@@ -12,17 +12,17 @@ filename = 1; i = 1; no_of_seg = 1; filePath = 'C:\Users\agopinath\Documents';  
 while (filename ~= 0) %while the user continues to select files
     [filename, filePath] = uigetfile('.avi', 'Please select the next video file, if done select cancel.', filePath); %select one file at a time
     if (filename ~= 0) %if the user selects a file
-        name_length(i) = length(filename); %set element i in array name_length to be the length of filename
-        path_length(i) = length(filePath); %set element i in array path_length to be the length of filePath
-        video_names(i,1:name_length(i)) = filename; %store filename in element i of video_names
-        path_names(i,1:path_length(i)) = filePath; %store filePath in element i of video_names
+        %name_length(i) = length(filename); %set element i in array name_length to be the length of filename
+        %path_length(i) = length(filePath); %set element i in array path_length to be the length of filePath
+        video_names{i} = filename; %store filename in element i of video_names
+        path_names{i} = filePath; %store filePath in element i of video_names
         [frame_rate(i)] = input (['Please enter the frame rate for video ', filename, ':']); %store inputted number value for frame rate
         i = i+1; %increment the index i
     end
 end
 
-for i = 1:size(video_names,1)
-    fprintf('Files selected: %s.\n',strcat(path_names(i,1:path_length(i)), video_names(i, 1:name_length(i))));
+for i = 1:size(video_names, 2)
+    fprintf('Videos: %s.\n', [path_names{i}, video_names{i}, ' at', ' ', num2str(frame_rate(i)), ' FPS']);
 end
 % tStart = tic;
 % for i = 1:size(video_names,1)
