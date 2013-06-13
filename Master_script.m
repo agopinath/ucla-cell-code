@@ -26,7 +26,7 @@ while (numFilesSelected > 0) % while the user selects at least one file and hasn
         % Inform the user of which files were selected - this is just for convenience
         fprintf('============ SELECTED ==============\n');
         for j = lastCount:count
-            fprintf('Selected: %s.\n', [path_names{j}, video_names{j}]);
+            fprintf('Selected: %s.\n', video_names{j});
         end
         fprintf('====================================\n');
         
