@@ -16,7 +16,7 @@ while (filename ~= 0) %while the user continues to select files
         %path_length(i) = length(filePath); %set element i in array path_length to be the length of filePath
         video_names{i} = filename; %store filename in element i of video_names
         path_names{i} = filePath; %store filePath in element i of video_names
-        [frame_rate(i)] = input (['Please enter the frame rate for video ', filename, ':']); %store inputted number value for frame rate
+        [frame_rate(i)] = input (['Please enter the frame rate for video ', filename, ': ']); %store inputted number value for frame rate
         i = i+1; %increment the index i
     end
 end
