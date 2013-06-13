@@ -2,6 +2,7 @@
 clear
 clc
 
+addpath('lib');
 % Header to test different files, commented when running actual code.
 % folder_name = 'D:\120220 hl60\MOCK 5um 4psi 600fps';
 % video_names = ['MOCK 5um 4psi 600fps Dev1-41'];
