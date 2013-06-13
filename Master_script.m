@@ -11,10 +11,10 @@ addpath('C:\Users\agopinath\Documents\ucla-cell-code\lib'); % Add any relevant l
 
 numFilesSelected = 1; no_of_seg = 1; filePath = 'C:\Users\agopinath\Documents', count = 1, lastCount = 1;   %initializations
 
-while (numFilesSelected > 0) % while at least one file is selected, continue prompting
-    files = uipickfiles('FilterSpec', '*.avi'); % prompt user to select files, filtering by file type
+while (numFilesSelected > 0) % while the user selects at least one file and hasn't cancelled, continue prompting
+    files = uipickfiles('FilterSpec', '*.avi', 'Prompt', 'Please select the video(s) with a common frame rate; if done select "Done".'); % prompt user to select files, filtering by file type
     numFilesSelected = size(files, 2); % number of files the user selects (can be 0, 1, or >1)
-    if (numFilesSelected > 0) % if the user selects at least one file
+    if (numFilesSelected > 0) % continue if the user selects at least one file and hasn't cancelled
         for i = 1:numFilesSelected
             [pathname, filename, ext] = fileparts(files{i}); % split up the full file name into its respective path, filename, and file extension
 
@@ -41,8 +41,12 @@ end
 
 % After user has selected all the videos he/she wants processed, display their names before continuing ahead
 fprintf('\n========= TO BE PROCESSED =========\n');
-for i = 1:size(video_names, 2)
-    fprintf('Videos: %s.\n', [path_names{i}, video_names{i}, ' at', ' ', num2str(frame_rate(i)), ' FPS']);
+if(exist('video_names') == 1) 
+    for i = 1:size(video_names, 2)
+        fprintf('Videos: %s.\n', [path_names{i}, video_names{i}, ' at', ' ', num2str(frame_rate(i)), ' FPS']);
+    end
+else
+     fprintf('None selected to be processed.\n');
 end
 fprintf('===================================\n');
 
