@@ -2,29 +2,56 @@
 clear
 clc
 
-addpath('lib');
+addpath('C:\Users\agopinath\Documents\ucla-cell-code\lib');
 % Header to test different files, commented when running actual code.
 % folder_name = 'D:\120220 hl60\MOCK 5um 4psi 600fps';
 % video_names = ['MOCK 5um 4psi 600fps Dev1-41'];
 % frame_rate = 600;           % frames per second
 
-filename = 1; i = 1; no_of_seg = 1; filePath = 'C:\Users\agopinath\Documents';   %initializations
 
-while (filename ~= 0) %while the user continues to select files
-    [filename, filePath] = uigetfile('.avi', 'Please select the next video file, if done select cancel.', filePath); %select one file at a time
-    if (filename ~= 0) %if the user selects a file
-        %name_length(i) = length(filename); %set element i in array name_length to be the length of filename
-        %path_length(i) = length(filePath); %set element i in array path_length to be the length of filePath
-        video_names{i} = filename; %store filename in element i of video_names
-        path_names{i} = filePath; %store filePath in element i of video_names
-        [frame_rate(i)] = input (['Please enter the frame rate for video ', filename, ': ']); %store inputted number value for frame rate
-        i = i+1; %increment the index i
+% fprintf('%s', class(files));
+% 
+% for i = 1:size(files, 2)
+%     [p, n, ext] = fileparts(files{i});
+%     ps{i} = p;
+%     ns{i} = n;
+% end
+
+% for i = 1:size(ns, 2)
+%     fprintf('Videos: %s.\n', [ps{i}, ' ~ ' ns{i}]);
+% end
+
+numFilesSelected = 1; no_of_seg = 1; filePath = 'C:\Users\agopinath\Documents', count = 1, lastCount = 1;   %initializations
+
+while (numFilesSelected > 0) %while at least one file is selected, continue prompting
+    files = uipickfiles('FilterSpec', '*.avi');
+    numFilesSelected = size(files, 2);
+    if (numFilesSelected > 0) %if the user selects at least one file
+        for i = 1:numFilesSelected
+            [pathname, filename, ext] = fileparts(files{i});
+
+            video_names{lastCount+i-1} = [filename, ext]; %store filename in element i of video_names
+            path_names{lastCount+i-1} = [pathname, '\']; %store filePath in element i of video_names
+        end
+        count = lastCount+i-1;
+        fprintf('============ SELECTED ==============\n');
+        for j = lastCount:count
+            fprintf('Selected: %s.\n', [path_names{j}, video_names{j}]);
+        end
+        fprintf('====================================\n');
+        frate = input (['Please enter the common frame rate for the selected video(s): ']); %prompt for frame rate
+        for k = lastCount:count
+            [frame_rate(k)] = frate; %store inputted number value for frame rate
+        end
+        lastCount = count+1;
     end
 end
 
+fprintf('\n========= TO BE PROCESSED =========\n');
 for i = 1:size(video_names, 2)
     fprintf('Videos: %s.\n', [path_names{i}, video_names{i}, ' at', ' ', num2str(frame_rate(i)), ' FPS']);
 end
+fprintf('===================================\n');
 % tStart = tic;
 % for i = 1:size(video_names,1)
 %     temp_mov = VideoReader([path_names(i,1:path_length(i)), video_names(i,1:name_length(i))]);
