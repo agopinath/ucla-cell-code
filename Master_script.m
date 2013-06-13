@@ -2,43 +2,35 @@
 clear
 clc
 
-addpath('C:\Users\agopinath\Documents\ucla-cell-code\lib');
+addpath('C:\Users\agopinath\Documents\ucla-cell-code\lib'); % Add any relevant libraries to the path
+
 % Header to test different files, commented when running actual code.
 % folder_name = 'D:\120220 hl60\MOCK 5um 4psi 600fps';
 % video_names = ['MOCK 5um 4psi 600fps Dev1-41'];
 % frame_rate = 600;           % frames per second
 
-
-% fprintf('%s', class(files));
-% 
-% for i = 1:size(files, 2)
-%     [p, n, ext] = fileparts(files{i});
-%     ps{i} = p;
-%     ns{i} = n;
-% end
-
-% for i = 1:size(ns, 2)
-%     fprintf('Videos: %s.\n', [ps{i}, ' ~ ' ns{i}]);
-% end
-
 numFilesSelected = 1; no_of_seg = 1; filePath = 'C:\Users\agopinath\Documents', count = 1, lastCount = 1;   %initializations
 
-while (numFilesSelected > 0) %while at least one file is selected, continue prompting
-    files = uipickfiles('FilterSpec', '*.avi');
-    numFilesSelected = size(files, 2);
-    if (numFilesSelected > 0) %if the user selects at least one file
+while (numFilesSelected > 0) % while at least one file is selected, continue prompting
+    files = uipickfiles('FilterSpec', '*.avi'); % prompt user to select files, filtering by file type
+    numFilesSelected = size(files, 2); % number of files the user selects (can be 0, 1, or >1)
+    if (numFilesSelected > 0) % if the user selects at least one file
         for i = 1:numFilesSelected
-            [pathname, filename, ext] = fileparts(files{i});
+            [pathname, filename, ext] = fileparts(files{i}); % split up the full file name into its respective path, filename, and file extension
 
-            video_names{lastCount+i-1} = [filename, ext]; %store filename in element i of video_names
-            path_names{lastCount+i-1} = [pathname, '\']; %store filePath in element i of video_names
+            video_names{lastCount+i-1} = [filename, ext]; % concatenate filename with its respective file extension and store it
+            path_names{lastCount+i-1} = [pathname, '\']; % concatenate pathname with a trailing backslash and store it
         end
         count = lastCount+i-1;
+        
+        % Inform the user of which files were selected - this is just for convenience
         fprintf('============ SELECTED ==============\n');
         for j = lastCount:count
             fprintf('Selected: %s.\n', [path_names{j}, video_names{j}]);
         end
         fprintf('====================================\n');
+        
+        % Prompts user for a common frame rate to assign to the selected video(s), and store them in frame_rate
         frate = input (['Please enter the common frame rate for the selected video(s): ']); %prompt for frame rate
         for k = lastCount:count
             [frame_rate(k)] = frate; %store inputted number value for frame rate
@@ -47,11 +39,13 @@ while (numFilesSelected > 0) %while at least one file is selected, continue prom
     end
 end
 
+% After user has selected all the videos he/she wants processed, display their names before continuing ahead
 fprintf('\n========= TO BE PROCESSED =========\n');
 for i = 1:size(video_names, 2)
     fprintf('Videos: %s.\n', [path_names{i}, video_names{i}, ' at', ' ', num2str(frame_rate(i)), ' FPS']);
 end
 fprintf('===================================\n');
+
 % tStart = tic;
 % for i = 1:size(video_names,1)
 %     temp_mov = VideoReader([path_names(i,1:path_length(i)), video_names(i,1:name_length(i))]);
