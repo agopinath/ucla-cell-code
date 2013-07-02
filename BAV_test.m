@@ -1,16 +1,24 @@
-%%% Bino Abel Varghese
-%%% Code to track cells
-%%% First part of the code
-%%% Output variable 'diff_int' is the final variable.
+%% Originally written by Bino Abel Varghese
+% Modified 6/27/2013 by Mike Scott
+% Called as a function in Master_Script_New, instead of being run as a
+% function.  Designed to track cells moving through the constriction
+% device, and output their transit times as they pass through it.  
+% Changes:
+%   - Readability improvements
+%   - No longer calls SecondCheckForCellValidity.  This code has been
+%   moved into the main code and heavily modified, resulting in performance
+%   gains.
+%   - Implemented a 'counter' variable to count the number of cells found.
+%   This allows for preallocation of mat_label
 
-function [diffint] = AnalysisCodeBAV(folder_name, video_name, no_of_images, seg_number, frame_rate)
+% function [diffint] = AnalysisCodeBAV(folder_name, video_name, no_of_images, seg_number, frame_rate)
 
 % Temporary to run as a script, not a function
-% folder_name = 'C:\Users\Mike\Desktop\Microfluidic Code Testing\video\';
-% video_name = 'dev5x10_20X_400fps_2400us_hESC-FF1_H9+Blebb_76.avi';
-% no_of_images = 1500;
-% seg_number = 1;
-% frame_rate = 400;
+folder_name = 'C:\Users\Mike\Desktop\Microfluidic Code Testing\video\';
+video_name = 'dev5x10_20X_400fps_2400us_hESC-FF1_H9+Blebb_76.avi';
+no_of_images = 1500;
+seg_number = 1;
+frame_rate = 400;
 counter = 1;
 
 % clear all;
@@ -27,7 +35,7 @@ clc;
 template = imread([folder_name, video_name, '_', num2str(seg_number), '\', 'FinalTemplate.tif']);
 
 %% Labels each grid line in the template from 1-8 starting at the top
-[tempmask, temlab] = bwlabel(template); 
+[tempmask, temlab] = bwlabel(template);
 clear template;
 
 % This loop begins at the first frame and finds the first frame that is not
@@ -48,27 +56,27 @@ for id=1:no_of_images
         for i = 1:nolabes
             % If the cell does not intersect the top template line, then
             % set the cell labels to zero for that cell
-            if (ismember(tempmask,1).*ismember(bw_frameno,i)) == 0 
-                bw_frameno2 = (bw_frameno2)-ismember(bw_frameno,i) == 0;  
+            if (ismember(tempmask,1).*ismember(bw_frameno,i)) == 0
+                bw_frameno2 = (bw_frameno2)-ismember(bw_frameno,i) == 0;
             else
                 % Counts the number of legitimate cells in the first image
                 % counter = counter + 1;
-            end  
+            end
         end
         
-        % Finds and stores the specifications of the first legitimate 
+        % Finds and stores the specifications of the first legitimate
         % starting frame.  Legitimate = non-blank and with at least one
         % cell touching the top template line.
         
-        % If the image is not blank save the labelled image and total 
+        % If the image is not blank save the labelled image and total
         % number of labels for cells intersecting line 1
-        if bw_frameno2 ~= 0 
-            [bw_framenonew, nolabesnew] = bwlabel(bw_frameno2); 
-        % If the image is blank, save the  labelled image and set the total 
-        % number of labels to zero
+        if bw_frameno2 ~= 0
+            [bw_framenonew, nolabesnew] = bwlabel(bw_frameno2);
+            % If the image is blank, save the  labelled image and set the total
+            % number of labels to zero
         else
-            bw_framenonew = bw_frameno2; 
-            nolabesnew = 0; 
+            bw_framenonew = bw_frameno2;
+            nolabesnew = 0;
         end
         
         % These lines of code record the starting legitimate image and start
@@ -78,23 +86,34 @@ for id=1:no_of_images
         %   'id', the image number
         %   'bw_framenonew', the image with labeled cells
         %   'nolabesnew', the label numbers of the cells
-        if sum(sum(bw_framenonew)) > 0 
-            start_image_ind = id; 
-            start_image = bw_framenonew; 
-            start_label = nolabesnew; 
+        if sum(sum(bw_framenonew)) > 0
+            start_image_ind = id;
+            start_image = bw_framenonew;
+            start_label = nolabesnew;
             break;
         end
     end
 end
 
-% Initializes a new array 'image_3d' to store all subsequent legitimate 
+% Initializes a new array 'image_3d' to store all subsequent legitimate
 % frames.  Legitimate frames are stored, and non-legitimate frames are zero
-image_3d(:,:,start_image_ind) = im2bw(bw_framenonew); 
+image_3d(:,:,start_image_ind) = im2bw(bw_framenonew);
 
-%% These lines of code select "legitimate cells" within each image, and 
+%% These lines of code select "legitimate cells" within each image, and
 % stores their label numbers and their centroid locations (x-coordinate and
 % y-coordinate).  Runs from the first frame after the legitimate frame
 % above until the last image
+
+% Preallocates the members of each line in an array for use in the
+% following for loop
+% idx_line = false(size(tempmask,1),size(tempmask,2),8);
+line_coordinate = zeros(1,8);
+for ii = 1:8
+    % idx_line(:,:,ii) = ismember(tempmask,ii);
+    q = regionprops(ismember(tempmask, ii), 'PixelList');
+    line_coordinate(ii) = q(1,1).PixelList(1,2);
+end
+
 for id = start_image_ind+1:no_of_images
     % If there is at least one cell in the frame
     if isempty(imread([folder_name, video_name, '_', num2str(seg_number), '\','BWstill_', num2str(no_of_images*(seg_number-1)+id),'.tif']))                   == 0;
@@ -103,20 +122,40 @@ for id = start_image_ind+1:no_of_images
         % The function 'SecondCheckForCellValidity' eliminates cells
         % which do not intersect with any of the grid lines in the
         % template image.
-        [bw_frameno2, counter] = SecondCheckForCellValidity(blabs, labs, tempmask, counter);
+        %% Testing
+        bw_frameno2 = zeros(size(blabs));
+        
+        % Here a legitimate cell is a cell which touches at least 1 of the eight
+        % grid lines in the template image. If this condition is not satisfied
+        % that given cell is set to zero or in other words eliminated from the image.
+        
+        for i = 1:labs
+            % Pull out cells labelled 1 2 3 etc....
+            idx = ismember(blabs, i);
+            for j = 1:8
+                % Find their intersection
+                if(sum(idx(line_coordinate(j),:)) ~= 0)
+                    bw_frameno2 = bw_frameno2 + idx; %% Images with only legitimate cells are sent back to main code.
+                    counter = counter + 1;
+                    break;
+                end
+            end
+        end
+        
+        %% Testing over
         % Stores the frame with only legitimate cells in the image_3d array
-        image_3d(:,:,id) = bw_frameno2;   
-    % If no cells are detected in the frame, store the frame as is
+        image_3d(:,:,id) = bw_frameno2;
+        % If no cells are detected in the frame, store the frame as is
     else
-        image_3d(:,:,id) = imread([folder_name, video_name, '_', num2str(seg_number), '\','BWstill_', num2str(no_of_images*(seg_number-1)+id),'.tif']); 
-    end    
+        image_3d(:,:,id) = imread([folder_name, video_name, '_', num2str(seg_number), '\','BWstill_', num2str(no_of_images*(seg_number-1)+id),'.tif']);
+    end
 end
 
-% The matrix 'mat_label' is an important matrix that stores information 
-% about each legitimate cell.  The columns are: 
-%   1) Image number 
-%   2) cell label number 
-%   3) Centroid X Coordinate 
+% The matrix 'mat_label' is an important matrix that stores information
+% about each legitimate cell.  The columns are:
+%   1) Frame number
+%   2) cell label number
+%   3) Centroid X Coordinate
 %   4) Centroid Y Coordinate
 %   5) Grid line that the cell intersects
 % mat_label = 0;
@@ -185,18 +224,18 @@ s = round(mat_label);
 % label 10, label 10 is tracked by label 13 and so forth.
 mat_pair = zeros(1,length(s(:,2)));
 
-% Creates cell pairs
+% Creates cell pairs (for each cell object found)
 for k = 1:length(s(:,2))
     count = 1;
     for k1 = (k+1):length(s(:,2))
         % The criteria to create cell pairs are as follows:
-        %   -Pairs of cells must lie in different images, 
-        %   -The centroid of the cells must be vary by than 4 pixels in the 
+        %   -Pairs of cells must lie in different images,
+        %   -The centroid of the cells must be vary by than 4 pixels in the
         %       x-direction.
-        %   Note: the cell with label number S can only be paired with cell 
+        %   Note: the cell with label number S can only be paired with cell
         %       which has a higher label number (> S).
-        if (s(k1,5) == (s(k,5)+1)) && (abs(s(k,3)-s(k1,3))<4) && (s(k,1)<s(k1,1));
-            % If a pair is found for a given label number S, then break 
+        if((s(k1,5) == (s(k,5)+1)) && ((abs(s(k,3)-s(k1,3))<4)));
+            % If a pair is found for a given label number S, then break
             mat_pair(k) = k1;
             break;
         end

@@ -3,7 +3,7 @@
 %%% First part of the code 
 %%% Output variable 'diff_int' is the final variable.
 
-function [diffint] = AnalysisCodeBAV(folder_name, video_name, no_of_images, seg_number, frame_rate)
+function [diffint] = AnalysisCodeBAV_temp(folder_name, video_name, no_of_images, seg_number, frame_rate)
 
 % clear all;
 close all;
@@ -15,7 +15,7 @@ clc;
 % no_of_images = 3000;
 % frame_rate = 300;
 
-template=imread([folder_name, video_name, '_', num2str(seg_number), '\', 'FinalTemplate.tif']);
+template=imread([folder_name, video_name, '_', num2str(seg_number), '\', 'FinalTemplateNorm3.tif']);
 % figure;
 % imshow(bwlabel(template1));
 % template=template1(1:size(template1,1),1:size(template1,2)); %%% Change
@@ -33,9 +33,9 @@ for id=1:no_of_images
 %     num2str(id),'.tif']); redudant
 %      I                               =imread(filename);  
     %% If image matrix I is not empty then
-     if isempty(imread([folder_name, video_name, '_', num2str(seg_number), '\','BWstill_', num2str(no_of_images*(seg_number-1)+id),'.tif']))==0
+     if isempty(imread([folder_name, video_name, '_', num2str(seg_number), '\','Norm3_', num2str(no_of_images*(seg_number-1)+id),'.tif']))==0
     %% Count number of cells in Image I and label them
-        [bw_frameno nolabes]         = bwlabel(imread([folder_name, video_name, '_', num2str(seg_number), '\','BWstill_', num2str(no_of_images*(seg_number-1)+id),'.tif']));
+        [bw_frameno nolabes]         = bwlabel(imread([folder_name, video_name, '_', num2str(seg_number), '\','Norm3_', num2str(no_of_images*(seg_number-1)+id),'.tif']));
     %% Check function ('FirstCheckForCellValidity') evoked here
     %% Function will recognize the first (base) image with a valid cell to start
     %% cell tracking. Function accepts the number of cells of the current
@@ -95,9 +95,9 @@ for id=start_image_ind+1:no_of_images
 % 
 % I=imread(filename);
            %% If image I has at least 1 detected cell then
-    if isempty(imread([folder_name, video_name, '_', num2str(seg_number), '\','BWstill_', num2str(no_of_images*(seg_number-1)+id),'.tif']))                   == 0;
+    if isempty(imread([folder_name, video_name, '_', num2str(seg_number), '\','Norm3_', num2str(no_of_images*(seg_number-1)+id),'.tif']))                   == 0;
         %% Label image I
-        [blabs labs]                =  bwlabel(imread([folder_name, video_name, '_', num2str(seg_number), '\','BWstill_', num2str(no_of_images*(seg_number-1)+id),'.tif']));
+        [blabs labs]                =  bwlabel(imread([folder_name, video_name, '_', num2str(seg_number), '\','Norm3_', num2str(no_of_images*(seg_number-1)+id),'.tif']));
         %% This function 'SecondCheckForCellValidity' eliminates cells
         %% which do not intersect with any of the grid lines in the
         %% template image.
@@ -105,7 +105,7 @@ for id=start_image_ind+1:no_of_images
         image_3d(:,:,id)            =  bw_frameno2; %% 3D matrix of images with legitimate cells
         
     else
-        image_3d(:,:,id)            =  imread([folder_name, video_name, '_', num2str(seg_number), '\','BWstill_', num2str(no_of_images*(seg_number-1)+id),'.tif']); %% else store image as it is
+        image_3d(:,:,id)            =  imread([folder_name, video_name, '_', num2str(seg_number), '\','Norm3_', num2str(no_of_images*(seg_number-1)+id),'.tif']); %% else store image as it is
     end
     
     
@@ -118,10 +118,8 @@ mat_label                               = 0;
 %% once again label the cells of the starting legitimate image
 [blabs_start labs_start]                = bwlabel(image_3d(:,:,start_image_ind));
 %% compute centroid of each cell in the starting image
-s                                       = regionprops(blabs_start, 'centroid', 'area','eccentricity');
+s                                       = regionprops(blabs_start, 'centroid');
 centroids                               = cat(1, s.Centroid);
-areas                                   = cat(1, s.Area);
-eccentricities                          = cat(1, s.Eccentricity);
 id                                      = start_image_ind;
 
 %% Recording each cell in the legitimate image in variable mat_label
@@ -144,10 +142,8 @@ for id=start_image_ind+1:no_of_images
         %% label the cells of the subsequent images
         [blabs labs]                    = bwlabel(image_3d(:,:,id));
         %% compute centroid of each cell in the subsequent image
-        s                               = regionprops(blabs, 'centroid','area','eccentricity');
+        s                               = regionprops(blabs, 'centroid');
         centroids                       = cat(1, s.Centroid);
-        areas                                   = cat(1, s.Area);
-        eccentricities                          = cat(1, s.Eccentricity);
         %% Note: we increment the label number of cells in corresponding
         %% images depending on the last cell's label number in the previous
         %% image
