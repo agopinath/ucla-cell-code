@@ -74,7 +74,7 @@ data_comp_ = zeros(1,8);
 for i = 1:size(video_names,1)
     for j = 1:no_of_seg
          %Portion_segment(video_names(i,1:name_length(i)), path_names(i,1:path_length(i)), max([50 (j-1)*break_size(i)])+1, j*break_size(i), position(i,:), j);
-          Portion_segment(video_names(i,1:name_length(i)), path_names(i,1:path_length(i)), max([1 (j-1)*break_size(i)]), j*break_size(i), position(i,:), j);
+         Portion_segment(video_names(i,1:name_length(i)), path_names(i,1:path_length(i)), max([1 (j-1)*break_size(i)]), j*break_size(i), position(i,:), j);
          [data_] = AnalysisCodeBAV(path_names(i,1:path_length(i)), video_names(i,1:name_length(i)), break_size(i), j, frame_rate(i));
          if (isempty(data_) ~= 1)
              if (data_comp_(1,1:8) == zeros(1,8))

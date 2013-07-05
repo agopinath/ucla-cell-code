@@ -33,11 +33,12 @@ clear template;
 % This loop begins at the first frame and finds the first frame that is not
 % empty
 for id=1:no_of_images
+    img = imread([folder_name, video_name, '_', num2str(seg_number), '\','BWstill_', num2str(no_of_images*(seg_number-1)+id),'.tif']);
     % If image matrix is not empty then
-    if isempty(imread([folder_name, video_name, '_', num2str(seg_number), '\','BWstill_', num2str(no_of_images*(seg_number-1)+id),'.tif'])) == 0
+    if isempty(img) == 0
         % Count number of cells in the frame and label them (nolabes gives
         % the number of cells found in that frame)
-        [bw_frameno, nolabes] = bwlabel(imread([folder_name, video_name, '_', num2str(seg_number), '\','BWstill_', num2str(no_of_images*(seg_number-1)+id),'.tif']));
+        [bw_frameno, nolabes] = bwlabel(img);
         
         % Converts the frame to a black and white logical frame (every
         % pixel is either 1 or zero)
@@ -96,10 +97,11 @@ image_3d(:,:,start_image_ind) = im2bw(bw_framenonew);
 % y-coordinate).  Runs from the first frame after the legitimate frame
 % above until the last image
 for id = start_image_ind+1:no_of_images
+    img = imread([folder_name, video_name, '_', num2str(seg_number), '\','BWstill_', num2str(no_of_images*(seg_number-1)+id),'.tif']);
     % If there is at least one cell in the frame
-    if isempty(imread([folder_name, video_name, '_', num2str(seg_number), '\','BWstill_', num2str(no_of_images*(seg_number-1)+id),'.tif']))                   == 0;
+    if isempty(img) == 0;
         % Label cells in the image
-        [blabs, labs] = bwlabel(imread([folder_name, video_name, '_', num2str(seg_number), '\','BWstill_', num2str(no_of_images*(seg_number-1)+id),'.tif']));
+        [blabs, labs] = bwlabel(img);
         % The function 'SecondCheckForCellValidity' eliminates cells
         % which do not intersect with any of the grid lines in the
         % template image.
@@ -108,7 +110,7 @@ for id = start_image_ind+1:no_of_images
         image_3d(:,:,id) = bw_frameno2;   
     % If no cells are detected in the frame, store the frame as is
     else
-        image_3d(:,:,id) = imread([folder_name, video_name, '_', num2str(seg_number), '\','BWstill_', num2str(no_of_images*(seg_number-1)+id),'.tif']); 
+        image_3d(:,:,id) = img; 
     end    
 end
 
