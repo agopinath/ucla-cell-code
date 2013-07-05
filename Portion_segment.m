@@ -2,7 +2,7 @@
 % Automation and efficiency changes made 03/11/2013 by Dave Hoelzle
 % Adding comments, commenting the output figure on 6/25/13 by Mike Scott
 
-function Portion_segment(video_name, folder_name, start_frame, end_frame, position, seg_number)
+% function Portion_segment(video_name, folder_name, start_frame, end_frame, position, seg_number)
 
 %% The aim of this code is to segment a binary image of the cells from a stack of grayscale images
 
@@ -25,28 +25,29 @@ BH_size = 7;
 smallest_cell = 5;      
 % Emperical threshold value for binarizing images (default 4)
 threshold = 4;          
-% folder_name = '';
-% video_name = ['MOCK 5um 4psi 600fps Dev1-41'];
-% no_of_seg = 1;
-% start_frame = 1;
-% end_frame = 1000;
-% position = [14     19    529    285];
-% seg_number = 1;
+folder_name = 'C:\Users\agopinath\Desktop\CellVideos\';
+video_name = ['compressed2.avi'];
+position = [14     19    529    285];
+seg_number = 1;
 
+% create the folder to write to
+writeFolder = [folder_name, video_name, '_', num2str(seg_number)];
+mkdir(writeFolder);
 
 %% Computing an average image
 % Loads the video
 temp_mov = VideoReader([folder_name, video_name]);
+start_frame = 1;
+end_frame = temp_mov.NumberOfFrames;
 
 % Generates a vector of to select 100 evenly spaced frames in the video
 select_range = 1:ceil(temp_mov.NumberOfFrames/100):temp_mov.NumberOfFrames; % change back to range_wide later
-
 % Compiles Aavi, an array of 100 evenly spaced frames specified by
 % select_range, and then averages over RGB to get Aaviconverted (uint8 type
 % uses less memory)
 for i=1:length(select_range)
-    Aavi =                  read(temp_mov, select_range(i));
-    Aaviconverted(:,:,i)=   uint8(mean(Aavi,3));
+    Aavi = read(temp_mov, select_range(i));
+    Aaviconverted(:,:,i) = uint8(mean(Aavi,3));
 end
 
 % Finds the 'background'.  Goes pixel by pixel and averages that pixel
@@ -97,47 +98,9 @@ for rep = start_frame:end_frame
     % with black.
     Clean(:,:) = bwareaopen(im2bw(double(med_bhat(:,:))/256, threshold/256),smallest_cell);
 
-   
- 
-%     %% Overlapping the boundaries on the original image to check validity
-%     % This section can be uncommented to display a plot that shows each
-%     % of the filtered images as well as the composite ('Clean') image as it
-%     % is filtered.  It can be used to verify that the code detects the
-%     % cells, but if it is not being used for verification it slows down the
-%     % usage of the code.
-%      
-%     % Gives the X (AB) and Y (CD) indicies of every white pixel in the
-%     % image.  This is hopefully every pixel of every cell.
-%     [AB CD] = find(logical(Clean(:,:))); 
-%     
-%     OVERLAP(:,:) = Aaviconverted(max([1 position(2)]):min([size(Aaviconverted,1) position(2)+position(4)]), max([1 position(1)]):min([size(Aaviconverted,2) position(1)+position(3)]));
-%     for integ=1:length(AB)
-%         OVERLAP(AB(integ),CD(integ))=255;
-%     end
-%  
-%     if (rep<=50)
-%     figure(100)
-%     subplot(2,2,1)
-%     imagesc(OVERLAP(:,:));
-%     title (['Final; Frame ', int2str(rep)])
-%     subplot(2,2,2)
-%     imagesc(Aaviconverted2(:,:));
-%     title (['Difference Image; Frame ', int2str(rep)])
-%     colorbar;impixelinfo;
-%     subplot(2,2,3)
-%     imagesc(BH(:,:));
-%     title (['Bottom Hat Filtered; Frame ', int2str(rep)])
-%     colorbar;impixelinfo;
-%     subplot(2,2,4)
-%     imagesc(med_bhat(:,:));
-%     title (['Median Filtered; Frame ', int2str(rep)])
-%     colorbar;impixelinfo;
-%     end
-
     %% Save
     % The following code saves image sequence and the image template with
     % the demarcation lines for the transit time analysis.
-    filename = [folder_name, video_name, '_', num2str(seg_number), '\','BWstill_', num2str(rep),'.tif']; %% Change filename .tif
+    filename = [writeFolder, '\','BWstill_', num2str(rep),'.tif']; %% Change filename .tif
     imwrite(Clean(:,:),filename,'Compression','none');
-
 end
