@@ -3,14 +3,14 @@
 %%% First part of the code
 %%% Output variable 'diff_int' is the final variable.
 
-function [diffint] = AnalysisCodeBAV(folder_name, video_name, no_of_images, seg_number, frame_rate)
+%function [diffint] = AnalysisCodeBAV(folder_name, video_name, no_of_images, seg_number, frame_rate)
 
 % Temporary to run as a script, not a function
-% folder_name = 'C:\Users\agopinath\Desktop\CellVideos\';
-% video_name = 'device01_20X_800fps_0.6ms_6psi_p4_15.avi';
-% no_of_images = 1500;
-% seg_number = 1;
-% frame_rate = 400;
+folder_name = 'C:\Users\agopinath\Desktop\CellVideos\';
+video_name = 'compressed.avi';
+no_of_images = 1500;
+seg_number = 1;
+frame_rate = 400;
 counter = 1;
 
 % clear all;
