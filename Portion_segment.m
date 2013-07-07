@@ -13,64 +13,61 @@ clc;
 % was unused and slowed down the user during execution.  Also added
 % comments to clarify the code. (Mike Scott)
 
-folder_name = 'C:\Users\agopinath\Desktop\CellVideos\';
-video_name = 'compressed.avi';%'unconstricted_test.avi';
-seg_number = 1;
+folderName = 'C:\Users\agopinath\Desktop\CellVideos\';
+videoName = 'unconstricted_test.avi';%'unconstricted_test.avi';
+segmentNum = 1;
 
 % create the folder to write to
-writeFolder = [folder_name, video_name, '_', num2str(seg_number)];
+writeFolder = [folderName, videoName, '_', num2str(segmentNum)];
 mkdir(writeFolder);
 
 %% Computing an average image
-% Loads the video
-temp_mov = VideoReader([folder_name, video_name]);
-start_frame = 4;
-end_frame = temp_mov.NumberOfFrames;
+% loads the video and initialize range of frames to process
+cellVideo = VideoReader([folderName, videoName]);
+startFrame = 4;
+endFrame = cellVideo.NumberOfFrames;
 
-% Generates a vector of to select 100 evenly spaced frames in the video
-select_range = 1:ceil(temp_mov.NumberOfFrames/100):temp_mov.NumberOfFrames; % change back to range_wide later
-% Compiles Aavi, an array of 100 evenly spaced frames specified by
-% select_range, and then averages over RGB to get Aaviconverted (uint8 type
-% uses less memory)
-temp = read(temp_mov, 1);
-height = size(temp, 1);
-width = size(temp, 2);
+% generates a sample array of the indices of 100 evenly spaced frames in the video
+bgSample = 1:ceil(cellVideo.NumberOfFrames/100):cellVideo.NumberOfFrames;
 
-Aaviconverted = zeros(height, width, 'uint8');
-for i = 1:length(select_range)
-    Aavi = read(temp_mov, select_range(i));
-    Aaviconverted(:,:,i) = uint8(mean(Aavi,3));
+% read cell video 
+bgFrames = read(cellVideo, 1);
+height = size(bgFrames, 1);
+width = size(bgFrames, 2);
+
+% bgFrames holds the video frames specified by the indices stored in bgSample
+bgFrames = zeros(height, width, 'uint8');
+for i = 1:length(bgSample)
+    bgSampleFrame = read(cellVideo, bgSample(i));
+    bgFrames(:,:,i) = uint8(mean(bgSampleFrame,3));
 end
 
-% Finds the 'background'.  Goes pixel by pixel and averages that pixel
+% finds the 'background'.  Goes pixel by pixel and averages that pixel
 % value over the 100 selected frames.  Amean is the average of these 100
-% frames.  The 'max' and 'min' statements ensure the box (specified by the
-% user) are nonnegative and within the video size.
+% frames
 
-Amean = zeros(height, width, 'uint8');
+movi = zeros(height, width, 'uint8');
 for i = 1:height
     for j = 1:width
-        Amean(i,j) = uint8(mean(Aaviconverted(i,j,:)));
+        backgroundImg(i,j) = uint8(mean(bgFrames(i,j,:)));
     end
 end
 
-%% Steps through the video one frame at a time to segment out cells
-% Clears variables to conserve memory 
-clear Aaviconverted; clear select_range; clear temp;
+clear bgSampleFrame; clear bgSample;
 
-for rep = start_frame:end_frame
-    %% Reads in the movie file frame by frame
-    Aavi = read(temp_mov, rep); 
+%% Steps through the video frame by frame in the range [startFrame, endFrame]
+for frameIdx = startFrame:endFrame
+    % reads in the movie file 
+    bgSampleFrame = read(cellVideo, frameIdx); 
 
-    % Converts the Avi from a structure format to a 3D array (In future versions, speed can be improved of the code is altered to work on cell strct instead of 3D array.
-    Aaviconverted(:,:) = uint8(mean(Aavi,3));
-    clear Aavi;  
-
+    % converts the Avi from a structure format to a 3D array (In future versions, speed can be improved of the code is altered to work on cell strct instead of 3D array.
+    bgFrames(:,:) = uint8(mean(bgSampleFrame,3));
+    
     %% Perform Change detection
-    % Subtracts the background (Amean) from each frame, hopefully leaving
+    % subtracts the background (Amean) from each frame, hopefully leaving
     % just the cells.  Again, the min/max statements ensure the indicies
     % are nonzero.
-    Aaviconverted2 = imsubtract(Amean, Aaviconverted(:,:));
+    Aaviconverted2 = imsubtract(backgroundImg, bgFrames(:,:));
     Aaviconverted2 = imadjust(Aaviconverted2);
 
     Aaviconverted2 = bwareaopen(Aaviconverted2, 40);
@@ -80,9 +77,9 @@ for rep = start_frame:end_frame
     seD = strel('disk', 2);
     Aaviconverted2 = imclose(Aaviconverted2, seD);
     
-    %% Save
-    % The following code saves image sequence and the image template with
-    % the demarcation lines for the transit time analysis.
-    filename = [writeFolder, '\','BWstill_', num2str(rep),'.tif']; %% Change filename .tif
+    %% Save edge-detected image file
+    % the following code saves image sequence and the image template with
+    % the demarcation lines for the transit time analysis
+    filename = [writeFolder, '\','BWstill_', num2str(frameIdx),'.tif'];
     imwrite(Aaviconverted2(:,:),filename,'Compression','none');
 end
