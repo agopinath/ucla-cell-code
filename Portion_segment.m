@@ -1,33 +1,20 @@
 %% Cell Segmentation Algorithm (Modified as of 10/05/2011) by Bino Abel Varghese
 % Automation and efficiency changes made 03/11/2013 by Dave Hoelzle
 % Adding comments, commenting the output figure on 6/25/13 by Mike Scott
+% Adding comments, commenting the output figure on 6/25/13 by Mike Scott
 
 % function Portion_segment(video_name, folder_name, start_frame, end_frame, position, seg_number)
 
 %% The aim of this code is to segment a binary image of the cells from a stack of grayscale images
 
-%% Clears the screen
-% clear;
-% close all;
 clc;
 
-%% ------------------------- Header Strip -------------------------------%
-% all major code design changes made here
 % 6/25/13 Commented out the code which generated the 'overlap' diagram.  It
 % was unused and slowed down the user during execution.  Also added
 % comments to clarify the code. (Mike Scott)
 
-% Median filter size in pixels, must be an odd number; 11 is nice
-med_size = 11;          
-BH_size = 7;
-% Threshold to filter out small cells, specifies the minimum AREA in pixels
-% of a cell
-smallest_cell = 5;      
-% Emperical threshold value for binarizing images (default 4)
-threshold = 4;          
 folder_name = 'C:\Users\agopinath\Desktop\CellVideos\';
 video_name = 'compressed.avi';%'unconstricted_test.avi';
-% position = [5     5    540    300];
 seg_number = 1;
 
 % create the folder to write to
@@ -77,9 +64,6 @@ for rep = start_frame:end_frame
 
     % Converts the Avi from a structure format to a 3D array (In future versions, speed can be improved of the code is altered to work on cell strct instead of 3D array.
     Aaviconverted(:,:) = uint8(mean(Aavi,3));
-
-    % Clears Aavi to save memory, add more variables if you landup with 
-    % Java heap or out of memory error. 
     clear Aavi;  
 
     %% Perform Change detection
@@ -88,32 +72,14 @@ for rep = start_frame:end_frame
     % are nonzero.
     Aaviconverted2 = imsubtract(Amean, Aaviconverted(:,:));
     Aaviconverted2 = imadjust(Aaviconverted2);
-    %seD = strel('disk', 10);
-    %Aaviconverted2 = imerode(Aaviconverted2, seD);
-    %Aaviconverted2 = medfilt2(Aaviconverted2,[4, 4]);%imerode(Aaviconverted2, seD);
+
     Aaviconverted2 = bwareaopen(Aaviconverted2, 40);
     seD = strel('disk', 1);
     Aaviconverted2 = imerode(Aaviconverted2, seD);
-    Aaviconverted2 = bwareaopen(Aaviconverted2, 10);
-    seD = strel('disk', 11);
+    Aaviconverted2 = bwareaopen(Aaviconverted2, 40);
+    seD = strel('disk', 2);
     Aaviconverted2 = imclose(Aaviconverted2, seD);
-    %Aaviconverted2 = imfill(Aaviconverted2, 'holes');
-    %myfilter = fspecial('gaussian',[3, 3], 4);
-    %Aaviconverted2 = imfilter(Aaviconverted2, myfilter, 'replicate');
-    % Performs a bottom hat filter using the strel 'se'
-    %se = strel('disk',BH_size);
-    %BH(:,:) = imbothat(Aaviconverted2,se);
     
-    % Performs a median filter using the pixel size specified in the
-    % header
-    %med_bhat(:,:) = medfilt2(BH(:,:),[med_size med_size]);
-
-    % Gets rid of small 'cells'.  This function gets rid of any connected
-    % region which is less that smallest_cell pixels connected.  Each frame
-    % is converted to black and white before the small cells are filled in
-    % with black.
-    %Clean(:,:) = bwareaopen(im2bw(double(med_bhat(:,:))/256, threshold/256),smallest_cell);
-
     %% Save
     % The following code saves image sequence and the image template with
     % the demarcation lines for the transit time analysis.
