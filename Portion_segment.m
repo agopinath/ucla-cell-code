@@ -14,7 +14,7 @@ clc;
 
 folderName = 'C:\Users\agopinath\Desktop\CellVideos\';
 videoName = 'compressed.avi';%'unconstricted_test.avi';
-segmentNum = 1;
+segmentNum = 2;
 
 % create the folder to write to
 writeFolder = [folderName, videoName, '_', num2str(segmentNum)];
@@ -75,7 +75,7 @@ for frameIdx = startFrame:endFrame
     cleanImg = imerode(cleanImg, forErode);
     cleanImg = bwareaopen(cleanImg, 40);
     
-    cleanImg = imfill(cleanImg, 'holes');
+    cleanImg = imclose(cleanImg, forClose);
     
     %% Save edge-detected image file
     % the following code saves image sequence and the image template with
