@@ -14,7 +14,7 @@ clc;
 % comments to clarify the code. (Mike Scott)
 
 folderName = 'C:\Users\agopinath\Desktop\CellVideos\';
-videoName = 'unconstricted_test.avi';%'unconstricted_test.avi';
+videoName = 'compressed.avi';%'unconstricted_test.avi';
 segmentNum = 1;
 
 % create the folder to write to
@@ -30,10 +30,9 @@ endFrame = cellVideo.NumberOfFrames;
 % generates a sample array of the indices of 100 evenly spaced frames in the video
 bgSample = 1:ceil(cellVideo.NumberOfFrames/100):cellVideo.NumberOfFrames;
 
-% read cell video 
-bgFrames = read(cellVideo, 1);
-height = size(bgFrames, 1);
-width = size(bgFrames, 2);
+% store the height/width of the cell video for clarity
+height = cellVideo.Height;
+width = cellVideo.Width;
 
 % bgFrames holds the video frames specified by the indices stored in bgSample
 bgFrames = zeros(height, width, 'uint8');
@@ -53,10 +52,11 @@ for i = 1:height
     end
 end
 
+% clear variables for better memory management
 clear bgSampleFrame; clear bgSample; clear bgFrames;
 
-%% Steps through the video frame by frame in the range [startFrame, endFrame]
 for frameIdx = startFrame:endFrame
+    %% Steps through the video frame by frame in the range [startFrame, endFrame]
     % reads in the movie file 
     currFrame = read(cellVideo, frameIdx); 
 
