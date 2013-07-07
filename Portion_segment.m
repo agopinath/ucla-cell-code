@@ -1,7 +1,6 @@
 %% Cell Segmentation Algorithm (Modified as of 10/05/2011) by Bino Abel Varghese
 % Automation and efficiency changes made 03/11/2013 by Dave Hoelzle
 % Adding comments, commenting the output figure on 6/25/13 by Mike Scott
-% Adding comments, commenting the output figure on 6/25/13 by Mike Scott
 
 % function Portion_segment(video_name, folder_name, start_frame, end_frame, position, seg_number)
 
@@ -24,7 +23,7 @@ mkdir(writeFolder);
 %% Computing an average image
 % loads the video and initialize range of frames to process
 cellVideo = VideoReader([folderName, videoName]);
-startFrame = 4;
+startFrame = 1;
 endFrame = cellVideo.NumberOfFrames;
 
 % generates a sample array of the indices of 100 evenly spaced frames in the video
@@ -76,7 +75,7 @@ for frameIdx = startFrame:endFrame
     cleanImg = imerode(cleanImg, forErode);
     cleanImg = bwareaopen(cleanImg, 40);
     
-    cleanImg = imclose(cleanImg, forClose);
+    cleanImg = imfill(cleanImg, 'holes');
     
     %% Save edge-detected image file
     % the following code saves image sequence and the image template with
