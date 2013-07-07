@@ -37,11 +37,10 @@ width = cellVideo.Width;
 % bgFrames holds the video frames specified by the indices stored in bgSample
 bgFrames = zeros(height, width, 'uint8');
 for i = 1:length(bgSample)
-    bgSampleFrame = read(cellVideo, bgSample(i));
-    bgFrames(:,:,i) = uint8(mean(bgSampleFrame,3));
+    bgFrames(:,:,i) = uint8(mean(read(cellVideo, bgSample(i)), 3));
 end
 
-% finds the 'background'.  Goes pixel by pixel and averages that pixel
+% finds the 'background'. Goes pixel by pixel and averages that pixel
 % value over the 100 selected frames.  backgroundImg is the image 
 % whose pixels values are the average of these 100 sample frames.
 
@@ -55,27 +54,29 @@ end
 % clear variables for better memory management
 clear bgSampleFrame; clear bgSample; clear bgFrames;
 
+forErode = strel('disk', 1);
+forClose = strel('disk', 11);
+
 for frameIdx = startFrame:endFrame
     %% Steps through the video frame by frame in the range [startFrame, endFrame]
     % reads in the movie file 
     currFrame = read(cellVideo, frameIdx); 
 
-    % converts the Avi from a structure format to a 3D array (In future versions, speed can be improved of the code is altered to work on cell strct instead of 3D array.
+    % converts currFrame from a structure format to a 3D array (In future versions, speed can be improved of the code is altered to work on cell strct instead of 3D array.
     currFrame = uint8(mean(currFrame,3));
     
     %% Do cell detection
     % subtracts the background (backgroundImg) from each frame, hopefully leaving
     % just the cells
-    justCells = imsubtract(backgroundImg, currFrame);
+    cleanImg = imsubtract(backgroundImg, currFrame);
     
     %% Cleanup the grayscale image of the cells
-    cleanImg = imadjust(justCells);
+    cleanImg = imadjust(cleanImg);
+    
+    cleanImg = imerode(cleanImg, forErode);
     cleanImg = bwareaopen(cleanImg, 40);
-    seD = strel('disk', 1);
-    cleanImg = imerode(cleanImg, seD);
-    cleanImg = bwareaopen(cleanImg, 40);
-    seD = strel('disk', 2);
-    cleanImg = imclose(cleanImg, seD);
+    
+    cleanImg = imclose(cleanImg, forClose);
     
     %% Save edge-detected image file
     % the following code saves image sequence and the image template with
