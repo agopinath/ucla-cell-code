@@ -43,8 +43,8 @@ for i = 1:length(bgSample)
 end
 
 % finds the 'background'.  Goes pixel by pixel and averages that pixel
-% value over the 100 selected frames.  Amean is the average of these 100
-% frames
+% value over the 100 selected frames.  backgroundImg is the image 
+% whose pixels values are the average of these 100 sample frames.
 
 backgroundImg = zeros(height, width, 'uint8');
 for i = 1:height
@@ -53,33 +53,33 @@ for i = 1:height
     end
 end
 
-clear bgSampleFrame; clear bgSample;
+clear bgSampleFrame; clear bgSample; clear bgFrames;
 
 %% Steps through the video frame by frame in the range [startFrame, endFrame]
 for frameIdx = startFrame:endFrame
     % reads in the movie file 
-    bgSampleFrame = read(cellVideo, frameIdx); 
+    currFrame = read(cellVideo, frameIdx); 
 
     % converts the Avi from a structure format to a 3D array (In future versions, speed can be improved of the code is altered to work on cell strct instead of 3D array.
-    bgFrames(:,:) = uint8(mean(bgSampleFrame,3));
+    currFrame = uint8(mean(currFrame,3));
     
-    %% Perform Change detection
-    % subtracts the background (Amean) from each frame, hopefully leaving
-    % just the cells.  Again, the min/max statements ensure the indicies
-    % are nonzero.
-    Aaviconverted2 = imsubtract(backgroundImg, bgFrames(:,:));
-    Aaviconverted2 = imadjust(Aaviconverted2);
-
-    Aaviconverted2 = bwareaopen(Aaviconverted2, 40);
+    %% Do cell detection
+    % subtracts the background (backgroundImg) from each frame, hopefully leaving
+    % just the cells
+    justCells = imsubtract(backgroundImg, currFrame);
+    
+    %% Cleanup the grayscale image of the cells
+    cleanImg = imadjust(justCells);
+    cleanImg = bwareaopen(cleanImg, 40);
     seD = strel('disk', 1);
-    Aaviconverted2 = imerode(Aaviconverted2, seD);
-    Aaviconverted2 = bwareaopen(Aaviconverted2, 40);
+    cleanImg = imerode(cleanImg, seD);
+    cleanImg = bwareaopen(cleanImg, 40);
     seD = strel('disk', 2);
-    Aaviconverted2 = imclose(Aaviconverted2, seD);
+    cleanImg = imclose(cleanImg, seD);
     
     %% Save edge-detected image file
     % the following code saves image sequence and the image template with
     % the demarcation lines for the transit time analysis
-    filename = [writeFolder, '\','BWstill_', num2str(frameIdx),'.tif'];
-    imwrite(Aaviconverted2(:,:),filename,'Compression','none');
+    filename = [writeFolder, '\','BWstill_', num2str(frameIdx), '.tif'];
+    imwrite(cleanImg, filename, 'Compression', 'none');
 end
