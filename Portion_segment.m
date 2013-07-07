@@ -37,7 +37,7 @@ mkdir(writeFolder);
 %% Computing an average image
 % Loads the video
 temp_mov = VideoReader([folder_name, video_name]);
-start_frame = 1;
+start_frame = 4;
 end_frame = temp_mov.NumberOfFrames;
 
 % Generates a vector of to select 100 evenly spaced frames in the video
@@ -88,12 +88,16 @@ for rep = start_frame:end_frame
     % are nonzero.
     Aaviconverted2 = imsubtract(Amean, Aaviconverted(:,:));
     Aaviconverted2 = imadjust(Aaviconverted2);
-    seD = strel('disk', 1);
-    Aaviconverted2 = imerode(Aaviconverted2, seD);
+    %seD = strel('disk', 10);
+    %Aaviconverted2 = imerode(Aaviconverted2, seD);
     %Aaviconverted2 = medfilt2(Aaviconverted2,[4, 4]);%imerode(Aaviconverted2, seD);
     Aaviconverted2 = bwareaopen(Aaviconverted2, 40);
-    seD = strel('disk', 10);
+    seD = strel('disk', 1);
+    Aaviconverted2 = imerode(Aaviconverted2, seD);
+    Aaviconverted2 = bwareaopen(Aaviconverted2, 10);
+    seD = strel('disk', 11);
     Aaviconverted2 = imclose(Aaviconverted2, seD);
+    %Aaviconverted2 = imfill(Aaviconverted2, 'holes');
     %myfilter = fspecial('gaussian',[3, 3], 4);
     %Aaviconverted2 = imfilter(Aaviconverted2, myfilter, 'replicate');
     % Performs a bottom hat filter using the strel 'se'
