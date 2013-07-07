@@ -1,6 +1,8 @@
 %% Cell Segmentation Algorithm (Modified as of 10/05/2011) by Bino Abel Varghese
 % Automation and efficiency changes made 03/11/2013 by Dave Hoelzle
 % Adding comments, commenting the output figure on 6/25/13 by Mike Scott
+% Huge boost in program efficiency (~4x as fast) + improved cell segmentation on 7/6/13 by Ajay G.
+
 
 % function Portion_segment(video_name, folder_name, start_frame, end_frame, position, seg_number)
 
@@ -12,9 +14,9 @@ clc;
 % was unused and slowed down the user during execution.  Also added
 % comments to clarify the code. (Mike Scott)
 
-folderName = 'C:\Users\agopinath\Desktop\CellVideos\';
-videoName = 'compressed.avi';%'unconstricted_test.avi';
-segmentNum = 2;
+folderName = 'G:\CellVideos\';
+videoName = 'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi';%'unconstricted_test.avi';
+segmentNum = 1;
 
 % create the folder to write to
 writeFolder = [folderName, videoName, '_', num2str(segmentNum)];
@@ -56,6 +58,7 @@ clear bgSampleFrame; clear bgSample; clear bgFrames;
 forErode = strel('disk', 1);
 forClose = strel('disk', 11);
 
+startTime = tic;
 for frameIdx = startFrame:endFrame
     %% Steps through the video frame by frame in the range [startFrame, endFrame]
     % reads in the movie file 
@@ -83,3 +86,6 @@ for frameIdx = startFrame:endFrame
     filename = [writeFolder, '\','BWstill_', num2str(frameIdx), '.tif'];
     imwrite(cleanImg, filename, 'Compression', 'none');
 end
+
+totalTime = toc(startTime)
+averageTimePerFrame = totalTime/(endFrame-startFrame)
