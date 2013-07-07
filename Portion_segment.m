@@ -28,6 +28,9 @@ cellVideo = VideoReader([folderName, videoName]);
 startFrame = 1;
 endFrame = cellVideo.NumberOfFrames;
 
+% stores the number of frames that will be processed
+effectiveFrameCount = (endFrame-startFrame+1) ;
+
 % generates a sample array of the indices of 100 evenly spaced frames in the video
 bgSample = 1:ceil(cellVideo.NumberOfFrames/100):cellVideo.NumberOfFrames;
 
@@ -36,7 +39,7 @@ height = cellVideo.Height;
 width = cellVideo.Width;
 
 % bgFrames holds the video frames specified by the indices stored in bgSample
-bgFrames = zeros(height, width, 'uint8');
+bgFrames = zeros(height, width, length(bgSample), 'uint8');
 for i = 1:length(bgSample)
     bgFrames(:,:,i) = uint8(mean(read(cellVideo, bgSample(i)), 3));
 end
@@ -58,7 +61,7 @@ clear bgSampleFrame; clear bgSample; clear bgFrames;
 forErode = strel('disk', 1);
 forClose = strel('disk', 11);
 
-startTime = tic;
+startTime = tic
 for frameIdx = startFrame:endFrame
     %% Steps through the video frame by frame in the range [startFrame, endFrame]
     % reads in the movie file 
@@ -78,7 +81,7 @@ for frameIdx = startFrame:endFrame
     cleanImg = imerode(cleanImg, forErode);
     cleanImg = bwareaopen(cleanImg, 40);
     
-    cleanImg = imclose(cleanImg, forClose);
+    %cleanImg = imclose(cleanImg, forClose);
     
     %% Save edge-detected image file
     % the following code saves image sequence and the image template with
@@ -88,4 +91,4 @@ for frameIdx = startFrame:endFrame
 end
 
 totalTime = toc(startTime)
-averageTimePerFrame = totalTime/(endFrame-startFrame)
+averageTimePerFrame = totalTime/effectiveFrameCount
