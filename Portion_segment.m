@@ -46,7 +46,7 @@ end
 % value over the 100 selected frames.  Amean is the average of these 100
 % frames
 
-movi = zeros(height, width, 'uint8');
+backgroundImg = zeros(height, width, 'uint8');
 for i = 1:height
     for j = 1:width
         backgroundImg(i,j) = uint8(mean(bgFrames(i,j,:)));
