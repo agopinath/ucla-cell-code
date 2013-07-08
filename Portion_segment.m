@@ -61,7 +61,8 @@ clear bgSampleFrame; clear bgSample; clear bgFrames;
 forErode = strel('disk', 1);
 forClose = strel('disk', 11);
 
-startTime = tic
+startTime = tic;
+processed = zeros(height, width, effectiveFrameCount, 'uint8');
 for frameIdx = startFrame:endFrame
     %% Steps through the video frame by frame in the range [startFrame, endFrame]
     % reads in the movie file 
@@ -81,14 +82,24 @@ for frameIdx = startFrame:endFrame
     cleanImg = imerode(cleanImg, forErode);
     cleanImg = bwareaopen(cleanImg, 40);
     
-    %cleanImg = imclose(cleanImg, forClose);
+    cleanImg = imclose(cleanImg, forClose);
     
+    % store cleaned image of segmented cells in processed
+    processed(:,:,frameIdx) = cleanImg;
     %% Save edge-detected image file
     % the following code saves image sequence and the image template with
     % the demarcation lines for the transit time analysis
-    filename = [writeFolder, '\','BWstill_', num2str(frameIdx), '.tif'];
-    imwrite(cleanImg, filename, 'Compression', 'none');
+    %filename = [writeFolder, '\','BWstill_', num2str(frameIdx), '.tif'];
+    %imwrite(cleanImg, filename, 'Compression', 'none');
 end
 
 totalTime = toc(startTime)
 averageTimePerFrame = totalTime/effectiveFrameCount
+
+% open GUI to display image
+display = figure;
+imshow(processed(:,:,startFrame));
+frameToShow = startFrame;
+
+% map key events to function to change frame displayed
+set(display, 'KeyPressFcn', @(h_obj,evt) debug_processed(evt.Key, processed));
