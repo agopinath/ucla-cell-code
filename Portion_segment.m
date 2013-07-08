@@ -72,7 +72,7 @@ clear bgSampleFrame; clear bgSample; clear bgFrames;
 forErode1 = strel('disk', 1);
 forErode2 = strel('disk', 4);
 forDilate = strel('disk', 2);
-forClose = strel('disk', 10);
+forClose = strel('disk', 6);
 
 % preallocate memory for marix for speed
 processed = false(height, width, effectiveFrameCount);
