@@ -35,49 +35,26 @@ effectiveFrameCount = (endFrame-startFrame+1) ;
 height = cellVideo.Height;
 width = cellVideo.Width;
 
-% % bgFrames holds the video frames specified by the indices stored in bgSample
-% bgFrames = zeros(height, width, length(bgSample), 'uint8');
-% for i = 1:length(bgSample)
-%     bgFrames(:,:,i) = uint8(mean(read(cellVideo, bgSample(i)), 3));
-% end
-% 
-% % finds the 'background'. Goes pixel by pixel and averages that pixel
-% % value over the 100 selected frames.  backgroundImg is the image 
-% % whose pixels values are the average of these 100 sample frames.
-% 
-% backgroundImg = zeros(height, width, 'uint8');
-% for i = 1:height
-%     for j = 1:width
-%         backgroundImg(i,j) = mean(bgFrames(i,j,:));
-%     end
-% end
-
-%==
 numSections = 2; % the number of sections to "divide" the video into
-%meanFramesPerVideo = 3000;
-numSamples = 120;
+numSamples = 100; % the number of samples to take from each section
 
-bgSections = 1:ceil(cellVideo.NumberOfFrames/numSections):cellVideo.NumberOfFrames;
+bgSections = 1:ceil(cellVideo.NumberOfFrames/numSections):cellVideo.NumberOfFrames; % indices of the frames which separate the sections
 bgSections(numSections+1) = cellVideo.NumberOfFrames;  % add on the last frame to signal the end of the last section
 bgImgs = zeros(height, width, length(bgSections)-1, 'uint8'); % 3D array to store the background image for each section
 
-frameIdxs = zeros(numSamples);
 bgImgIdx = 1;
-
 backgroundImg = zeros(height, width, 'uint8');
-
+bgFrames = zeros(height, width, length(frameIdxs), 'uint8');
 % loop through each 'section'
 for i = 2:length(bgSections)
-    sectionStart = bgSections(i-1);
-    sectionEnd = bgSections(i);
-    sampleInterval = ceil((sectionEnd-sectionStart)/numSamples);
-    frameIdxs = sectionStart:sampleInterval:sectionEnd;
-    
-    bgFrames = zeros(height, width, length(frameIdxs), 'uint8');
+    sectionStart = bgSections(i-1); % the starting frame of each section
+    sectionEnd = bgSections(i); % the ending frame of each section
+    sampleInterval = ceil((sectionEnd-sectionStart)/numSamples); % the interval using which the samples are taken
+    frameIdxs = sectionStart:sampleInterval:sectionEnd; % stores the indices of the frames to sample in each section
+       
     for j = 1:length(frameIdxs)
-        bgFrames(:,:,j) = uint8(mean(read(cellVideo, frameIdxs(j)), 3));
+        bgFrames(:,:,j) = uint8(read(cellVideo, frameIdxs(j))); % store the frame in bgImgs
     end
-    
     
     for col = 1:height
         for row = 1:width
@@ -89,28 +66,19 @@ for i = 2:length(bgSections)
     bgImgIdx = bgImgIdx + 1;
 end
 
-%==
-
-
 % clear variables for better memory management
 clear bgSampleFrame; clear bgSample; clear bgFrames;
 
 % create structuring elements used in cleanup of grayscale image
 forErode = strel('disk', 1);
-forClose1 = strel('disk', 3);
-forClose2 = strel('disk', 4);
-forDilate = strel('disk', 1);
+
 % preallocate memory for marix for speed
 processed = false(height, width, effectiveFrameCount);
-
 
 for frameIdx = startFrame:endFrame
     %% Steps through the video frame by frame in the range [startFrame, endFrame]
     % reads in the movie file frame at frameIdx
     currFrame = read(cellVideo, frameIdx);
-    
-    % converts currFrame from a structure format to a 3D array (In future versions, speed can be improved of the code is altered to work on cell strct instead of 3D array.
-    currFrame = uint8(mean(currFrame, 3));
     
     %% Determine which background image to use
     imgIdx = 0;
@@ -125,7 +93,6 @@ for frameIdx = startFrame:endFrame
     % subtracts the background (backgroundImg) from each frame, hopefully leaving
     % just the cells
     cleanImg = imsubtract(bgImgs(:,:,imgIdx), currFrame);
-    %cleanImg = imsubtract(backgroundImg, currFrame);
     
     %% Cleanup the grayscale image of the cells to improve detection
     cleanImg = logical(imadjust(cleanImg));
