@@ -9,7 +9,7 @@ function debug_processed(keyevt, processed)
     end
     
     % check boundaries
-    if(fts <= 1 || fts >= length(processed)) 
+    if fts <= 1 || fts > size(processed, 3)
         return;
     end
     

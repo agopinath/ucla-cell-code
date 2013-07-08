@@ -14,7 +14,7 @@ clc;
 % comments to clarify the code. (Mike Scott)
 
 folderName = 'G:\CellVideos\';
-videoName = 'unconstricted_test_800.avi';%'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi'; 
+videoName = 'unconstricted_test_1200.avi';%'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi'; 
             %'unconstricted_test_800.avi';
 segmentNum = 1;
 
@@ -56,7 +56,7 @@ clear bgSampleFrame; clear bgSample; clear bgFrames;
 
 % create structuring elements used in cleanup of grayscale image
 forErode = strel('disk', 1);
-forClose = strel('disk', 11);
+forClose = strel('disk', 4);
 
 % preallocate memory for marix for speed
 processed = false(height, width, effectiveFrameCount);
@@ -79,7 +79,7 @@ for frameIdx = startFrame:endFrame
     cleanImg = imadjust(cleanImg);
     
     cleanImg = imerode(cleanImg, forErode);
-    cleanImg = bwareaopen(cleanImg, 40);
+    cleanImg = bwareaopen(cleanImg, 30);
     
     cleanImg = imclose(cleanImg, forClose);
     
