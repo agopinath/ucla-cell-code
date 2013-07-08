@@ -45,7 +45,7 @@ ImageTemplate = zeros(size(A,1), size(A,2));
 
 % Shows the cropped frame, and asks the user to specify the constriction
 % region
-fig1 = figure (1)
+fig1 = figure (1);
 imshow(A)
 text (150,150, 'Specify Constriction Region then Double-Click Inside', 'EdgeColor', [0 0 0], 'BackgroundColor', [1 1 1])
 

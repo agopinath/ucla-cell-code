@@ -14,11 +14,12 @@
 % comments to clarify the code. (Mike Scott)
 
 DEBUG_FLAG = 1; % boolean flag to indicate whether to show debug info
+WRITEMOVIE_FLAG = 1; % boolean flag to indicate whether to write processed frames to disk
 
-startTime = tic;
+startTime1 = tic;
 
 folderName = 'G:\CellVideos\';
-videoName = 'device01_20X_800fps_0.6ms_6psi_p4_15_3.avi';
+videoName = 'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi';
             %'Dev3x10_20x_200fps_4,8ms_72_1.avi';
             %'device01_20X_800fps_0.6ms_6psi_p4_15_3.avi';
             %'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi'; 
@@ -77,15 +78,15 @@ clear frameIdxs; clear backgroundImg; clear bgFrames; clear bgImgIdx; clear samp
 
 % create structuring elements used in cleanup of grayscale image
 forErode1 = strel('disk', 1);
-forErode2 = strel('disk', 2);
+forErode2 = strel('disk', 4);
 forDilate = strel('disk', 2);
-forClose = strel('disk', 6);
+forClose = strel('disk', 10);
 
 % preallocate memory for marix for speed
 processed = false(height, width, effectiveFrameCount);
-
+tempTime = toc(startTime1);
 template = logical(Make_waypoints(videoName, folderName));
-
+startTime2 = tic;
 for frameIdx = startFrame:endFrame
     %% Steps through the video frame by frame in the range [startFrame, endFrame]
     % reads in the movie file frame at frameIdx
@@ -110,11 +111,11 @@ for frameIdx = startFrame:endFrame
     
     cleanImg = imerode(cleanImg, forErode1);
     cleanImg = medfilt2(cleanImg, [2, 2]);
-    cleanImg = bwareaopen(cleanImg, 20);
+    cleanImg = bwareaopen(cleanImg, 25);
     cleanImg = imdilate(cleanImg, forDilate);
     cleanImg = imclose(cleanImg, forClose);
     cleanImg = imerode(cleanImg, forErode2);
-    cleanImg = bwareaopen(cleanImg, 40);
+    cleanImg = bwareaopen(cleanImg, 60);
     
     cleanImg = cleanImg | template; % binary 'OR' to find the union of the two imgs
     
@@ -123,18 +124,27 @@ for frameIdx = startFrame:endFrame
 end
 
 % output debugging information
-totalTime = toc(startTime)
+totalTime = toc(startTime2) + tempTime
 averageTimePerFrame = totalTime/effectiveFrameCount
 
-%% Set up crude frame viewer if debugging is on
+%% Set up built-in frame viewer and write to file if debugging is on
 if DEBUG_FLAG == 1
-    % open GUI to display image 
-    display = figure('Name', videoName);
+    implay(processed);
+    if WRITEMOVIE_FLAG == 1
+        writer = VideoWriter([folderName, 'proc_new_', videoName]);
+        open(writer);
 
-    % declare, initialize and show the current frame to be displayed
-    frameToShow = startFrame;
-    imshow(processed(:,:,startFrame), 'Border', 'tight');
+        processed = uint8(processed);
 
-    % map key events to function to change frame displayed
-    set(display, 'KeyPressFcn', @(h_obj,evt) debug_processed(evt.Key, processed));
+        % number of frames processed minus 2 (to stay in bounds)
+        frameBounds = (effectiveFrameCount) 
+        for idx = 1:effectiveFrameCount
+            processed(:,:,idx) = processed(:,:,idx)*255;
+        end
+
+        for currFrame = startFrame:endFrame
+            writeVideo(writer, processed(:,:,currFrame));
+        end
+        close(writer);
+    end
 end
