@@ -72,7 +72,7 @@ clear bgSampleFrame; clear bgSample; clear bgFrames;
 forErode1 = strel('disk', 1);
 forErode2 = strel('disk', 4);
 forDilate = strel('disk', 2);
-forClose = strel('disk', 8);
+forClose = strel('disk', 10);
 
 % preallocate memory for marix for speed
 processed = false(height, width, effectiveFrameCount);
@@ -119,7 +119,7 @@ display = figure('Name', videoName);
 
 % declare, initialize and show the current frame to be displayed
 frameToShow = startFrame;
-imshow(processed(:,:,startFrame));
+imshow(processed(:,:,startFrame), 'Border', 'tight');
 
 % map key events to function to change frame displayed
 set(display, 'KeyPressFcn', @(h_obj,evt) debug_processed(evt.Key, processed));

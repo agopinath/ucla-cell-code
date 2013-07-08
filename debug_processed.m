@@ -13,7 +13,7 @@ function debug_processed(keyevt, processed)
         return;
     end
     
-    imshow(processed(:,:,fts));
+    imshow(processed(:,:,fts), 'Border', 'tight');
     
     % assign new value to variable in other workspace
     assignin('base', 'frameToShow', fts);
