@@ -7,7 +7,7 @@
 % was unused and slowed down the user during execution.  Also added
 % comments to clarify the code. (Mike Scott)
 
-function processed = Portion_segment(cellVideo, videoName, startFrame, endFrame)
+function processed = Portion_segment(cellVideo, folderName, videoName, startFrame, endFrame)
 
 %%% This code analyzes a video of cells passing through constrictions
 %%% to produce and return a binary array of the video's frames which
@@ -26,6 +26,8 @@ startTime1 = tic;
 %             %'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi'; 
 %             %'unconstricted_test_800.avi';
 %             %'unconstricted_test_1200.avi';
+% startFrame = 1;
+% endFrame = cellVideo.NumberOfFrames;
 
 %% Initialization
 % stores the number of frames that will be processed
