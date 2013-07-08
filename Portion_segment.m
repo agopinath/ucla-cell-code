@@ -1,7 +1,7 @@
 %% Cell Detection Algorithm  - rewriten on 7/7/2013 by Ajay Gopinath; original (Modified as of 10/05/2011) by Bino Abel Varghese, 
-% Automation and efficiency changes made 03/11/2013 by Dave Hoelzle
-% Adding comments, commenting the output figure on 6/25/13 by Mike Scott
-% Increase in speed (~5x faster) + better cell detection quality on 7/6/13 by Ajay G.
+% Automation and efficiency changes made 03/11/2013 by Dave Hoelzle Adding
+% comments, commenting the output figure on 6/25/13 by Mike Scott 
+% Increase in speed (~4x faster) + better cell detection on 7/6/13 by Ajay G.
 
 % 6/25/13 Commented out the code which generated the 'overlap' diagram.  It
 % was unused and slowed down the user during execution.  Also added
@@ -13,13 +13,21 @@ function processed = Portion_segment(cellVideo, videoName, startFrame, endFrame)
 %%% to produce and return a binary array of the video's frames which
 %%% have been processed to yield only the cells.
 
-DEBUG_FLAG = 1; % boolean flag to indicate whether to show debug info
+DEBUG_FLAG = 0; % flag for whether to show debug info
+WRITEMOVIE_FLAG = 0; % flag for whether to write processed frames to disk
+OVERLAYTEMPLATE_FLAG = 0; % flag whether to overlay template lines on processed frames
 
-startTime = tic;
+startTime1 = tic;
+
+% folderName = 'G:\CellVideos\';
+% videoName = 'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi';
+%             %'Dev3x10_20x_200fps_4,8ms_72_1.avi';
+%             %'device01_20X_800fps_0.6ms_6psi_p4_15_3.avi';
+%             %'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi'; 
+%             %'unconstricted_test_800.avi';
+%             %'unconstricted_test_1200.avi';
 
 %% Initialization
-% loads the video and initialize range of frames to process
-
 % stores the number of frames that will be processed
 effectiveFrameCount = (endFrame-startFrame+1) ;
 
@@ -67,10 +75,17 @@ clear frameIdxs; clear backgroundImg; clear bgFrames; clear bgImgIdx; clear samp
 forErode1 = strel('disk', 1);
 forErode2 = strel('disk', 4);
 forDilate = strel('disk', 2);
-forClose = strel('disk', 6);
+forClose = strel('disk', 10);
 
 % preallocate memory for marix for speed
 processed = false(height, width, effectiveFrameCount);
+tempTime = toc(startTime1);
+
+if OVERLAYTEMPLATE_FLAG == 1
+    template = logical(Make_waypoints(videoName, folderName));
+end
+
+startTime2 = tic;
 
 %% Steps through the video frame by frame in the range [startFrame, endFrame]
 for frameIdx = startFrame:endFrame
@@ -96,30 +111,46 @@ for frameIdx = startFrame:endFrame
     
     cleanImg = imerode(cleanImg, forErode1);
     cleanImg = medfilt2(cleanImg, [2, 2]);
-    cleanImg = bwareaopen(cleanImg, 20);
+    cleanImg = bwareaopen(cleanImg, 25);
     cleanImg = imdilate(cleanImg, forDilate);
     cleanImg = imclose(cleanImg, forClose);
     cleanImg = imerode(cleanImg, forErode2);
+    cleanImg = bwareaopen(cleanImg, 60);
+    
+    if OVERLAYTEMPLATE_FLAG == 1
+        cleanImg = cleanImg | template; % binary 'OR' to find the union of the two imgs
+    end
     
     %% Store cleaned image of segmented cells in processed
     processed(:,:,frameIdx) = cleanImg;
 end
 
 % output debugging information
-totalTime = toc(startTime)
+totalTime = toc(startTime2) + tempTime
 averageTimePerFrame = totalTime/effectiveFrameCount
 
-%% Set up crude frame viewer if debugging is on
+%% Set up built-in frame viewer and write to file if debugging is on
 if DEBUG_FLAG == 1
-    % open GUI to display image 
-    display = figure('Name', videoName);
-
-    % declare, initialize and show the current frame to be displayed
-    frameToShow = startFrame;
-    imshow(processed(:,:,startFrame), 'Border', 'tight');
-
-    % map key events to function to change frame displayed
-    set(display, 'KeyPressFcn', @(h_obj,evt) debug_processed(evt.Key, processed));
+    implay(processed);
+    if WRITEMOVIE_FLAG == 1
+        writer = VideoWriter([folderName, 'proc_new_', videoName]);
+        open(writer);
+        
+        processed = uint8(processed); % convert to uint8 for use with writeVideo
+        
+        % make binary '1's into '255's so all resulting pixels will be
+        % either black or white
+        for idx = 1:effectiveFrameCount
+            processed(:,:,idx) = processed(:,:,idx)*255;
+        end
+        
+        % write processed frames to disk
+        for currFrame = startFrame:endFrame
+            writeVideo(writer, processed(:,:,currFrame));
+        end
+        
+        close(writer);
+    end
 end
 
 end

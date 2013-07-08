@@ -1,7 +1,7 @@
 %% Image Template Maker (Modified as of 10/05/2011) by Bino Abel Varghese
 % Latest update by David Hoelzle (2013/01/07)
 
-function [position] = Make_waypoints(video_name, folder_name, video_num, no_of_breaks)
+function [ImageTemplate] = Make_waypoints(videoName, folderName)
 
 % The aim of the code is to write a TEMPLATE file that marks the contriction locations.
 
@@ -22,30 +22,30 @@ close all;
 
 % Specify region of interest
 % Reads in the specified movie
-temp_mov = VideoReader([folder_name, video_name]);
+temp_mov = VideoReader([folderName, videoName]);
 
 % Shows the first frame, and asks for a cropping rectangle to be drawn
-figure (1)
-imshow(read(temp_mov,1))
-text (150,100, ['File:', video_name], 'EdgeColor', [0 0 0], 'BackgroundColor', [1 1 1])
-text (150,150, 'Draw and Drag Cropping Rectangle then Double-Click Inside', 'EdgeColor', [0 0 0], 'BackgroundColor', [1 1 1])
+% figure (1)
+% imshow(read(temp_mov,1))
+% text (150,100, ['File:', videoName], 'EdgeColor', [0 0 0], 'BackgroundColor', [1 1 1])
+% text (150,150, 'Draw and Drag Cropping Rectangle then Double-Click Inside', 'EdgeColor', [0 0 0], 'BackgroundColor', [1 1 1])
 
 % Allows the user to draw a rectangle and waits until they double click
 % inside it.  Then it stores in position [Xmin, Ymin, width, height]
-h = imrect;
-position = uint16(wait(h));
+% h = imrect;
+% position = uint16(wait(h));
     
 % Crops the image to the specified rectangle.  The min/max ensure the
 % indicies of the matrix are nonnegative
 A = read(temp_mov,1); 
-A = A(max([1 position(2)]):min([size(A,1) position(2)+position(4)]), max([1 position(1)]):min([size(A,2) position(1)+position(3)]),:);
+A = A(:,:,:);
 
 % Preallocates an array for storing the template
 ImageTemplate = zeros(size(A,1), size(A,2));
 
 % Shows the cropped frame, and asks the user to specify the constriction
 % region
-figure (1)
+fig1 = figure (1);
 imshow(A)
 text (150,150, 'Specify Constriction Region then Double-Click Inside', 'EdgeColor', [0 0 0], 'BackgroundColor', [1 1 1])
 
@@ -87,9 +87,6 @@ end
 figure(11);
 imshow(A);
 
-% Writes the template file to a .tif in the directory where the first
-% video was selected.
-for write_count = 1:no_of_breaks
-imwrite(ImageTemplate, [folder_name, video_name, '_', num2str(write_count), '\', 'FinalTemplate.tif']);%% Change filename .tif
-end
+delete(fig1);
+%imwrite(ImageTemplate, [folderName, videoName, '_', num2str(videoNum), '\', 'FinalTemplate.tif']);%% Change filename .tif
 

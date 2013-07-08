@@ -68,7 +68,7 @@ for i = 1:size(video_names,1)
     % Calls the Make_waypoints function to define the constriction region.
     % This function draws a template with a line across each constriction;
     % these lines are used in calculating the transit time
-    [position(i,:)] = Make_waypoints(video_names(i,1:name_length(i)), path_names(i,1:path_length(i)), i, no_of_seg);
+    %[position(i,:)] = Make_waypoints(video_names(i,1:name_length(i)), path_names(i,1:path_length(i)), i, no_of_seg);
     
     % This preprocessing of the first 50 frames was cut out, and was seen
     % as unnecessary.  Other minor edits were required to keep the same
