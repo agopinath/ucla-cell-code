@@ -18,7 +18,9 @@ DEBUG_FLAG = 1; % boolean flag to indicate whether to show debug info
 startTime = tic;
 
 folderName = 'G:\CellVideos\';
-videoName = 'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi'; 
+videoName = 'Dev3x10_20x_200fps_4,8ms_72_1.avi';
+            %'device01_20X_800fps_0.6ms_6psi_p4_15_3.avi';
+            %'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi'; 
             %'unconstricted_test_800.avi';
             %'unconstricted_test_1200.avi';
 segmentNum = 1;
@@ -74,7 +76,7 @@ clear frameIdxs; clear backgroundImg; clear bgFrames; clear bgImgIdx; clear samp
 
 % create structuring elements used in cleanup of grayscale image
 forErode1 = strel('disk', 1);
-forErode2 = strel('disk', 4);
+forErode2 = strel('disk', 2);
 forDilate = strel('disk', 2);
 forClose = strel('disk', 6);
 
