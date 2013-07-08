@@ -14,8 +14,9 @@ clc;
 % comments to clarify the code. (Mike Scott)
 
 folderName = 'G:\CellVideos\';
-videoName = 'unconstricted_test_1200.avi';%'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi'; 
+videoName = 'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi'; 
             %'unconstricted_test_800.avi';
+            %'unconstricted_test_1200.avi';
 segmentNum = 1;
 
 %% Computing an average image
@@ -47,7 +48,7 @@ end
 backgroundImg = zeros(height, width, 'uint8');
 for i = 1:height
     for j = 1:width
-        backgroundImg(i,j) = uint8(mean(bgFrames(i,j,:)));
+        backgroundImg(i,j) = mean(bgFrames(i,j,:));
     end
 end
 
@@ -56,8 +57,8 @@ clear bgSampleFrame; clear bgSample; clear bgFrames;
 
 % create structuring elements used in cleanup of grayscale image
 forErode = strel('disk', 1);
-forClose = strel('disk', 4);
-
+forClose1 = strel('disk', 3);
+forClose2 = strel('disk', 5);
 % preallocate memory for marix for speed
 processed = false(height, width, effectiveFrameCount);
 
@@ -68,7 +69,7 @@ for frameIdx = startFrame:endFrame
     currFrame = read(cellVideo, frameIdx); 
 
     % converts currFrame from a structure format to a 3D array (In future versions, speed can be improved of the code is altered to work on cell strct instead of 3D array.
-    currFrame = uint8(mean(currFrame,3));
+    currFrame = uint8(mean(currFrame, 3));
     
     %% Do cell detection
     % subtracts the background (backgroundImg) from each frame, hopefully leaving
@@ -76,13 +77,20 @@ for frameIdx = startFrame:endFrame
     cleanImg = imsubtract(backgroundImg, currFrame);
     
     %% Cleanup the grayscale image of the cells to improve detection
-    cleanImg = imadjust(cleanImg);
+    cleanImg = logical(imadjust(cleanImg));
     
     cleanImg = imerode(cleanImg, forErode);
-    cleanImg = bwareaopen(cleanImg, 30);
-    
-    cleanImg = imclose(cleanImg, forClose);
-    
+    cleanImg = medfilt2(cleanImg, [2, 2]);
+%    cleanImg = imclose(cleanImg, forClose1);
+%     cleanImg = medfilt2(cleanImg, [2, 2]);
+%     
+%     cleanImg = bwareaopen(cleanImg, 70);
+%     %cleanImg = imfill(cleanImg, 'holes');
+%     cleanImg = imclose(cleanImg, forClose2);
+%     cleanImg = imfill(cleanImg, 'holes');
+%     
+%     cleanImg = imclose(cleanImg, forClose1);
+    %cleanImg = imfill(cleanImg, 'holes');
     %% Store cleaned image of segmented cells in processed
     processed(:,:,frameIdx) = cleanImg;
 end
