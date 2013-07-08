@@ -18,7 +18,8 @@ DEBUG_FLAG = 1; % boolean flag to indicate whether to show debug info
 startTime = tic;
 
 folderName = 'G:\CellVideos\';
-videoName = 'Dev3x10_20x_200fps_4,8ms_72_1.avi';
+videoName = 'device01_20X_800fps_0.6ms_6psi_p4_15_3.avi';
+            %'Dev3x10_20x_200fps_4,8ms_72_1.avi';
             %'device01_20X_800fps_0.6ms_6psi_p4_15_3.avi';
             %'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi'; 
             %'unconstricted_test_800.avi';
@@ -83,6 +84,8 @@ forClose = strel('disk', 6);
 % preallocate memory for marix for speed
 processed = false(height, width, effectiveFrameCount);
 
+template = logical(Make_waypoints(videoName, folderName));
+
 for frameIdx = startFrame:endFrame
     %% Steps through the video frame by frame in the range [startFrame, endFrame]
     % reads in the movie file frame at frameIdx
@@ -111,6 +114,9 @@ for frameIdx = startFrame:endFrame
     cleanImg = imdilate(cleanImg, forDilate);
     cleanImg = imclose(cleanImg, forClose);
     cleanImg = imerode(cleanImg, forErode2);
+    cleanImg = bwareaopen(cleanImg, 40);
+    
+    cleanImg = cleanImg | template; % binary 'OR' to find the union of the two imgs
     
     %% Store cleaned image of segmented cells in processed
     processed(:,:,frameIdx) = cleanImg;
