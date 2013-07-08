@@ -17,15 +17,15 @@ i = 1;
 no_of_seg = 1; 
 filePath = 'C:\';   
 
-folderName = 'G:\CellVideos\';
-videoName = 'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi'; 
+%folderName = 'G:\CellVideos\';
+%videoName = 'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi'; 
             %'unconstricted_test_800.avi';
             %'unconstricted_test_1200.avi';
 
-startFrame = 1;
-endFrame = cellVideo.NumberOfFrames;
+%startFrame = 1;
+%endFrame = cellVideo.NumberOfFrames;
 
-cellVideo = VideoReader([folderName, videoName]);
+%cellVideo = VideoReader([folderName, videoName]);
 
 % Opens a GUI to select videos, user can select a single file at a time and
 % ends selection by clicking 'cancel'
