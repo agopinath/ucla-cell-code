@@ -1,33 +1,24 @@
-%% Cell Segmentation Algorithm (Modified as of 10/05/2011) by Bino Abel Varghese
+%% Cell Detection Algorithm  - completely rewriten on 7/7/2013 by Ajay Gopinath; original (Modified as of 10/05/2011) by Bino Abel Varghese, 
 % Automation and efficiency changes made 03/11/2013 by Dave Hoelzle
 % Adding comments, commenting the output figure on 6/25/13 by Mike Scott
-% Huge boost in program efficiency (~4x as fast) + improved cell segmentation on 7/6/13 by Ajay G.
-
-% function Portion_segment(video_name, folder_name, start_frame, end_frame, position, seg_number)
-
-%% The aim of this code is to segment a binary image of the cells from a stack of grayscale images
-
-%%clc;
+% Increase in speed (~5x faster) + better cell detection quality on 7/6/13 by Ajay G.
 
 % 6/25/13 Commented out the code which generated the 'overlap' diagram.  It
 % was unused and slowed down the user during execution.  Also added
 % comments to clarify the code. (Mike Scott)
 
+function processed = Portion_segment(cellVideo, videoName, startFrame, endFrame)
+
+%%% This code analyzes a video of cells passing through constrictions
+%%% to produce and return a binary array of the video's frames which
+%%% have been processed to yield only the cells.
+
 DEBUG_FLAG = 1; % boolean flag to indicate whether to show debug info
 
 startTime = tic;
 
-folderName = 'G:\CellVideos\';
-videoName = 'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi'; 
-            %'unconstricted_test_800.avi';
-            %'unconstricted_test_1200.avi';
-segmentNum = 1;
-
 %% Initialization
 % loads the video and initialize range of frames to process
-cellVideo = VideoReader([folderName, videoName]);
-startFrame = 1;
-endFrame = cellVideo.NumberOfFrames;
 
 % stores the number of frames that will be processed
 effectiveFrameCount = (endFrame-startFrame+1) ;
@@ -81,8 +72,8 @@ forClose = strel('disk', 6);
 % preallocate memory for marix for speed
 processed = false(height, width, effectiveFrameCount);
 
+%% Steps through the video frame by frame in the range [startFrame, endFrame]
 for frameIdx = startFrame:endFrame
-    %% Steps through the video frame by frame in the range [startFrame, endFrame]
     % reads in the movie file frame at frameIdx
     currFrame = read(cellVideo, frameIdx);
     
@@ -129,4 +120,6 @@ if DEBUG_FLAG == 1
 
     % map key events to function to change frame displayed
     set(display, 'KeyPressFcn', @(h_obj,evt) debug_processed(evt.Key, processed));
+end
+
 end
