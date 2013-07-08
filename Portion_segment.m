@@ -14,7 +14,7 @@
 % comments to clarify the code. (Mike Scott)
 startTime = tic;
 folderName = 'G:\CellVideos\';
-videoName = 'unconstricted_test_1200.avi';%'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi'; 
+videoName = 'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi'; 
             %'unconstricted_test_800.avi';
             %'unconstricted_test_1200.avi';
 segmentNum = 1;
@@ -59,7 +59,7 @@ numSamples = 120;
 
 bgSections = 1:ceil(cellVideo.NumberOfFrames/numSections):cellVideo.NumberOfFrames;
 bgSections(numSections+1) = cellVideo.NumberOfFrames;  % add on the last frame to signal the end of the last section
-bgImgs = zeros(304, width, length(bgSections)-1, 'uint8'); % 3D array to store the background image for each section
+bgImgs = zeros(height, width, length(bgSections)-1, 'uint8'); % 3D array to store the background image for each section
 
 frameIdxs = zeros(numSamples);
 bgImgIdx = 1;
@@ -99,7 +99,7 @@ clear bgSampleFrame; clear bgSample; clear bgFrames;
 forErode = strel('disk', 1);
 forClose1 = strel('disk', 3);
 forClose2 = strel('disk', 4);
-forDilate = strel('disk', 2);
+forDilate = strel('disk', 1);
 % preallocate memory for marix for speed
 processed = false(height, width, effectiveFrameCount);
 
