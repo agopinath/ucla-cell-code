@@ -12,7 +12,11 @@
 % 6/25/13 Commented out the code which generated the 'overlap' diagram.  It
 % was unused and slowed down the user during execution.  Also added
 % comments to clarify the code. (Mike Scott)
+
+DEBUG_FLAG = 1; % boolean flag to indicate whether to show debug info
+
 startTime = tic;
+
 folderName = 'G:\CellVideos\';
 videoName = 'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi'; 
             %'unconstricted_test_800.avi';
@@ -66,7 +70,7 @@ for i = 2:length(bgSections)
 end
 
 % clear variables for better memory management
-clear bgSampleFrame; clear bgSample; clear bgFrames;
+clear frameIdxs; clear backgroundImg; clear bgFrames; clear bgImgIdx; clear sampleInterval;
 
 % create structuring elements used in cleanup of grayscale image
 forErode1 = strel('disk', 1);
@@ -114,12 +118,15 @@ end
 totalTime = toc(startTime)
 averageTimePerFrame = totalTime/effectiveFrameCount
 
-% open GUI to display image
-display = figure('Name', videoName);
+%% Set up crude frame viewer if debugging is on
+if DEBUG_FLAG == 1
+    % open GUI to display image 
+    display = figure('Name', videoName);
 
-% declare, initialize and show the current frame to be displayed
-frameToShow = startFrame;
-imshow(processed(:,:,startFrame), 'Border', 'tight');
+    % declare, initialize and show the current frame to be displayed
+    frameToShow = startFrame;
+    imshow(processed(:,:,startFrame), 'Border', 'tight');
 
-% map key events to function to change frame displayed
-set(display, 'KeyPressFcn', @(h_obj,evt) debug_processed(evt.Key, processed));
+    % map key events to function to change frame displayed
+    set(display, 'KeyPressFcn', @(h_obj,evt) debug_processed(evt.Key, processed));
+end
