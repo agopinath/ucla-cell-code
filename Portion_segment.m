@@ -13,7 +13,7 @@ function processed = Portion_segment(cellVideo, folderName, videoName, startFram
 %%% to produce and return a binary array of the video's frames which
 %%% have been processed to yield only the cells.
 
-DEBUG_FLAG = 0; % flag for whether to show debug info
+DEBUG_FLAG = 1; % flag for whether to show debug info
 WRITEMOVIE_FLAG = 0; % flag for whether to write processed frames to disk
 OVERLAYTEMPLATE_FLAG = 0; % flag whether to overlay template lines on processed frames
 
