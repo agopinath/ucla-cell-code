@@ -14,12 +14,8 @@ clc;
 % comments to clarify the code. (Mike Scott)
 
 folderName = 'G:\CellVideos\';
-videoName = 'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi';%'unconstricted_test.avi';
+videoName = 'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi';
 segmentNum = 1;
-
-% create the folder to write to
-writeFolder = [folderName, videoName, '_', num2str(segmentNum)];
-mkdir(writeFolder);
 
 %% Computing an average image
 % loads the video and initialize range of frames to process
@@ -57,14 +53,17 @@ end
 % clear variables for better memory management
 clear bgSampleFrame; clear bgSample; clear bgFrames;
 
+% create structuring elements used in cleanup of grayscale image
 forErode = strel('disk', 1);
 forClose = strel('disk', 11);
 
-startTime = tic;
+% preallocate memory for marix for speed
 processed = false(height, width, effectiveFrameCount);
+
+startTime = tic;
 for frameIdx = startFrame:endFrame
     %% Steps through the video frame by frame in the range [startFrame, endFrame]
-    % reads in the movie file 
+    % reads in the movie file frame at frameIdx
     currFrame = read(cellVideo, frameIdx); 
 
     % converts currFrame from a structure format to a 3D array (In future versions, speed can be improved of the code is altered to work on cell strct instead of 3D array.
@@ -75,7 +74,7 @@ for frameIdx = startFrame:endFrame
     % just the cells
     cleanImg = imsubtract(backgroundImg, currFrame);
     
-    %% Cleanup the grayscale image of the cells
+    %% Cleanup the grayscale image of the cells to improve detection
     cleanImg = imadjust(cleanImg);
     
     cleanImg = imerode(cleanImg, forErode);
@@ -83,16 +82,11 @@ for frameIdx = startFrame:endFrame
     
     cleanImg = imclose(cleanImg, forClose);
     
-    % store cleaned image of segmented cells in processed
+    %% Store cleaned image of segmented cells in processed
     processed(:,:,frameIdx) = cleanImg;
-    
-    %% Save edge-detected image file
-    % the following code saves image sequence and the image template with
-    % the demarcation lines for the transit time analysis
-    %filename = [writeFolder, '\','BWstill_', num2str(frameIdx), '.tif'];
-    %imwrite(cleanImg, filename, 'Compression', 'none');
 end
 
+% output debugging information
 totalTime = toc(startTime)
 averageTimePerFrame = totalTime/effectiveFrameCount
 
