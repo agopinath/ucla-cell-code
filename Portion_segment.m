@@ -13,8 +13,9 @@
 % was unused and slowed down the user during execution.  Also added
 % comments to clarify the code. (Mike Scott)
 
-DEBUG_FLAG = 1; % boolean flag to indicate whether to show debug info
-WRITEMOVIE_FLAG = 1; % boolean flag to indicate whether to write processed frames to disk
+DEBUG_FLAG = 0; % flag for whether to show debug info
+WRITEMOVIE_FLAG = 0; % flag for whether to write processed frames to disk
+OVERLAYTEMPLATE_FLAG = 0; % flag whether to overlay template lines on processed frames
 
 startTime1 = tic;
 
@@ -25,7 +26,6 @@ videoName = 'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi';
             %'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi'; 
             %'unconstricted_test_800.avi';
             %'unconstricted_test_1200.avi';
-segmentNum = 1;
 
 %% Initialization
 % loads the video and initialize range of frames to process
@@ -85,7 +85,11 @@ forClose = strel('disk', 10);
 % preallocate memory for marix for speed
 processed = false(height, width, effectiveFrameCount);
 tempTime = toc(startTime1);
-template = logical(Make_waypoints(videoName, folderName));
+
+if OVERLAYTEMPLATE_FLAG == 1
+    template = logical(Make_waypoints(videoName, folderName));
+end
+
 startTime2 = tic;
 for frameIdx = startFrame:endFrame
     %% Steps through the video frame by frame in the range [startFrame, endFrame]
@@ -117,7 +121,9 @@ for frameIdx = startFrame:endFrame
     cleanImg = imerode(cleanImg, forErode2);
     cleanImg = bwareaopen(cleanImg, 60);
     
-    cleanImg = cleanImg | template; % binary 'OR' to find the union of the two imgs
+    if OVERLAYTEMPLATE_FLAG == 1
+        cleanImg = cleanImg | template; % binary 'OR' to find the union of the two imgs
+    end
     
     %% Store cleaned image of segmented cells in processed
     processed(:,:,frameIdx) = cleanImg;
@@ -133,18 +139,20 @@ if DEBUG_FLAG == 1
     if WRITEMOVIE_FLAG == 1
         writer = VideoWriter([folderName, 'proc_new_', videoName]);
         open(writer);
-
-        processed = uint8(processed);
-
-        % number of frames processed minus 2 (to stay in bounds)
-        frameBounds = (effectiveFrameCount) 
+        
+        processed = uint8(processed); % convert to uint8 for use with writeVideo
+        
+        % make binary '1's into '255's so all resulting pixels will be
+        % either black or white
         for idx = 1:effectiveFrameCount
             processed(:,:,idx) = processed(:,:,idx)*255;
         end
-
+        
+        % write processed frames to disk
         for currFrame = startFrame:endFrame
             writeVideo(writer, processed(:,:,currFrame));
         end
+        
         close(writer);
     end
 end
