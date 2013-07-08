@@ -3,7 +3,6 @@
 % Adding comments, commenting the output figure on 6/25/13 by Mike Scott
 % Huge boost in program efficiency (~4x as fast) + improved cell segmentation on 7/6/13 by Ajay G.
 
-
 % function Portion_segment(video_name, folder_name, start_frame, end_frame, position, seg_number)
 
 %% The aim of this code is to segment a binary image of the cells from a stack of grayscale images
@@ -62,7 +61,7 @@ forErode = strel('disk', 1);
 forClose = strel('disk', 11);
 
 startTime = tic;
-processed = zeros(height, width, effectiveFrameCount, 'uint8');
+processed = false(height, width, effectiveFrameCount);
 for frameIdx = startFrame:endFrame
     %% Steps through the video frame by frame in the range [startFrame, endFrame]
     % reads in the movie file 
@@ -86,6 +85,7 @@ for frameIdx = startFrame:endFrame
     
     % store cleaned image of segmented cells in processed
     processed(:,:,frameIdx) = cleanImg;
+    
     %% Save edge-detected image file
     % the following code saves image sequence and the image template with
     % the demarcation lines for the transit time analysis
