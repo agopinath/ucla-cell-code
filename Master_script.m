@@ -17,29 +17,28 @@ i = 1;
 no_of_seg = 1; 
 filePath = 'C:\';   
 
-%folderName = 'G:\CellVideos\';
-%videoName = 'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi'; 
+folderName = 'G:\CellVideos\';
+videoName = 'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi'; 
             %'unconstricted_test_800.avi';
             %'unconstricted_test_1200.avi';
+            
+cellVideo = VideoReader([folderName, videoName]);
+startFrame = 1;
+endFrame = cellVideo.NumberOfFrames;
 
-%startFrame = 1;
-%endFrame = cellVideo.NumberOfFrames;
-
-%cellVideo = VideoReader([folderName, videoName]);
-
-% Opens a GUI to select videos, user can select a single file at a time and
-% ends selection by clicking 'cancel'
-while (filename ~= 0)
-    [filename, filePath] = uigetfile('.avi', 'Please select the next video file, if done select cancel.', filePath);
-    if (filename ~= 0)
-        name_length(i) = length(filename);
-        path_length(i) = length(filePath);
-        video_names(i,1:name_length(i)) = filename;
-        path_names(i,1:path_length(i)) = filePath;
-        [frame_rate(i)] = input (['Please enter the frame rate for video ', filename, ':']);
-        i = i+1;
-    end
-end
+% % Opens a GUI to select videos, user can select a single file at a time and
+% % ends selection by clicking 'cancel'
+% while (filename ~= 0)
+%     [filename, filePath] = uigetfile('.avi', 'Please select the next video file, if done select cancel.', filePath);
+%     if (filename ~= 0)
+%         name_length(i) = length(filename);
+%         path_length(i) = length(filePath);
+%         video_names(i,1:name_length(i)) = filename;
+%         path_names(i,1:path_length(i)) = filePath;
+%         [frame_rate(i)] = input (['Please enter the frame rate for video ', filename, ':']);
+%         i = i+1;
+%     end
+% end
 tStart = tic;
 
 % Calculates the length of each segment.  If no_of_seg = 0, then break_size
