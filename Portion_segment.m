@@ -14,7 +14,8 @@ clc;
 % comments to clarify the code. (Mike Scott)
 
 folderName = 'G:\CellVideos\';
-videoName = 'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi';
+videoName = 'unconstricted_test_800.avi';%'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi'; 
+            %'unconstricted_test_800.avi';
 segmentNum = 1;
 
 %% Computing an average image
@@ -91,9 +92,11 @@ totalTime = toc(startTime)
 averageTimePerFrame = totalTime/effectiveFrameCount
 
 % open GUI to display image
-display = figure;
-imshow(processed(:,:,startFrame));
+display = figure('Name', videoName);
+
+% declare, initialize and show the current frame to be displayed
 frameToShow = startFrame;
+imshow(processed(:,:,startFrame));
 
 % map key events to function to change frame displayed
 set(display, 'KeyPressFcn', @(h_obj,evt) debug_processed(evt.Key, processed));
