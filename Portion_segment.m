@@ -69,7 +69,10 @@ end
 clear bgSampleFrame; clear bgSample; clear bgFrames;
 
 % create structuring elements used in cleanup of grayscale image
-forErode = strel('disk', 1);
+forErode1 = strel('disk', 1);
+forErode2 = strel('disk', 4);
+forDilate = strel('disk', 2);
+forClose = strel('disk', 8);
 
 % preallocate memory for marix for speed
 processed = false(height, width, effectiveFrameCount);
@@ -96,9 +99,12 @@ for frameIdx = startFrame:endFrame
     %% Cleanup the grayscale image of the cells to improve detection
     cleanImg = logical(imadjust(cleanImg));
     
-    cleanImg = imerode(cleanImg, forErode);
+    cleanImg = imerode(cleanImg, forErode1);
     cleanImg = medfilt2(cleanImg, [2, 2]);
     cleanImg = bwareaopen(cleanImg, 20);
+    cleanImg = imdilate(cleanImg, forDilate);
+    cleanImg = imclose(cleanImg, forClose);
+    cleanImg = imerode(cleanImg, forErode2);
     
     %% Store cleaned image of segmented cells in processed
     processed(:,:,frameIdx) = cleanImg;
