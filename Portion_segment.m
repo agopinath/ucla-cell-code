@@ -13,6 +13,8 @@ function processed = Portion_segment(cellVideo, folderName, videoName, startFram
 %%% to produce and return a binary array of the video's frames which
 %%% have been processed to yield only the cells.
 
+disp(['Starting cell detection for ', videoName, '...']);
+
 DEBUG_FLAG = 1; % flag for whether to show debug info
 WRITEMOVIE_FLAG = 0; % flag for whether to write processed frames to disk
 OVERLAYTEMPLATE_FLAG = 0; % flag whether to overlay template lines on processed frames
@@ -128,8 +130,9 @@ for frameIdx = startFrame:endFrame
 end
 
 % output debugging information
-totalTime = toc(startTime2) + tempTime
-averageTimePerFrame = totalTime/effectiveFrameCount
+totalTime = toc(startTime2) + tempTime;
+disp(['Time taken for cell detection: ', num2str(totalTime), ' secs']);
+disp(['Average time to detect cells per frame: ', num2str(totalTime/effectiveFrameCount), ' secs']);
 
 %% Set up built-in frame viewer and write to file if debugging is on
 if DEBUG_FLAG == 1

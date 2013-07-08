@@ -13,7 +13,7 @@ clc
 
 % Initializations
 paths = cellstr(['G:\CellVideos\']);
-videos = cellstr(['dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi']); 
+videos = cellstr(['unconstricted_test_1200.avi']); 
             %'Dev3x10_20x_200fps_4,8ms_72_1.avi';
             %'device01_20X_800fps_0.6ms_6psi_p4_15_3.avi';
             %'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi'; 
@@ -82,7 +82,7 @@ for i = 1:length(cellVideos)
          currVideo = cellVideos(i);
          startFrame = 1;
          endFrame = currVideo.NumberOfFrames;
-         Portion_segment(currVideo, videos{i}, paths{i}, startFrame, endFrame);
+         Portion_segment(currVideo, paths{i}, videos{i}, startFrame, endFrame);
 %          [data_] = AnalysisCodeBAV(paths{i}, videos{i}, break_size(i), j, frame_rate(i));
 %          if (isempty(data_) ~= 1)
 %              if (data_comp_(1,1:8) == zeros(1,8))
@@ -103,5 +103,7 @@ for i = 1:length(cellVideos)
 %     end    
 end
 
-totalTime = toc(startTime)
-averageTimePerVideo = totalTime/length(videos)
+totalTime = toc(startTime);
+disp(sprintf('\n\n======'));
+disp(['Total time to analyze ', num2str(length(videos)), ' video(s): ', num2str(totalTime), ' secs']);
+disp(['Average time per video: ', num2str(totalTime/length(videos)), ' secs']);
