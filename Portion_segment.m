@@ -19,7 +19,7 @@ videoName = 'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi';
             %'unconstricted_test_1200.avi';
 segmentNum = 1;
 
-%% Computing an average image
+%% Initialization
 % loads the video and initialize range of frames to process
 cellVideo = VideoReader([folderName, videoName]);
 startFrame = 1;
@@ -28,13 +28,11 @@ endFrame = cellVideo.NumberOfFrames;
 % stores the number of frames that will be processed
 effectiveFrameCount = (endFrame-startFrame+1) ;
 
-% generates a sample array of the indices of 100 evenly spaced frames in the video
-% bgSample = 1:ceil(cellVideo.NumberOfFrames/100):cellVideo.NumberOfFrames;
-
 % store the height/width of the cell video for clarity
 height = cellVideo.Height;
 width = cellVideo.Width;
 
+%% Calculate background image(s)
 numSections = 2; % the number of sections to "divide" the video into
 numSamples = 100; % the number of samples to take from each section
 
@@ -44,14 +42,15 @@ bgImgs = zeros(height, width, length(bgSections)-1, 'uint8'); % 3D array to stor
 
 bgImgIdx = 1;
 backgroundImg = zeros(height, width, 'uint8');
-bgFrames = zeros(height, width, length(frameIdxs), 'uint8');
+
 % loop through each 'section'
 for i = 2:length(bgSections)
     sectionStart = bgSections(i-1); % the starting frame of each section
     sectionEnd = bgSections(i); % the ending frame of each section
     sampleInterval = ceil((sectionEnd-sectionStart)/numSamples); % the interval using which the samples are taken
     frameIdxs = sectionStart:sampleInterval:sectionEnd; % stores the indices of the frames to sample in each section
-       
+    
+    bgFrames = zeros(height, width, length(frameIdxs), 'uint8');
     for j = 1:length(frameIdxs)
         bgFrames(:,:,j) = uint8(read(cellVideo, frameIdxs(j))); % store the frame in bgImgs
     end
