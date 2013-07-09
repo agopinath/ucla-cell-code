@@ -15,7 +15,7 @@
 %%% have been processed to yield only the cells.
 
 DEBUG_FLAG = 1; % flag for whether to show debug info
-WRITEMOVIE_FLAG = 1; % flag for whether to write processed frames to movie on disk
+WRITEMOVIE_FLAG = 0; % flag for whether to write processed frames to movie on disk
 OVERLAYTEMPLATE_FLAG = 0; % flag whether to overlay template lines on processed frames
 
 startTime1 = tic;
@@ -33,6 +33,7 @@ cellVideo = VideoReader([folderName, videoName]);
 startFrame = 1;
 endFrame = cellVideo.NumberOfFrames;
 
+clc;
 disp(sprintf(['\nStarting cell detection for ', videoName, '...']));
 
 
