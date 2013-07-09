@@ -119,7 +119,7 @@ for frameIdx = startFrame:endFrame
     cleanImg = imdilate(cleanImg, forDilate);
     cleanImg = imclose(cleanImg, forClose);
     cleanImg = imerode(cleanImg, forErode2);
-    cleanImg = bwareaopen(cleanImg, 60);
+    cleanImg = bwareaopen(cleanImg, 65);
     
     if OVERLAYTEMPLATE_FLAG == 1
         cleanImg = cleanImg | template; % binary 'OR' to find the union of the two imgs
