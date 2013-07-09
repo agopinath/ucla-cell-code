@@ -1,37 +1,41 @@
-%% Cell Detection Algorithm  - rewriten on 7/7/2013 by Ajay Gopinath; original (Modified as of 10/05/2011) by Bino Abel Varghese, 
+%% Cell Detection Algorithm - complete rewrite 7/6/13 by Ajay G.; original (Modified as of 10/05/2011) by Bino Abel Varghese, 
 % Automation and efficiency changes made 03/11/2013 by Dave Hoelzle Adding
 % comments, commenting the output figure on 6/25/13 by Mike Scott 
-% Increase in speed (~4x faster) + better cell detection on 7/6/13 by Ajay G.
+% Increase in speed (~3 - 4x faster) + removed disk output unless debugging + 
+% better cell detection, made on 7/5/13 by Ajay G.
 
 % 6/25/13 Commented out the code which generated the 'overlap' diagram.  It
 % was unused and slowed down the user during execution.  Also added
 % comments to clarify the code. (Mike Scott)
 
-function processed = Portion_segment(cellVideo, folderName, videoName, startFrame, endFrame)
+%function processed = Portion_segment(cellVideo, folderName, videoName, startFrame, endFrame)
 
 %%% This code analyzes a video of cells passing through constrictions
 %%% to produce and return a binary array of the video's frames which
 %%% have been processed to yield only the cells.
 
-disp(sprintf(['\nStarting cell detection for ', videoName, '...']));
-
 DEBUG_FLAG = 1; % flag for whether to show debug info
-WRITEMOVIE_FLAG = 0; % flag for whether to write processed frames to disk
+WRITEMOVIE_FLAG = 1; % flag for whether to write processed frames to movie on disk
 OVERLAYTEMPLATE_FLAG = 0; % flag whether to overlay template lines on processed frames
 
 startTime1 = tic;
 
-% folderName = 'G:\CellVideos\';
-% videoName = 'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi';
-%             %'Dev3x10_20x_200fps_4,8ms_72_1.avi';
-%             %'device01_20X_800fps_0.6ms_6psi_p4_15_3.avi';
-%             %'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi'; 
-%             %'unconstricted_test_800.avi';
-%             %'unconstricted_test_1200.avi';
-% startFrame = 1;
-% endFrame = cellVideo.NumberOfFrames;
-
 %% Initialization
+folderName = 'G:\CellVideos\';
+videoName = 'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi';
+            %'Dev3x10_20x_200fps_4,8ms_72_1.avi';
+            %'device01_20X_800fps_0.6ms_6psi_p4_15_3.avi';
+            %'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi'; 
+            %'unconstricted_test_800.avi';
+            %'unconstricted_test_1200.avi';
+            
+cellVideo = VideoReader([folderName, videoName]);
+startFrame = 1;
+endFrame = cellVideo.NumberOfFrames;
+
+disp(sprintf(['\nStarting cell detection for ', videoName, '...']));
+
+
 % stores the number of frames that will be processed
 effectiveFrameCount = (endFrame-startFrame+1) ;
 
@@ -75,11 +79,12 @@ end
 % clear variables for better memory management
 clear frameIdxs; clear backgroundImg; clear bgFrames; clear bgImgIdx; clear sampleInterval;
 
+%% Prepare for Cell Detection
 % create structuring elements used in cleanup of grayscale image
 forErode1 = strel('disk', 1);
-forErode2 = strel('disk', 4);
+forErode2 = strel('disk', 3);
 forDilate = strel('disk', 2);
-forClose = strel('disk', 10);
+forClose = strel('disk', 9);
 
 % preallocate memory for marix for speed
 processed = false(height, width, effectiveFrameCount);
@@ -91,7 +96,8 @@ end
 
 startTime2 = tic;
 
-%% Steps through the video frame by frame in the range [startFrame, endFrame]
+%% Step through video
+% iterates through each video frame in the range [startFrame, endFrame]
 for frameIdx = startFrame:endFrame
     % reads in the movie file frame at frameIdx
     currFrame = read(cellVideo, frameIdx);
@@ -110,7 +116,8 @@ for frameIdx = startFrame:endFrame
     % just the cells
     cleanImg = imsubtract(bgImgs(:,:,imgIdx), currFrame);
     
-    %% Cleanup the grayscale image of the cells to improve detection
+    %% Cleanup 
+    % clean the grayscale image of the cells to improve detection
     cleanImg = logical(imadjust(cleanImg));
     
     cleanImg = imerode(cleanImg, forErode1);
@@ -119,7 +126,7 @@ for frameIdx = startFrame:endFrame
     cleanImg = imdilate(cleanImg, forDilate);
     cleanImg = imclose(cleanImg, forClose);
     cleanImg = imerode(cleanImg, forErode2);
-    cleanImg = bwareaopen(cleanImg, 65);
+    cleanImg = bwareaopen(cleanImg, 50);
     
     if OVERLAYTEMPLATE_FLAG == 1
         cleanImg = cleanImg | template; % binary 'OR' to find the union of the two imgs
@@ -134,7 +141,7 @@ totalTime = toc(startTime2) + tempTime;
 disp(['Time taken for cell detection: ', num2str(totalTime), ' secs']);
 disp(['Average time to detect cells per frame: ', num2str(totalTime/effectiveFrameCount), ' secs']);
 
-%% Set up built-in frame viewer and write to file if debugging is on
+%% Set up frame viewer and write to file if debugging is on
 if DEBUG_FLAG == 1
     implay(processed);
     if WRITEMOVIE_FLAG == 1
@@ -156,6 +163,4 @@ if DEBUG_FLAG == 1
         
         close(writer);
     end
-end
-
 end
