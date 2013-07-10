@@ -17,6 +17,7 @@
 DEBUG_FLAG = 1; % flag for whether to show debug info
 WRITEMOVIE_FLAG = 0; % flag for whether to write processed frames to movie on disk
 OVERLAYTEMPLATE_FLAG = 0; % flag whether to overlay template lines on processed frames
+OVERLAYOUTLINE_FLAG = 1; % flag whether to overlay detected outlines of cells on original frames
 
 startTime1 = tic;
 
@@ -88,7 +89,12 @@ forDilate = strel('disk', 2);
 forClose = strel('disk', 9);
 
 % preallocate memory for marix for speed
-processed = false(height, width, effectiveFrameCount);
+if OVERLAYOUTLINE_FLAG == 1
+    processed = zeros(height, width, effectiveFrameCount, 'uint8');
+else
+    processed = false(height, width, effectiveFrameCount);
+end
+
 tempTime = toc(startTime1);
 
 if OVERLAYTEMPLATE_FLAG == 1
@@ -131,6 +137,10 @@ for frameIdx = startFrame:endFrame
     
     if OVERLAYTEMPLATE_FLAG == 1
         cleanImg = cleanImg | template; % binary 'OR' to find the union of the two imgs
+    end
+    
+    if OVERLAYOUTLINE_FLAG == 1
+        cleanImg = imadd(currFrame, uint8(bwperim(cleanImg)*255));
     end
     
     %% Store cleaned image of segmented cells in processed
