@@ -1,4 +1,4 @@
-%% Cell Detection Algorithm - complete rewrite 7/6/13 by Ajay G.; original (Modified as of 10/05/2011) by Bino Abel Varghese, 
+%% Cell Detection Algorithm - original (10/05/2011) by Bino Abel Varghese; complete rewrite 7/9/2013 Ajay Gopinath
 % Automation and efficiency changes made 03/11/2013 by Dave Hoelzle Adding
 % comments, commenting the output figure on 6/25/13 by Mike Scott 
 % Increase in speed (~3 - 4x faster) + removed disk output unless debugging + 
@@ -15,7 +15,7 @@
 %%% have been processed to yield only the cells.
 
 DEBUG_FLAG = 1; % flag for whether to show debug info
-WRITEMOVIE_FLAG = 0; % flag for whether to write processed frames to movie on disk
+WRITEMOVIE_FLAG = 1; % flag for whether to write processed frames to movie on disk
 OVERLAYTEMPLATE_FLAG = 0; % flag whether to overlay template lines on processed frames
 OVERLAYOUTLINE_FLAG = 1; % flag whether to overlay detected outlines of cells on original frames
 
@@ -27,7 +27,6 @@ videoName = 'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi';
             %'Dev3x10_20x_200fps_4,8ms_72_1.avi';
             %'device01_20X_800fps_0.6ms_6psi_p4_15_3.avi';
             %'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi'; 
-            %'unconstricted_test_800.avi';
             %'unconstricted_test_1200.avi';
             
 cellVideo = VideoReader([folderName, videoName]);
@@ -67,9 +66,12 @@ for i = 2:length(bgSections)
     
     bgFrames = zeros(height, width, length(frameIdxs), 'uint8');
     for j = 1:length(frameIdxs)
-        bgFrames(:,:,j) = uint8(read(cellVideo, frameIdxs(j))); % store the frame in bgImgs
+        bgFrames(:,:,j) = uint8(read(cellVideo, frameIdxs(j))); % store the frame that was read in bgFrames
     end
     
+    % calculate the 'background' frame for the current section by
+    % storing the corresponding pixel value as the mean value of
+    % each corresponding pixel of the background frames in bgFrames
     for col = 1:height
         for row = 1:width
             backgroundImg(col, row) = mean(bgFrames(col, row,:));
@@ -97,12 +99,14 @@ else
     processed = false(height, width, effectiveFrameCount);
 end
 
+% temporarily stop and record the time taken so far
 bgCalcTime = toc(startTime1);
 
 if OVERLAYTEMPLATE_FLAG == 1
     template = logical(Make_waypoints(videoName, folderName));
 end
 
+% continue recording the time taken
 startTime2 = tic;
 
 %% Step through video
@@ -133,7 +137,7 @@ for frameIdx = startFrame:endFrame
     cleanImg = bwareaopen(cleanImg, 80);
     cleanImg = imfill(cleanImg, 'holes');
      
-    %cleanImg = imerode(cleanImg, forErode1);
+%     cleanImg = imerode(cleanImg, forErode1);
 %     cleanImg = medfilt2(cleanImg, [2, 2]);
 %     cleanImg = bwareaopen(cleanImg, 25);
 %     cleanImg = imdilate(cleanImg, forDilate);
@@ -153,7 +157,7 @@ for frameIdx = startFrame:endFrame
     processed(:,:,frameIdx-startFrame+1) = cleanImg;
 end
 
-% output debugging information
+% stop recording the time and output debugging information
 processTime = toc(startTime2);
 totalTime = processTime + bgCalcTime;
 disp(['Time taken for cell detection: ', num2str(totalTime), ' secs']);
@@ -162,6 +166,8 @@ disp(['Average time to detect cells per frame: ', num2str(processTime/effectiveF
 %% Set up frame viewer and write to file if debugging is on
 if DEBUG_FLAG == 1
     implay(processed);
+    
+    % if video file is set
     if WRITEMOVIE_FLAG == 1
         writer = VideoWriter([folderName, 'proc_new_', videoName]);
         open(writer);
