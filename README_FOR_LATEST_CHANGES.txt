@@ -30,3 +30,11 @@ to allow it to run as a function via an external call
 
 Make waypoints:
 - mainly experimental changes, feel free to make any changes to this
+
+=== CELL VIDEO LINKS ====
+- These videos show the overlayed detected cell outline over the original video
+- They are unlisted so only those with the link can see it
+http://www.youtube.com/watch?v=1UMqrNlp1LI
+http://www.youtube.com/watch?v=DbzlPZlV-Dw
+http://www.youtube.com/watch?v=iRgirB5s-N0
+=========================
