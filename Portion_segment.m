@@ -97,7 +97,7 @@ else
     processed = false(height, width, effectiveFrameCount);
 end
 
-tempTime = toc(startTime1);
+bgCalcTime = toc(startTime1);
 
 if OVERLAYTEMPLATE_FLAG == 1
     template = logical(Make_waypoints(videoName, folderName));
@@ -154,9 +154,10 @@ for frameIdx = startFrame:endFrame
 end
 
 % output debugging information
-totalTime = toc(startTime2) + tempTime;
+processTime = toc(startTime2);
+totalTime = processTime + bgCalcTime;
 disp(['Time taken for cell detection: ', num2str(totalTime), ' secs']);
-disp(['Average time to detect cells per frame: ', num2str(totalTime/effectiveFrameCount), ' secs']);
+disp(['Average time to detect cells per frame: ', num2str(processTime/effectiveFrameCount), ' secs']);
 
 %% Set up frame viewer and write to file if debugging is on
 if DEBUG_FLAG == 1
