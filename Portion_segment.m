@@ -30,6 +30,7 @@ videoName = 'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi';
             %'unconstricted_test_1200.avi';
             
 cellVideo = VideoReader([folderName, videoName]);
+isVideoGrayscale = (strcmp(cellVideo.VideoFormat, 'Grayscale') == 1);
 startFrame = 1;
 endFrame = cellVideo.NumberOfFrames;
 
@@ -66,7 +67,12 @@ for i = 2:length(bgSections)
     
     bgFrames = zeros(height, width, length(frameIdxs), 'uint8');
     for j = 1:length(frameIdxs)
-        bgFrames(:,:,j) = uint8(read(cellVideo, frameIdxs(j))); % store the frame that was read in bgFrames
+        if(isVideoGrayscale)
+            bgFrames(:,:,j) = read(cellVideo, frameIdxs(j)); % store the frame that was read in bgFrames
+        else
+            temp = read(cellVideo, frameIdxs(j));
+            bgFrames(:,:,j) = temp(:,:,1);
+        end
     end
     
     % calculate the 'background' frame for the current section by
@@ -113,7 +119,12 @@ startTime2 = tic;
 % iterates through each video frame in the range [startFrame, endFrame]
 for frameIdx = startFrame:endFrame
     % reads in the movie file frame at frameIdx
-    currFrame = read(cellVideo, frameIdx);
+    if(isVideoGrayscale)
+        currFrame = read(cellVideo, frameIdx);
+    else
+        temp = read(cellVideo, frameIdx);
+        currFrame = temp(:,:,1);
+    end
     
     %% Determine which background image to use
     imgIdx = 0;
