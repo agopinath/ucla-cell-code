@@ -150,7 +150,7 @@ for frameIdx = startFrame:endFrame
     end
     
     %% Store cleaned image of segmented cells in processed
-    processed(:,:,frameIdx) = cleanImg;
+    processed(:,:,frameIdx-startFrame+1) = cleanImg;
 end
 
 % output debugging information
@@ -175,7 +175,7 @@ if DEBUG_FLAG == 1
         
         % write processed frames to disk
         for currFrame = startFrame:endFrame
-            writeVideo(writer, processed(:,:,currFrame));
+            writeVideo(writer, processed(:,:,currFrame-startFrame+1));
         end
         
         close(writer);
