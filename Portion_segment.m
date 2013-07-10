@@ -172,12 +172,14 @@ if DEBUG_FLAG == 1
         writer = VideoWriter([folderName, 'proc_new_', videoName]);
         open(writer);
         
-        processed = uint8(processed); % convert to uint8 for use with writeVideo
-        
-        % make binary '1's into '255's so all resulting pixels will be
-        % either black or white
-        for idx = 1:effectiveFrameCount
-            processed(:,:,idx) = processed(:,:,idx)*255;
+        if(islogical(processed))
+            processed = uint8(processed); % convert to uint8 for use with writeVideo
+
+            % make binary '1's into '255's so all resulting pixels will be
+            % either black or white
+            for idx = 1:effectiveFrameCount
+                processed(:,:,idx) = processed(:,:,idx)*255;
+            end
         end
         
         % write processed frames to disk
