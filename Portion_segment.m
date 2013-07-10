@@ -37,6 +37,8 @@ endFrame = cellVideo.NumberOfFrames;
 clc;
 disp(sprintf(['\nStarting cell detection for ', videoName, '...']));
 
+% empirical threshold value for conversion from grayscale to binary image
+threshold = 0.02;
 
 % stores the number of frames that will be processed
 effectiveFrameCount = (endFrame-startFrame+1) ;
@@ -86,7 +88,7 @@ clear frameIdxs; clear backgroundImg; clear bgFrames; clear bgImgIdx; clear samp
 forErode1 = strel('disk', 1);
 forErode2 = strel('disk', 3);
 forDilate = strel('disk', 2);
-forClose = strel('disk', 9);
+forClose = strel('disk', 10);
 
 % preallocate memory for marix for speed
 if OVERLAYOUTLINE_FLAG == 1
@@ -121,19 +123,23 @@ for frameIdx = startFrame:endFrame
     %% Do cell detection
     % subtracts the background (backgroundImg) from each frame, hopefully leaving
     % just the cells
-    cleanImg = imsubtract(bgImgs(:,:,imgIdx), currFrame);
+    cleanImg = im2bw(imsubtract(bgImgs(:,:,imgIdx), currFrame), threshold);
     
     %% Cleanup 
     % clean the grayscale image of the cells to improve detection
-    cleanImg = logical(imadjust(cleanImg));
-    
-    cleanImg = imerode(cleanImg, forErode1);
-    cleanImg = medfilt2(cleanImg, [2, 2]);
-    cleanImg = bwareaopen(cleanImg, 25);
-    cleanImg = imdilate(cleanImg, forDilate);
+    %cleanImg = logical(imadjust(cleanImg));
+    cleanImg = bwareaopen(cleanImg, 40);
     cleanImg = imclose(cleanImg, forClose);
-    cleanImg = imerode(cleanImg, forErode2);
-    cleanImg = bwareaopen(cleanImg, 50);
+    cleanImg = bwareaopen(cleanImg, 80);
+    cleanImg = imfill(cleanImg, 'holes');
+     
+    %cleanImg = imerode(cleanImg, forErode1);
+%     cleanImg = medfilt2(cleanImg, [2, 2]);
+%     cleanImg = bwareaopen(cleanImg, 25);
+%     cleanImg = imdilate(cleanImg, forDilate);
+%     cleanImg = imclose(cleanImg, forClose);
+%     cleanImg = imerode(cleanImg, forErode2);
+%     cleanImg = bwareaopen(cleanImg, 50);
     
     if OVERLAYTEMPLATE_FLAG == 1
         cleanImg = cleanImg | template; % binary 'OR' to find the union of the two imgs
