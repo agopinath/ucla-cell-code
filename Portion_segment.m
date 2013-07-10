@@ -8,31 +8,32 @@
 % was unused and slowed down the user during execution.  Also added
 % comments to clarify the code. (Mike Scott)
 
-%function processed = Portion_segment(cellVideo, folderName, videoName, startFrame, endFrame)
+function processed = Portion_segment(cellVideo, folderName, videoName, startFrame, endFrame)
 
 %%% This code analyzes a video of cells passing through constrictions
 %%% to produce and return a binary array of the video's frames which
 %%% have been processed to yield only the cells.
 
 DEBUG_FLAG = 1; % flag for whether to show debug info
-WRITEMOVIE_FLAG = 1; % flag for whether to write processed frames to movie on disk
+WRITEMOVIE_FLAG = 0; % flag for whether to write processed frames to movie on disk
 OVERLAYTEMPLATE_FLAG = 0; % flag whether to overlay template lines on processed frames
 OVERLAYOUTLINE_FLAG = 1; % flag whether to overlay detected outlines of cells on original frames
 
 startTime1 = tic;
 
-%% Initialization
-folderName = 'G:\CellVideos\';
-videoName = 'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi';
-            %'Dev3x10_20x_200fps_4,8ms_72_1.avi';
-            %'device01_20X_800fps_0.6ms_6psi_p4_15_3.avi';
-            %'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi'; 
-            %'unconstricted_test_1200.avi';
-            
-cellVideo = VideoReader([folderName, videoName]);
+% %% Initialization
+% folderName = 'G:\CellVideos\';
+% videoName = 'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi';
+%             %'Dev3x10_20x_200fps_4,8ms_72_1.avi';
+%             %'device01_20X_800fps_0.6ms_6psi_p4_15_3.avi';
+%             %'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi'; 
+%             %'unconstricted_test_1200.avi';
+%             
+% cellVideo = VideoReader([folderName, videoName]);
+% startFrame = 1;
+% endFrame = cellVideo.NumberOfFrames;
+
 isVideoGrayscale = (strcmp(cellVideo.VideoFormat, 'Grayscale') == 1);
-startFrame = 1;
-endFrame = cellVideo.NumberOfFrames;
 
 clc;
 disp(sprintf(['\nStarting cell detection for ', videoName, '...']));
@@ -180,7 +181,7 @@ if DEBUG_FLAG == 1
     
     % if video file is set
     if WRITEMOVIE_FLAG == 1
-        writer = VideoWriter([folderName, 'proc_new_', videoName]);
+        writer = VideoWriter([folderName, 'cellsdetected_', videoName]);
         open(writer);
         
         if(islogical(processed))
