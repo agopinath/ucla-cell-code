@@ -17,7 +17,7 @@ function processed = Portion_segment(cellVideo, folderName, videoName, startFram
 DEBUG_FLAG = 1; % flag for whether to show debug info
 WRITEMOVIE_FLAG = 0; % flag for whether to write processed frames to movie on disk
 OVERLAYTEMPLATE_FLAG = 0; % flag whether to overlay template lines on processed frames
-OVERLAYOUTLINE_FLAG = 1; % flag whether to overlay detected outlines of cells on original frames
+OVERLAYOUTLINE_FLAG = 0; % flag whether to overlay detected outlines of cells on original frames
 
 startTime1 = tic;
 
@@ -94,9 +94,6 @@ clear frameIdxs; clear backgroundImg; clear bgFrames; clear bgImgIdx; clear samp
 
 %% Prepare for Cell Detection
 % create structuring elements used in cleanup of grayscale image
-forErode1 = strel('disk', 1);
-forErode2 = strel('disk', 3);
-forDilate = strel('disk', 2);
 forClose = strel('disk', 10);
 
 % preallocate memory for marix for speed
@@ -146,9 +143,9 @@ for frameIdx = startFrame:endFrame
     %cleanImg = logical(imadjust(cleanImg));
     cleanImg = bwareaopen(cleanImg, 40);
     cleanImg = imclose(cleanImg, forClose);
-    cleanImg = bwareaopen(cleanImg, 80);
+    cleanImg = bwareaopen(cleanImg, 60);
     cleanImg = imfill(cleanImg, 'holes');
-     
+    
 %     cleanImg = imerode(cleanImg, forErode1);
 %     cleanImg = medfilt2(cleanImg, [2, 2]);
 %     cleanImg = bwareaopen(cleanImg, 25);
