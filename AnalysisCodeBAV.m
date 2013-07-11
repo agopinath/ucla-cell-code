@@ -3,11 +3,18 @@
 %%% First part of the code
 
 function cellSizes = AnalysisCodeBAV(processed, videoName)
-close all;
-
 disp(['Starting analysis for video ', videoName, '...']);
-cellSizes = zeros(1, 10);
-j = 1;
+
+DEBUG_FLAG = 1;
+% to keep track of the frames from in which the unconstricted cell sizes were recorded
+unconFrames = zeros(1, 20);
+unconFrameIdx = 1;
+
+% preallocating array to store unconstricted cell sizes
+% as well as counter to keep track of the current index
+unconstricted = zeros(1, 20);
+unconIdx = 1;
+
 frameCount = size(processed, 3);
 
 height = size(processed, 1);
@@ -28,8 +35,12 @@ for frameIdx = 1:frameCount
                 currCell = s(i);
                 isUnconstricted = abs(currCell.Centroid(2) - 30) < 4;
                 if(isUnconstricted)
-                    cellSizes(j) = (currCell.MajorAxisLength + currCell.MinorAxisLength)/2;
-                    j = j+1;
+                    unconstricted(unconIdx) = (currCell.MajorAxisLength + currCell.MinorAxisLength)/2;
+                    unconIdx = unconIdx+1;
+                    if DEBUG_FLAG == 1
+                        unconFrames(unconFrameIdx) = frameIdx;
+                        unconFrameIdx = unconFrameIdx+1;
+                    end
                 end
             end
         end
