@@ -22,17 +22,16 @@ for frameIdx = 1:frameCount
         mask = imclearborder(mask);
         comps = bwconncomp(mask);
         if comps.NumObjects > 0
-        s = regionprops(comps, 'Centroid', 'BoundingBox');%, 'MajorAxisLength', 'MinorAxis');
-    
-        for i = 1:length(s) 
-            currCell = s(i);
-            isUnconstricted = abs(currCell.Centroid(2) - 30) < 4;
-            if(isUnconstricted)
-                cellSizes(j) = (currCell.BoundingBox(3) + currCell.BoundingBox(4))/2;
-                j = j+1;
-                %cellSizes(j) = (currCell.MajorAxisLength + currCell.MinorAxisLength)/2;
+            s = regionprops(comps, 'Centroid', 'MajorAxisLength', 'MinorAxis');
+            
+            for i = 1:length(s)
+                currCell = s(i);
+                isUnconstricted = abs(currCell.Centroid(2) - 30) < 4;
+                if(isUnconstricted)
+                    cellSizes(j) = (currCell.MajorAxisLength + currCell.MinorAxisLength)/2;
+                    j = j+1;
+                end
             end
-        end
         end
     end
 end
