@@ -1,10 +1,9 @@
 This is a summary of the latest major changes for my code on GitHub. Last updated: 7/10/13 By Ajay Gopinath.
 
 Master_script:
-- feel free to make changes that conflict with this, any of my changes were mainly experimental
 - very stripped-down version of its previous self
-- pretty much just a proxy for calling Portion_segment to do the edge detection
-- all analysis and other functionality commented out
+- removed all calls except to Portion_segment and AnalysisCodeBAV to do cell detection and analysis
+- currently gathers all unconstricted cell sizes detected in the specified video files and outputs a histogram of the distribution of these unconstricted cell sizes
 
 Portion_segment:
 - can currently run by itself as a script. comment lines 24 - 34 and uncomment line 11 (function line)
@@ -27,6 +26,10 @@ to allow it to run as a function via an external call
 	7) ...
 	8) Set up frame viewer - if debug flag is set, it shows you the processed images. if the writemovie
 	flag is set, it also writes the processed images to a movie on disk. etc.
+
+AnalysisCodeBAV:
+- currently removed all code for tracking the cells
+- returns a vector of the measured unconstricted cell sizes for the cells in the video
 
 Make waypoints:
 - mainly experimental changes, feel free to make any changes to this
