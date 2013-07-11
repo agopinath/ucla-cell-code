@@ -15,10 +15,13 @@ width = size(processed, 2);
 
 for frameIdx = 1:frameCount
     currFrame = processed(:,:,frameIdx);
-    mask = imclearborder(currFrame(1:40,1:width));
+    mask = currFrame(1:40,1:width);
     
     comps = bwconncomp(mask);
     if comps.NumObjects > 0
+        mask = imclearborder(mask);
+        comps = bwconncomp(mask);
+        if comps.NumObjects > 0
         s = regionprops(comps, 'Centroid', 'BoundingBox');%, 'MajorAxisLength', 'MinorAxis');
     
         for i = 1:length(s) 
@@ -29,6 +32,7 @@ for frameIdx = 1:frameCount
                 j = j+1;
                 %cellSizes(j) = (currCell.MajorAxisLength + currCell.MinorAxisLength)/2;
             end
+        end
         end
     end
 end
