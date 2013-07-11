@@ -13,8 +13,10 @@ clc
 
 % Initializations
 % make sure to delimit path and video names below by semicolons, NOT commas
-paths = {'G:\CellVideos\'};
-videos = {'device01_20X_800fps_0.6ms_6psi_p4_15_3.avi'}; 
+paths = {'G:\CellVideos\'; 'G:\CellVideos\'; 'G:\CellVideos\'; 'G:\CellVideos\'; 'G:\CellVideos\'; 'G:\CellVideos\'};
+videos = {'device01_20X_800fps_0.6ms_6psi_p4_15_1.avi'; 'device01_20X_800fps_0.6ms_6psi_p4_15_2.avi';
+          'device01_20X_800fps_0.6ms_6psi_p4_15_3.avi'; 'Dev3x10_20x_200fps_4,8ms_72_1.avi';
+          'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi'; 'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi'}; 
             %'Dev3x10_20x_200fps_4,8ms_72_1.avi';
             %'device01_20X_800fps_0.6ms_6psi_p4_15_3.avi';
             %'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi'; 
@@ -77,6 +79,7 @@ startTime = tic;
 % end
 
 % data_comp_ = zeros(1,8);
+allUnconSizes = [];
 for i = 1:length(cellVideos)
 %     for j = 1:no_of_seg
 %        Portion_segment(videos{i}, paths{i}, max([50 (j-1)*break_size(i)])+1, j*break_size(i), position(i,:), j);
@@ -84,7 +87,9 @@ for i = 1:length(cellVideos)
          startFrame = 1;
          endFrame = currVideo.NumberOfFrames;
          processed = Portion_segment(currVideo, paths{i}, videos{i}, startFrame, endFrame);
-         cellSizes = AnalysisCodeBAV(processed, videos{i});
+         unconSizes = AnalysisCodeBAV(processed, videos{i});
+         allUnconSizes = [allUnconSizes, unconSizes];
+         clear processed;
 %          [data_] = AnalysisCodeBAV(paths{i}, videos{i}, break_size(i), j, frame_rate(i));
 %          if (isempty(data_) ~= 1)
 %              if (data_comp_(1,1:8) == zeros(1,8))
@@ -106,6 +111,9 @@ for i = 1:length(cellVideos)
 end
 
 totalTime = toc(startTime);
+
+hist(allUnconSizes);
+
 disp(sprintf('\n\n======'));
 disp(['Total time to analyze ', num2str(length(videos)), ' video(s): ', num2str(totalTime), ' secs']);
 disp(['Average time per video: ', num2str(totalTime/length(videos)), ' secs']);
