@@ -6,15 +6,10 @@
 clear
 clc
 
-% Header to test different files, commented when running actual code.
-% folder_name = 'D:\120220 hl60\MOCK 5um 4psi 600fps';
-% videos = ['MOCK 5um 4psi 600fps Dev1-41'];
-% frame_rate = 600;           % frames per second
-
-% Initializations
-
-searchPaths = {'Y:\Kendra\Microfluidics\Raw Data\130618\Mock\7x10um\2psi\';
-                'Y:\Kendra\Microfluidics\Raw Data\130628\Mock\7x10\2psi\'};
+% if you want to process all videos in a set of folders, uncomment the
+% following lines and specify the folders of the videos you want to process
+% searchPaths = {'Y:\Kendra\Microfluidics\Raw Data\130618\Mock\7x10um\2psi\';
+%                'Y:\Kendra\Microfluidics\Raw Data\130628\Mock\7x10\2psi\'};
 
 if exist('searchPaths', 'var') == 0 
     % make sure to delimit path and video names below by semicolons, NOT commas
