@@ -12,16 +12,33 @@ clc
 % frame_rate = 600;           % frames per second
 
 % Initializations
-% make sure to delimit path and video names below by semicolons, NOT commas
-paths = {'G:\CellVideos\'; 'G:\CellVideos\'; 'G:\CellVideos\'; 'G:\CellVideos\'; 'G:\CellVideos\'; 'G:\CellVideos\'};
-videos = {'device01_20X_800fps_0.6ms_6psi_p4_15_1.avi'; 'device01_20X_800fps_0.6ms_6psi_p4_15_2.avi';
+
+searchPaths = {'Y:\Kendra\Microfluidics\Raw Data\130618\Mock\7x10um\2psi\';
+                'Y:\Kendra\Microfluidics\Raw Data\130628\Mock\7x10\2psi\'};
+
+if exist('searchPaths', 'var') == 0 
+    % make sure to delimit path and video names below by semicolons, NOT commas
+    paths = {'G:\CellVideos\'; 'G:\CellVideos\'; 'G:\CellVideos\'; 'G:\CellVideos\'; 'G:\CellVideos\'; 'G:\CellVideos\'};
+    videos = {'device01_20X_800fps_0.6ms_6psi_p4_15_1.avi'; 'device01_20X_800fps_0.6ms_6psi_p4_15_2.avi';
           'device01_20X_800fps_0.6ms_6psi_p4_15_3.avi'; 'Dev3x10_20x_200fps_4,8ms_72_1.avi';
           'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi'; 'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi'}; 
             %'Dev3x10_20x_200fps_4,8ms_72_1.avi';
             %'device01_20X_800fps_0.6ms_6psi_p4_15_3.avi';
             %'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi'; 
             %'unconstricted_test_800.avi';
-            %'unconstricted_test_1200.avi';
+            %'unconstricted_test_1200.avi'; 
+else
+    idx = 0;
+    for i = 1:length(searchPaths)
+        pathToSearch = searchPaths{i};
+        files = dir([pathToSearch, '*.avi']);
+        for j = 1:length(files)
+            paths{j+idx} = pathToSearch;
+            videos{j+idx} = files(j).name;
+        end
+        idx = idx + length(files);
+    end
+end
 
 for i = 1: length(videos)
     cellVideos(i) = VideoReader([paths{i}, videos{i}]);
