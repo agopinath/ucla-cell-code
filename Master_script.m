@@ -128,7 +128,7 @@ for i = 1:length(cellVideos)
 end
 
 totalTime = toc(startTime);
-
+dlmwrite([datestr(now, 'mm-dd-YY_HH-MM-SS'), '.txt'], allUnconSizes);
 hist(allUnconSizes);
 
 disp(sprintf('\n\n======'));
