@@ -5,10 +5,7 @@
 function unconstrictedSizes = AnalysisCodeBAV(processed, videoName)
 disp(['Starting analysis for video ', videoName, '...']);
 
-DEBUG_FLAG = 0;
-% to keep track of the frames from in which the unconstricted cell sizes were recorded
-unconFrames = zeros(1, 20);
-unconFrameIdx = 1;
+DEBUG_FLAG = 1;
 
 % preallocating array to store unconstricted cell sizes
 % as well as counter to keep track of the current index
@@ -19,26 +16,37 @@ frameCount = size(processed, 3);
 
 height = size(processed, 1);
 width = size(processed, 2);
+maskRows = 5:45;
+maskCols = 1:width;
+
+% to keep track of the frames from in which the unconstricted cell sizes were recorded
+unconFrames = zeros(length(maskRows), length(maskCols), 'uint8');
+unconFrameIdx = 1;
+
 t = tic;
 for frameIdx = 1:frameCount
     currFrame = processed(:,:,frameIdx);
-    mask = currFrame(1:40,1:width);
-    
+    mask = currFrame(maskRows, maskCols);
+    %imshow(mask);
     comps = bwconncomp(mask);
     if comps.NumObjects > 0
         mask = imclearborder(mask);
         comps = bwconncomp(mask);
         if comps.NumObjects > 0
-            s = regionprops(comps, 'Centroid', 'MajorAxisLength', 'MinorAxis');
+            s = regionprops(comps, 'Centroid', 'Eccentricity', 'MajorAxisLength', 'MinorAxis');
             
             for i = 1:length(s)
                 currCell = s(i);
-                isUnconstricted = abs(currCell.Centroid(2) - 30) < 4;
+                if(currCell.Eccentricity > 0.7) 
+                    continue;
+                end
+                isUnconstricted = abs(currCell.Centroid(2) - 30) < 1.4;
                 if(isUnconstricted)
-                    unconstrictedSizes(unconIdx) = (currCell.MajorAxisLength + currCell.MinorAxisLength)/2;
+                    csize = sqrt((currCell.MajorAxisLength*currCell.MajorAxisLength + currCell.MinorAxisLength*currCell.MinorAxisLength)/2);
+                    unconstrictedSizes(unconIdx) = csize;
                     unconIdx = unconIdx+1;
                     if DEBUG_FLAG == 1
-                        unconFrames(unconFrameIdx) = frameIdx;
+                        unconFrames(:,:, unconFrameIdx) = mask(:,:);
                         unconFrameIdx = unconFrameIdx+1;
                     end
                 end

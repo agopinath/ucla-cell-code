@@ -1,4 +1,4 @@
-%% Cell Detection Algorithm - original (10/05/2011) by Bino Abel Varghese; complete rewrite 7/9/2013 Ajay Gopinath
+%% Cell Detection Algorithm - original (10/05/2011) by Bino Abel Varghese; complete rewrite 7/9/13 by Ajay Gopinath
 % Automation and efficiency changes made 03/11/2013 by Dave Hoelzle Adding
 % comments, commenting the output figure on 6/25/13 by Mike Scott 
 % Increase in speed (~3 - 4x faster) + removed disk output unless debugging + 
