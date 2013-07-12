@@ -1,8 +1,7 @@
-%% Cell Detection Algorithm - original (10/05/2011) by Bino Abel Varghese; complete rewrite 7/9/13 by Ajay Gopinath
+%% Cell Detection Algorithm - original (10/05/2011) by Bino Abel Varghese
 % Automation and efficiency changes made 03/11/2013 by Dave Hoelzle Adding
 % comments, commenting the output figure on 6/25/13 by Mike Scott 
-% Increase in speed (~3 - 4x faster) + removed disk output unless debugging + 
-% better cell detection, made on 7/5/13 by Ajay G.
+% Increase in speed (~3 - 4x faster) + removed disk output unless debugging made on 7/5/13 by Ajay G.
 
 % 6/25/13 Commented out the code which generated the 'overlap' diagram.  It
 % was unused and slowed down the user during execution.  Also added
@@ -14,10 +13,10 @@ function processed = Portion_segment(cellVideo, folderName, videoName, startFram
 %%% to produce and return a binary array of the video's frames which
 %%% have been processed to yield only the cells.
 
-DEBUG_FLAG = 0; % flag for whether to show debug info
+DEBUG_FLAG = 1; % flag for whether to show debug info
 WRITEMOVIE_FLAG = 0; % flag for whether to write processed frames to movie on disk
 OVERLAYTEMPLATE_FLAG = 0; % flag whether to overlay template lines on processed frames
-OVERLAYOUTLINE_FLAG = 0; % flag whether to overlay detected outlines of cells on original frames
+OVERLAYOUTLINE_FLAG = 1; % flag whether to overlay detected outlines of cells on original frames
 
 startTime1 = tic;
 

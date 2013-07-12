@@ -13,8 +13,8 @@ clc
 
 if exist('searchPaths', 'var') == 0 
     % make sure to delimit path and video names below by semicolons, NOT commas
-    paths = {'G:\CellVideos\'; 'G:\CellVideos\'; 'G:\CellVideos\'; 'G:\CellVideos\'; 'G:\CellVideos\'; 'G:\CellVideos\'};
-    videos = {'device01_20X_800fps_0.6ms_6psi_p4_15_1.avi'};%; 'device01_20X_800fps_0.6ms_6psi_p4_15_2.avi';
+    paths = {'G:\CellVideos\originalvids'};
+    videos = {'device01_20X_800fps_0.6ms_2psi_p4_04_2.avi'};%; 'device01_20X_800fps_0.6ms_6psi_p4_15_2.avi';
           %'device01_20X_800fps_0.6ms_6psi_p4_15_3.avi'; 'Dev3x10_20x_200fps_4,8ms_72_1.avi';
           %'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi'; 'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi'}; 
             %'Dev3x10_20x_200fps_4,8ms_72_1.avi';
@@ -46,7 +46,7 @@ else
 end
 
 for i = 1: length(videos)
-    cellVideos(i) = VideoReader(fullfile(paths{i}, videos{i}))
+    cellVideos(i) = VideoReader(fullfile(paths{i}, videos{i}));
 end
 
 % % Opens a GUI to select videos, user can select a single file at a time and
@@ -107,11 +107,12 @@ for i = 1:length(cellVideos)
 %        Portion_segment(videos{i}, paths{i}, max([50 (j-1)*break_size(i)])+1, j*break_size(i), position(i,:), j);
          currVideo = cellVideos(i);
          startFrame = 1;
-         endFrame = currVideo.NumberOfFrames;
+	 endFrame = currVideo.NumberOfFrames;
+	 disp(['==Video ', num2str(i), '==']);
          processed = Portion_segment(currVideo, paths{i}, videos{i}, startFrame, endFrame);
          unconSizes = AnalysisCodeBAV(processed, videos{i});
          allUnconSizes = [allUnconSizes, unconSizes];
-         clear processed;
+         %clear processed;
 %          [data_] = AnalysisCodeBAV(paths{i}, videos{i}, break_size(i), j, frame_rate(i));
 %          if (isempty(data_) ~= 1)
 %              if (data_comp_(1,1:8) == zeros(1,8))
@@ -133,7 +134,8 @@ for i = 1:length(cellVideos)
 end
 
 totalTime = toc(startTime);
-dlmwrite([datestr(now, 'mm-dd-YY_HH-MM-SS'), '.txt'], allUnconSizes);
+outputFilename = [datestr(now, 'mm-dd-YY_HH-MM-SS'), '.txt'];
+dlmwrite(outputFilename, allUnconSizes);
 hist(allUnconSizes);
 
 disp(sprintf('\n\n======'));
