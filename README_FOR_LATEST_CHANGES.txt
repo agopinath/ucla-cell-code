@@ -1,4 +1,4 @@
-This is a summary of the latest major changes for my code on GitHub. Last updated: 7/10/13 By Ajay Gopinath.
+This is a summary of the latest major changes for my code on GitHub. Last updated: 7/12/13 By Ajay Gopinath.
 
 Master_script:
 - very stripped-down version of its previous self
@@ -8,7 +8,6 @@ Master_script:
 Portion_segment:
 - can currently run by itself as a script. comment lines 24 - 34 and uncomment line 11 (function line)
 to allow it to run as a function via an external call
-- preferably there should be little to no other work done here (unless discussed), as this is an area of active development
 - completely rewritten: large improvements in speed (~4x as fast) and better cell detection
 - "processed_sample.avi" is a video that shows the outline of the detected cells produced by the new Portion_segment code
 - almost fully commented the code
@@ -30,9 +29,6 @@ to allow it to run as a function via an external call
 AnalysisCodeBAV:
 - currently removed all code for tracking the cells
 - returns a vector of the measured unconstricted cell sizes for the cells in the video
-
-Make waypoints:
-- mainly experimental changes, feel free to make any changes to this
 
 === CELL VIDEO LINKS ====
 - These videos show the overlayed detected cell outline over the original video
