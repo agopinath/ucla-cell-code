@@ -16,7 +16,7 @@ function processed = Portion_segment(cellVideo, folderName, videoName, startFram
 DEBUG_FLAG = 1; % flag for whether to show debug info
 WRITEMOVIE_FLAG = 0; % flag for whether to write processed frames to movie on disk
 OVERLAYTEMPLATE_FLAG = 0; % flag whether to overlay template lines on processed frames
-OVERLAYOUTLINE_FLAG = 1; % flag whether to overlay detected outlines of cells on original frames
+OVERLAYOUTLINE_FLAG = 0; % flag whether to overlay detected outlines of cells on original frames
 
 startTime1 = tic;
 
@@ -36,9 +36,6 @@ isVideoGrayscale = (strcmp(cellVideo.VideoFormat, 'Grayscale') == 1);
 
 %clc;
 disp(sprintf(['\nStarting cell detection for ', videoName, '...']));
-
-% empirical threshold value for conversion from grayscale to binary image
-threshold = 0.02;
 
 % stores the number of frames that will be processed
 effectiveFrameCount = (endFrame-startFrame+1) ;
@@ -78,11 +75,7 @@ for i = 2:length(bgSections)
     % calculate the 'background' frame for the current section by
     % storing the corresponding pixel value as the mean value of
     % each corresponding pixel of the background frames in bgFrames
-    for col = 1:height
-        for row = 1:width
-            backgroundImg(col, row) = mean(bgFrames(col, row,:));
-        end
-    end
+    backgroundImg = mean(bgFrames, 3);
     
     bgImgs(:,:,bgImgIdx) = backgroundImg;
     bgImgIdx = bgImgIdx + 1;
@@ -94,7 +87,11 @@ clear frameIdxs; clear backgroundImg; clear bgFrames; clear bgImgIdx; clear samp
 %% Prepare for Cell Detection
 % create structuring elements used in cleanup of grayscale image
 forClose = strel('disk', 10);
+forErode = strel('disk', 3);
 
+% empirical threshold value for conversion from grayscale to binary image
+threshold = graythresh(uint8(mean(bgImgs, 3))) / 10;
+threshold
 % preallocate memory for marix for speed
 if OVERLAYOUTLINE_FLAG == 1
     processed = zeros(height, width, effectiveFrameCount, 'uint8');
@@ -140,11 +137,13 @@ for frameIdx = startFrame:endFrame
     %% Cleanup 
     % clean the grayscale image of the cells to improve detection
     %cleanImg = logical(imadjust(cleanImg));
-    cleanImg = bwareaopen(cleanImg, 40);
-    cleanImg = imclose(cleanImg, forClose);
-    cleanImg = bwareaopen(cleanImg, 60);
-    cleanImg = imfill(cleanImg, 'holes');
     
+%   cleanImg = bwareaopen(cleanImg, 40);
+    cleanImg = bwareaopen(cleanImg, 15);
+    cleanImg = imclose(cleanImg, forClose);
+    %cleanImg = imerode(cleanImg, forErode);
+    cleanImg = bwareaopen(cleanImg, 35);
+    cleanImg = medfilt2(cleanImg, [7, 7]);
 %     cleanImg = imerode(cleanImg, forErode1);
 %     cleanImg = medfilt2(cleanImg, [2, 2]);
 %     cleanImg = bwareaopen(cleanImg, 25);
