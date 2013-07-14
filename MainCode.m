@@ -15,7 +15,7 @@ filename = 1;
 i = 1;
 j = 1;
 no_of_seg = 1;
-filePath = 'C:\Users\Mike\Desktop\Videos\';
+filePath = 'G:\CellVideos\';
 position = [14     19    529    285];
 % Allocates an array for the data
 compiled_data = zeros(1,7);

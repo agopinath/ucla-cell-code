@@ -90,17 +90,22 @@ set(h, 'AlphaData', imcomplement(template))
 % Preallocates an array for storing the template
 line_template = uint8(zeros(size(frame)));
 
-% The variable 'constrict' stores the y-value in pixels of the top line,
-% default value = 46 pixels for 5, 7, and 9 micron templates, and 67 pixels 
-% for the 3 micron template.  The position(2) offset is due to the 
-% different size of the template and frame.  The variable 'spacing' gives 
-% the spacing between constrictions, default value = 32 pixels for 5, 7, 
-% and 9 micron templates, and 28 for the 3 micron template.  
+% The variable 'zerothLinePos' stores the y-value in pixels of the top line,
+% default value = 22 pixels for 5, 7, and 9 micron templates, and 19 pixels 
+% for the 3 micron template. 'firstLinePos' stores the y-value of the second
+% line (the line that should on the first constriction). The position(2) offset 
+% is due to the different size of the template and frame.  The variable 
+% 'spacing' gives the spacing between constrictions, default value = 32 pixels
+% for 5, 7, and 9 micron templates, and 28 for the 3 micron template.  
 if template_size == 3
-    constrict = 47 + position(2);
+    %constrict = 47 + position(2);
+    zerothLinePos = 19 + position(2);
+    firstLinePos = 47 + position(2);
     spacing = 28;
 else
-    constrict = 46 + position(2);
+    %constrict = 46 + position(2);
+    zerothLinePos = 26 + position(2);
+    firstLinePos = 46 + position(2);
     spacing = 32;
 end
 
@@ -117,8 +122,12 @@ end
 
 % This loop writes the horizontal lines defining each constriction to the
 % template
-for i = 1:7
-    line_template(floor(constrict+(i-1)*spacing),:) = uint8(ones(1,size(frame,2)));
+for i = 1:8
+    if(i ~= 1)
+        line_template(floor(firstLinePos+(i-2)*spacing),:) = uint8(ones(1,size(frame,2)));
+    else
+        line_template(floor(zerothLinePos),:) = uint8(ones(1,size(frame,2)));
+    end
 end
 
 %% Check: Displays the template overlaid on the background image 
