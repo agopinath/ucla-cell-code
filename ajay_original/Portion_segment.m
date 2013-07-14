@@ -15,10 +15,10 @@ function processed = Portion_segment(cellVideo, folderName, videoName, startFram
 
 DEBUG_FLAG = 1; % flag for whether to show debug info
 WRITEMOVIE_FLAG = 0; % flag for whether to write processed frames to movie on disk
-OVERLAYTEMPLATE_FLAG = 0; % flag whether to overlay template lines on processed frames
+%OVERLAYTEMPLATE_FLAG = 0; % flag whether to overlay template lines on processed frames
 OVERLAYOUTLINE_FLAG = 0; % flag whether to overlay detected outlines of cells on original frames
 
-startTime1 = tic;
+startTime = tic;
 
 % %% Initialization
 % folderName = 'G:\CellVideos\';
@@ -99,16 +99,6 @@ else
     processed = false(height, width, effectiveFrameCount);
 end
 
-% temporarily stop and record the time taken so far
-bgCalcTime = toc(startTime1);
-
-if OVERLAYTEMPLATE_FLAG == 1
-    template = logical(Make_waypoints(videoName, folderName));
-end
-
-% continue recording the time taken
-startTime2 = tic;
-
 %% Step through video
 % iterates through each video frame in the range [startFrame, endFrame]
 for frameIdx = startFrame:endFrame
@@ -152,9 +142,9 @@ for frameIdx = startFrame:endFrame
 %     cleanImg = imerode(cleanImg, forErode2);
 %     cleanImg = bwareaopen(cleanImg, 50);
     
-    if OVERLAYTEMPLATE_FLAG == 1
-        cleanImg = cleanImg | template; % binary 'OR' to find the union of the two imgs
-    end
+%     if OVERLAYTEMPLATE_FLAG == 1
+%         cleanImg = cleanImg | template; % binary 'OR' to find the union of the two imgs
+%     end
     
     if OVERLAYOUTLINE_FLAG == 1
         cleanImg = imadd(currFrame, uint8(bwperim(cleanImg)*255));
@@ -165,8 +155,7 @@ for frameIdx = startFrame:endFrame
 end
 
 % stop recording the time and output debugging information
-processTime = toc(startTime2);
-totalTime = processTime + bgCalcTime;
+totalTime = toc(startTime);
 disp(['Time taken for cell detection: ', num2str(totalTime), ' secs']);
 disp(['Average time to detect cells per frame: ', num2str(processTime/effectiveFrameCount), ' secs']);
 
