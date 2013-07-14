@@ -14,7 +14,6 @@ function [transit_time_data] = CellTracking(no_of_frames, framerate, template, p
 % counter = 1;
 
 close all;
-clc;
 progressbar([],[],0)
 % Change write_video to true in order to print a video of the output,
 % defaults to false.

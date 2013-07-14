@@ -19,13 +19,10 @@
 % deleted (and it must be deleted in the event the code were to be used on
 % the cluster!)
 
-function [mask, line_template, x_offset] = MakeWaypoints(video_name, folder_name, template_size)
+function [mask, line_template, x_offset] = MakeWaypoints(cellVideo, template_size)
 close all;
 
 %% Loading
-% Reads in the specified movie
-temp_mov = VideoReader([folder_name, video_name]);
-
 templateFolder = 'C:\Users\agopinath\Documents\ucla-cell-code\Masks';
 
 % Reads in the specified template
@@ -33,7 +30,7 @@ template = imread(fullfile(templateFolder, [num2str(template_size), 'micron_thin
 loaded_mask = logical(imread(fullfile(templateFolder, [num2str(template_size), 'micron.tif'])));
 
 % Load the input image and the template
-frame = read(temp_mov,1);
+frame = read(cellVideo,1);
 
 % Copies the frame to another variable, to be overlaid with the lines later
 % for verification (not strictly necessary, but nice to check if the lines
@@ -122,7 +119,7 @@ end
 
 % This loop writes the horizontal lines defining each constriction to the
 % template
-for i = 1:8
+for i = 2:8
     if(i ~= 1)
         line_template(floor(firstLinePos+(i-2)*spacing),:) = uint8(ones(1,size(frame,2)));
     else
