@@ -7,15 +7,17 @@
 % was unused and slowed down the user during execution.  Also added
 % comments to clarify the code. (Mike Scott)
 
-function processed = Portion_segment(cellVideo, folderName, videoName, startFrame, endFrame)
+function processed = Portion_segment(cellVideo, folderName, videoName, mask)
 
 %%% This code analyzes a video of cells passing through constrictions
 %%% to produce and return a binary array of the video's frames which
 %%% have been processed to yield only the cells.
 
+progressbar([],0,[])
+
 DEBUG_FLAG = 1; % flag for whether to show debug info
 WRITEMOVIE_FLAG = 0; % flag for whether to write processed frames to movie on disk
-%OVERLAYTEMPLATE_FLAG = 0; % flag whether to overlay template lines on processed frames
+USEMASK_FLAG = 1; % flag whether to binary AND the processed frames with the supplied mask
 OVERLAYOUTLINE_FLAG = 0; % flag whether to overlay detected outlines of cells on original frames
 
 startTime = tic;
@@ -29,8 +31,8 @@ startTime = tic;
 %             %'unconstricted_test_1200.avi';
 %             
 % cellVideo = VideoReader([folderName, videoName]);
-% startFrame = 1;
-% endFrame = cellVideo.NumberOfFrames;
+startFrame = 1;
+endFrame = cellVideo.NumberOfFrames;
 
 isVideoGrayscale = (strcmp(cellVideo.VideoFormat, 'Grayscale') == 1);
 
@@ -53,7 +55,6 @@ bgSections(numSections+1) = cellVideo.NumberOfFrames;  % add on the last frame t
 bgImgs = zeros(height, width, length(bgSections)-1, 'uint8'); % 3D array to store the background image for each section
 
 bgImgIdx = 1;
-backgroundImg = zeros(height, width, 'uint8');
 
 % loop through each 'section'
 for i = 2:length(bgSections)
@@ -87,11 +88,11 @@ clear frameIdxs; clear backgroundImg; clear bgFrames; clear bgImgIdx; clear samp
 %% Prepare for Cell Detection
 % create structuring elements used in cleanup of grayscale image
 forClose = strel('disk', 10);
-forErode = strel('disk', 3);
+%forErode = strel('disk', 3);
 
-% empirical threshold value for conversion from grayscale to binary image
+% automatic calculation of threshold value for conversion from grayscale to binary image
 threshold = graythresh(uint8(mean(bgImgs, 3))) / 10;
-threshold
+
 % preallocate memory for marix for speed
 if OVERLAYOUTLINE_FLAG == 1
     processed = zeros(height, width, effectiveFrameCount, 'uint8');
@@ -120,31 +121,21 @@ for frameIdx = startFrame:endFrame
     end
     
     %% Do cell detection
-    % subtracts the background (backgroundImg) from each frame, hopefully leaving
+    % subtracts the background in bgImgs from each frame, hopefully leaving
     % just the cells
     cleanImg = im2bw(imsubtract(bgImgs(:,:,imgIdx), currFrame), threshold);
     
     %% Cleanup 
     % clean the grayscale image of the cells to improve detection
-    %cleanImg = logical(imadjust(cleanImg));
     
-%   cleanImg = bwareaopen(cleanImg, 40);
     cleanImg = bwareaopen(cleanImg, 15);
     cleanImg = imclose(cleanImg, forClose);
-    %cleanImg = imerode(cleanImg, forErode);
     cleanImg = bwareaopen(cleanImg, 35);
     cleanImg = medfilt2(cleanImg, [7, 7]);
-%     cleanImg = imerode(cleanImg, forErode1);
-%     cleanImg = medfilt2(cleanImg, [2, 2]);
-%     cleanImg = bwareaopen(cleanImg, 25);
-%     cleanImg = imdilate(cleanImg, forDilate);
-%     cleanImg = imclose(cleanImg, forClose);
-%     cleanImg = imerode(cleanImg, forErode2);
-%     cleanImg = bwareaopen(cleanImg, 50);
     
-%     if OVERLAYTEMPLATE_FLAG == 1
-%         cleanImg = cleanImg | template; % binary 'OR' to find the union of the two imgs
-%     end
+    if USEMASK_FLAG == 1
+        cleanImg = cleanImg & mask; % binary 'OR' to find the union of the two imgs
+    end
     
     if OVERLAYOUTLINE_FLAG == 1
         cleanImg = imadd(currFrame, uint8(bwperim(cleanImg)*255));
@@ -152,6 +143,11 @@ for frameIdx = startFrame:endFrame
     
     %% Store cleaned image of segmented cells in processed
     processed(:,:,frameIdx-startFrame+1) = cleanImg;
+    
+    % Increments the progress bar, each time 1% of the frames are finished
+    if mod(frameIdx, floor(effectiveFrameCount/100)) == 0
+        progressbar([], frameIdx/effectiveFrameCount, [])
+    end
 end
 
 % stop recording the time and output debugging information
