@@ -1,98 +1,188 @@
-%% Cell Segmentation Algorithm (Modified as of 10/05/2011) by Bino Abel Varghese
-% Automation and efficiency changes made 03/11/2013 by Dave Hoelzle
-% Adding comments, commenting the output figure on 6/25/13 by Mike Scott
+%% Cell Detection Algorithm - original (10/05/2011) by Bino Abel Varghese; rewritten (7/12/13) by Ajay Gopinath
+% Automation and efficiency changes made 03/11/2013 by Dave Hoelzle Adding
+% comments, commenting the output figure on 6/25/13 by Mike Scott 
+% Increase in speed (~3 - 4x faster) + removed disk output unless debugging made on 7/5/13 by Ajay G.
 
-%% ------------------------- Header Strip -------------------------------%
-% all major code design changes made here
 % 6/25/13 Commented out the code which generated the 'overlap' diagram.  It
 % was unused and slowed down the user during execution.  Also added
 % comments to clarify the code. (Mike Scott)
 
-function [processed_frames] = Image_filtering(video_name, folder_name, number_of_frames, mask)
+function processed = Image_filtering(cellVideo, folderName, videoName, mask)
 
-%% The aim of this code is to segment a binary image of the cells from a stack of grayscale images
+%%% This code analyzes a video of cells passing through constrictions
+%%% to produce and return a binary array of the video's frames which
+%%% have been processed to yield only the cells.
 
-%% Clears the screen
-clc;
 progressbar([],0,[])
 
-%% Initializations
-% Median filter size in pixels, must be an odd number (default 11)
-med_size = 11;          
-% Size of the bottom hat filter (default 7)
-BH_size = 7;
-% Threshold to filter out small cells, specifies the minimum AREA in pixels
-% of a cell 
-smallest_cell = 35;
-se = strel('disk',BH_size);
+DEBUG_FLAG = 1; % flag for whether to show debug info
+WRITEMOVIE_FLAG = 0; % flag for whether to write processed frames to movie on disk
+USEMASK_FLAG = 1; % flag whether to binary AND the processed frames with the supplied mask
+OVERLAYOUTLINE_FLAG = 0; % flag whether to overlay detected outlines of cells on original frames
 
-%% Computing an average image to use for background subtraction
-% Loads the video
-temp_mov = VideoReader([folder_name, video_name]);
-% Allocates an array for the processed frames
-processed_frames = false(temp_mov.height, temp_mov.width, temp_mov.NumberOfFrames);
+startTime1 = tic;
 
-% Generates a vector of to select 100 evenly spaced frames in the video
-select_range = 1:ceil(temp_mov.NumberOfFrames/100):temp_mov.NumberOfFrames; 
+% %% Initialization
+% folderName = 'G:\CellVideos\';
+% videoName = 'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi';
+%             %'Dev3x10_20x_200fps_4,8ms_72_1.avi';
+%             %'device01_20X_800fps_0.6ms_6psi_p4_15_3.avi';
+%             %'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi'; 
+%             %'unconstricted_test_1200.avi';
+%             
+% cellVideo = VideoReader([folderName, videoName]);
+startFrame = 1;
+endFrame = cellVideo.NumberOfFrames;
 
-% Alocates an array for converted frames and average frame
-converted_frames = uint8(zeros(temp_mov.height, temp_mov.width, 100));
+isVideoGrayscale = (strcmp(cellVideo.VideoFormat, 'Grayscale') == 1);
 
-% Compiles converted_frames, an array of 100 evenly spaced frames specified by
-% select_range, and then averages over RGB to get converted_frames (uint8 type
-% uses less memory)
-for i=1:length(select_range)
-    current_frame = read(temp_mov, select_range(i));
-    converted_frames(:,:,i) = uint8(mean(current_frame,3));
+%clc;
+disp(sprintf(['\nStarting cell detection for ', videoName, '...']));
+
+% stores the number of frames that will be processed
+effectiveFrameCount = (endFrame-startFrame+1) ;
+
+% store the height/width of the cell video for clarity
+height = cellVideo.Height;
+width = cellVideo.Width;
+
+%% Calculate background image(s)
+numSections = 2; % the number of sections to "divide" the video into
+numSamples = 100; % the number of samples to take from each section
+
+bgSections = 1:ceil(cellVideo.NumberOfFrames/numSections):cellVideo.NumberOfFrames; % indices of the frames which separate the sections
+bgSections(numSections+1) = cellVideo.NumberOfFrames;  % add on the last frame to signal the end of the last section
+bgImgs = zeros(height, width, length(bgSections)-1, 'uint8'); % 3D array to store the background image for each section
+
+bgImgIdx = 1;
+
+% loop through each 'section'
+for i = 2:length(bgSections)
+    sectionStart = bgSections(i-1); % the starting frame of each section
+    sectionEnd = bgSections(i); % the ending frame of each section
+    sampleInterval = ceil((sectionEnd-sectionStart)/numSamples); % the interval using which the samples are taken
+    frameIdxs = sectionStart:sampleInterval:sectionEnd; % stores the indices of the frames to sample in each section
+    
+    bgFrames = zeros(height, width, length(frameIdxs), 'uint8');
+    for j = 1:length(frameIdxs)
+        if(isVideoGrayscale)
+            bgFrames(:,:,j) = read(cellVideo, frameIdxs(j)); % store the frame that was read in bgFrames
+        else
+            temp = read(cellVideo, frameIdxs(j));
+            bgFrames(:,:,j) = temp(:,:,1);
+        end
+    end
+    
+    % calculate the 'background' frame for the current section by
+    % storing the corresponding pixel value as the mean value of
+    % each corresponding pixel of the background frames in bgFrames
+    backgroundImg = mean(bgFrames, 3);
+    
+    bgImgs(:,:,bgImgIdx) = backgroundImg;
+    bgImgIdx = bgImgIdx + 1;
 end
 
-% Finds the 'background'.  Goes pixel by pixel and averages that pixel
-% value over the 100 selected frames.  Amean is the average of these 100
-% frames.  The 'max' and 'min' statements ensure the box (specified by the
-% user) are nonnegative and within the video size.
-average_frame = uint8(mean(converted_frames,3));
-% Finds a threshold value based on the first frame in average_frame
-threshold = 10 * graythresh(average_frame); 
- 
-% Clears variables to conserve memory 
-clear converted_frames; clear select_range;
+% clear variables for better memory management
+clear frameIdxs; clear backgroundImg; clear bgFrames; clear bgImgIdx; clear sampleInterval;
 
-%% Steps through the video one frame at a time to segment out cells
-for ii = 1:number_of_frames
-    %% Reads in the movie file frame by frame
-    current_frame = uint8(read(temp_mov, ii)); 
+%% Prepare for Cell Detection
+% create structuring elements used in cleanup of grayscale image
+forClose = strel('disk', 10);
+%forErode = strel('disk', 3);
+
+% automatic calculation of threshold value for conversion from grayscale to binary image
+threshold = graythresh(uint8(mean(bgImgs, 3))) / 10;
+
+% preallocate memory for marix for speed
+if OVERLAYOUTLINE_FLAG == 1
+    processed = zeros(height, width, effectiveFrameCount, 'uint8');
+else
+    processed = false(height, width, effectiveFrameCount);
+end
+
+bgProcessTime = toc(startTime1);
+startTime2 = tic;
+
+%% Step through video
+% iterates through each video frame in the range [startFrame, endFrame]
+for frameIdx = startFrame:endFrame
+    % reads in the movie file frame at frameIdx
+    if(isVideoGrayscale)
+        currFrame = read(cellVideo, frameIdx);
+    else
+        temp = read(cellVideo, frameIdx);
+        currFrame = temp(:,:,1);
+    end
     
-%     %  For MATLAB pre-2013: Converts the frame to uint8 rather than an RGB 
-%     % array
-%     current_frame(:,:) = uint8((mean((read(temp_mov, ii)),3)));
-
-    %% Perform Change detection
-    % Subtracts the background (average_frame) from each frame, hopefully 
-    % leaving just the cells.  
-    subtracted_frame(:,:) = imsubtract(average_frame,current_frame);   
-    % Performs a bottom hat filter using the strel 'se'
-    BH(:,:) = imbothat(subtracted_frame,se);
-
-    % Performs a median filter using the pixel size specified in the
-    % header
-    med_bhat(:,:) = medfilt2(BH(:,:),[med_size med_size]);
-
-    % Gets rid of small 'cells'.  This function gets rid of any connected
-    % region which is less that smallest_cell pixels connected.  Each frame
-    % is converted to black and white before the small cells are filled in
-    % with black.
-    % Clean(:,:) = bwareaopen(im2bw(double(med_bhat(:,:))/256, threshold/256),smallest_cell);
-    PreClean(:,:) = bwareaopen(im2bw(double(med_bhat(:,:))/256, threshold/256),smallest_cell);
+    %% Determine which background image to use
+    imgIdx = 0;
+    for idx = 2:length(bgSections)
+        if (frameIdx - bgSections(idx)) <= 0
+            imgIdx = idx-1;
+            break;
+        end
+    end
     
-    % template = logical(template);
-    Clean = PreClean & mask;
+    %% Do cell detection
+    % subtracts the background in bgImgs from each frame, hopefully leaving
+    % just the cells
+    cleanImg = im2bw(imsubtract(bgImgs(:,:,imgIdx), currFrame), threshold);
     
-    % Saves the 'Clean' image in processed_frames.  This array will store a
-    % copy of the entire video, with each frame cleaned
-    processed_frames(:,:,ii) = Clean;
+    %% Cleanup 
+    % clean the grayscale image of the cells to improve detection
+    
+    cleanImg = bwareaopen(cleanImg, 15);
+    cleanImg = imclose(cleanImg, forClose);
+    cleanImg = bwareaopen(cleanImg, 35);
+    cleanImg = medfilt2(cleanImg, [7, 7]);
+    
+    if USEMASK_FLAG == 1
+        cleanImg = cleanImg & mask; % binary 'OR' to find the union of the two imgs
+    end
+    
+    if OVERLAYOUTLINE_FLAG == 1
+        cleanImg = imadd(currFrame, uint8(bwperim(cleanImg)*255));
+    end
+    
+    %% Store cleaned image of segmented cells in processed
+    processed(:,:,frameIdx-startFrame+1) = cleanImg;
     
     % Increments the progress bar, each time 1% of the frames are finished
-    if mod(ii, floor(number_of_frames/100)) == 0
-        progressbar([], ii/number_of_frames, [])
+    if mod(frameIdx, floor(effectiveFrameCount/100)) == 0
+        progressbar([], frameIdx/effectiveFrameCount, [])
+    end
+end
+
+% stop recording the time and output debugging information
+framesTime = toc(startTime2);
+totalTime = bgProcessTime + framesTime;
+disp(['Time taken for cell detection: ', num2str(totalTime), ' secs']);
+disp(['Average time to detect cells per frame: ', num2str(framesTime/effectiveFrameCount), ' secs']);
+
+%% Set up frame viewer and write to file if debugging is on
+if DEBUG_FLAG == 1
+    implay(processed);
+    
+    % if video file is set
+    if WRITEMOVIE_FLAG == 1
+        writer = VideoWriter([folderName, 'cellsdetected_', videoName]);
+        open(writer);
+        
+        if(islogical(processed))
+            processed = uint8(processed); % convert to uint8 for use with writeVideo
+
+            % make binary '1's into '255's so all resulting pixels will be
+            % either black or white
+            for idx = 1:effectiveFrameCount
+                processed(:,:,idx) = processed(:,:,idx)*255;
+            end
+        end
+        
+        % write processed frames to disk
+        for currFrame = startFrame:endFrame
+            writeVideo(writer, processed(:,:,currFrame-startFrame+1));
+        end
+        
+        close(writer);
     end
 end

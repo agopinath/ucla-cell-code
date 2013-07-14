@@ -108,12 +108,13 @@ for i = 1:size(video_names,1)
     % Calls the Make_waypoints function to define the constriction region.
     % This function draws a template with a line across each constriction;
     % these lines are used in calculating the transit time
+    currVideo = VideoReader([path_names(i,1:path_length(i)), video_names(i,1:name_length(i))]);
     [mask, line_template, x_offset] = MakeWaypoints(video_names(i,1:name_length(i)), path_names(i,1:path_length(i)), template_size(i));
     
     % Calls Image_Filtering to filter the images and store them in
     % 'processed_frames'.  These stored image are binary and should
     % (hopefully) only have the cells in them
-    [processed_frames] = Image_filtering(video_names(i,1:name_length(i)), path_names(i,1:path_length(i)), break_size(i), mask);
+    [processedFrames] = Image_filtering(currVideo, path_names(i,1:path_length(i)), video_names(i,1:name_length(i)), mask);
     progressbar((i/(2*size(video_names,1))), [], [])
     
 %     % Outputs a video of the processed frames, used to check filter
@@ -126,7 +127,7 @@ for i = 1:size(video_names,1)
 %     close(processed_video);
     
     % Calls CellTracking to track the located cells.  
-    [data] = CellTracking(break_size(i), frame_rate(i), line_template, processed_frames, x_offset, temp_mov);
+    [data] = CellTracking(break_size(i), frame_rate(i), line_template, processedFrames, x_offset, temp_mov);
     progressbar((i/(size(video_names,1))), 0, 0)
     
     % If data is generated (cells are found and tracked through the device)
