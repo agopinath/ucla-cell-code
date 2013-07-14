@@ -18,7 +18,7 @@ progressbar([],0,[])
 DEBUG_FLAG = 1; % flag for whether to show debug info
 WRITEMOVIE_FLAG = 0; % flag for whether to write processed frames to movie on disk
 USEMASK_FLAG = 1; % flag whether to binary AND the processed frames with the supplied mask
-OVERLAYOUTLINE_FLAG = 0; % flag whether to overlay detected outlines of cells on original frames
+OVERLAYOUTLINE_FLAG = 1; % flag whether to overlay detected outlines of cells on original frames
 
 startTime1 = tic;
 
@@ -134,7 +134,7 @@ for frameIdx = startFrame:endFrame
     cleanImg = bwareaopen(cleanImg, 15);
     cleanImg = imclose(cleanImg, forClose);
     cleanImg = bwareaopen(cleanImg, 35);
-    cleanImg = medfilt2(cleanImg, [7, 7]);
+    cleanImg = medfilt2(cleanImg, [5, 5]);
     
     if USEMASK_FLAG == 1
         cleanImg = cleanImg & mask; % binary 'OR' to find the union of the two imgs
