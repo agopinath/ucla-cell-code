@@ -20,7 +20,7 @@ position = [14     19    529    285];
 % Allocates an array for the data
 compiled_data = zeros(1,7);
 % Initializes a progress bar
-progressbar('Overall', 'Portion Segment', 'Cell tracking');
+progressbar('Overall', 'Cell detection', 'Cell tracking');
 
 %% Loading GUI
 % Opens a GUI to select videos, user can select a single file at a time and
@@ -111,10 +111,10 @@ for i = 1:size(video_names,1)
     currVideo = VideoReader([path_names(i,1:path_length(i)), video_names(i,1:name_length(i))]);
     [mask, line_template, x_offset] = MakeWaypoints(video_names(i,1:name_length(i)), path_names(i,1:path_length(i)), template_size(i));
     
-    % Calls Image_Filtering to filter the images and store them in
+    % Calls CellDetection to filter the images and store them in
     % 'processed_frames'.  These stored image are binary and should
     % (hopefully) only have the cells in them
-    [processedFrames] = Image_filtering(currVideo, path_names(i,1:path_length(i)), video_names(i,1:name_length(i)), mask);
+    [processedFrames] = CellDetection(currVideo, path_names(i,1:path_length(i)), video_names(i,1:name_length(i)), mask);
     progressbar((i/(2*size(video_names,1))), [], [])
     
 %     % Outputs a video of the processed frames, used to check filter
