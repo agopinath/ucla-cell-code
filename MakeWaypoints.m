@@ -26,9 +26,11 @@ close all;
 % Reads in the specified movie
 temp_mov = VideoReader([folder_name, video_name]);
 
+templateFolder = 'C:\Users\agopinath\Documents\ucla-cell-code\Masks';
+
 % Reads in the specified template
-template = imread(['C:\Users\Mike\Desktop\Microfluidic Code Testing\ReducedIO 071113\Masks\', num2str(template_size), 'micron_thin.tif']);
-loaded_mask = logical(imread(['C:\Users\Mike\Desktop\Microfluidic Code Testing\ReducedIO 071113\Masks\', num2str(template_size), 'micron.tif']));
+template = imread(fullfile(templateFolder, [num2str(template_size), 'micron_thin.tif']));
+loaded_mask = logical(imread(fullfile(templateFolder, [num2str(template_size), 'micron.tif'])));
 
 % Load the input image and the template
 frame = read(temp_mov,1);
