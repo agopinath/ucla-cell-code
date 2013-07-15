@@ -15,10 +15,14 @@ function processed = CellDetection(cellVideo, startFrame, endFrame, folderName, 
 
 progressbar([],0,[])
 
-DEBUG_FLAG = 1; % flag for whether to show debug info
-WRITEMOVIE_FLAG = 0; % flag for whether to write processed frames to movie on disk
-USEMASK_FLAG = 1; % flag whether to binary AND the processed frames with the supplied mask
-OVERLAYOUTLINE_FLAG = 1; % flag whether to overlay detected outlines of cells on original frames
+DEBUG_FLAG = false; % flag for whether to show debug info
+WRITEMOVIE_FLAG = false; % flag for whether to write processed frames to movie on disk
+USEMASK_FLAG = true; % flag whether to binary AND the processed frames with the supplied mask
+OVERLAYOUTLINE_FLAG = false; % flag whether to overlay detected outlines of cells on original frames
+
+if(OVERLAYOUTLINE_FLAG)
+    disp('!!Warning: OVERLAYOUTLINE_FLAG is set, frames will be for debugging and cannnot processed!!');
+end
 
 startTime1 = tic;
 
@@ -88,13 +92,12 @@ clear frameIdxs; clear backgroundImg; clear bgFrames; clear bgImgIdx; clear samp
 %% Prepare for Cell Detection
 % create structuring elements used in cleanup of grayscale image
 forClose = strel('disk', 10);
-%forErode = strel('disk', 3);
 
 % automatic calculation of threshold value for conversion from grayscale to binary image
 threshold = graythresh(uint8(mean(bgImgs, 3))) / 10;
 
 % preallocate memory for marix for speed
-if OVERLAYOUTLINE_FLAG == 1
+if(OVERLAYOUTLINE_FLAG)
     processed = zeros(height, width, effectiveFrameCount, 'uint8');
 else
     processed = false(height, width, effectiveFrameCount);
@@ -136,7 +139,7 @@ for frameIdx = startFrame:endFrame
     cleanImg = bwareaopen(cleanImg, 35);
     cleanImg = medfilt2(cleanImg, [5, 5]);
     
-    if USEMASK_FLAG == 1
+    if(USEMASK_FLAG)
         cleanImg = cleanImg & mask; % binary 'OR' to find the union of the two imgs
     end
     
@@ -160,11 +163,11 @@ disp(['Time taken for cell detection: ', num2str(totalTime), ' secs']);
 disp(['Average time to detect cells per frame: ', num2str(framesTime/effectiveFrameCount), ' secs']);
 
 %% Set up frame viewer and write to file if debugging is on
-if DEBUG_FLAG == 1
+if(DEBUG_FLAG)
     implay(processed);
     
     % if video file is set
-    if WRITEMOVIE_FLAG == 1
+    if(WRITEMOVIE_FLAG)
         writer = VideoWriter([folderName, 'cellsdetected_', videoName]);
         open(writer);
         
