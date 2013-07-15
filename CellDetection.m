@@ -94,7 +94,7 @@ clear frameIdxs; clear backgroundImg; clear bgFrames; clear bgImgIdx; clear samp
 forClose = strel('disk', 10);
 
 % automatic calculation of threshold value for conversion from grayscale to binary image
-threshold = graythresh(uint8(mean(bgImgs, 3))) / 15;
+threshold = graythresh(uint8(mean(bgImgs, 3))) / 20;
 
 % preallocate memory for marix for speed
 if(OVERLAYOUTLINE_FLAG)
@@ -134,10 +134,10 @@ for frameIdx = startFrame:endFrame
     %% Cleanup 
     % clean the grayscale image of the cells to improve detection
     
-    cleanImg = bwareaopen(cleanImg, 25);
+    cleanImg = bwareaopen(cleanImg, 20);
     cleanImg = imclose(cleanImg, forClose);
     cleanImg = bwareaopen(cleanImg, 35);
-    cleanImg = medfilt2(cleanImg, [5, 5]);
+    cleanImg = medfilt2(cleanImg, [7, 7]);
     cleanImg = bwareaopen(cleanImg, 35);
     
     if(USEMASK_FLAG)
