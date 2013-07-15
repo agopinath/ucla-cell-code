@@ -87,22 +87,22 @@ set(h, 'AlphaData', imcomplement(template))
 % Preallocates an array for storing the template
 lineTemplate = uint8(zeros(size(frame)));
 
-% The variable 'zerothLinePos' stores the y-value in pixels of the top line,
+% The variable 'firstLinePos' stores the y-value in pixels of the top line,
 % default value = 22 pixels for 5, 7, and 9 micron templates, and 19 pixels 
-% for the 3 micron template. 'firstLinePos' stores the y-value of the second
-% line (the line that should on the first constriction). The position(2) offset 
-% is due to the different size of the template and frame.  The variable 
-% 'spacing' gives the spacing between constrictions, default value = 32 pixels
-% for 5, 7, and 9 micron templates, and 28 for the 3 micron template.  
+% for the 3 micron template. 'secondLinePos' stores the y-value of the second
+% line (the line that should on the first constriction and where the tracking starts). 
+% The position(2) offset is due to the different size of the template and frame.  
+% The variable 'spacing' gives the spacing between constrictions, default 
+% value = 32 pixels for 5, 7, and 9 micron templates, and 28 for the 3 micron template.  
 if templateSize == 3
     %constrict = 47 + position(2);
-    zerothLinePos = 21 + position(2);
-    firstLinePos = 47 + position(2);
+    firstLinePos = 21 + position(2);
+    secondLinePos = 47 + position(2);
     spacing = 28;
 else
     %constrict = 46 + position(2);
-    zerothLinePos = 33 + position(2);
-    firstLinePos = 46 + position(2);
+    firstLinePos = 33 + position(2);
+    secondLinePos = 46 + position(2);
     spacing = 32;
 end
 
@@ -121,9 +121,9 @@ end
 % template
 for i = 1:8
     if(i ~= 1)
-        lineTemplate(floor(firstLinePos+(i-2)*spacing),:) = uint8(ones(1,size(frame,2)));
+        lineTemplate(floor(secondLinePos+(i-2)*spacing),:) = uint8(ones(1,size(frame,2)));
     else
-        lineTemplate(floor(zerothLinePos),:) = uint8(ones(1,size(frame,2)));
+        lineTemplate(floor(firstLinePos),:) = uint8(ones(1,size(frame,2)));
     end
 end
 

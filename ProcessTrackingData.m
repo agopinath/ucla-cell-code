@@ -38,7 +38,10 @@ laneData = uint16(zeros(30,7));
 % trackingData is a cell that contains the lane data for each lane
 trackingData = cell(1,16);
 
-% cellIndex stores the index of the current cell being processed
+% cellSizes stores the unconstricted cell sizes values for all cells in the
+% current video. Later, the code concatenates these values with the
+% corresponding data rows in transitData to 'match' the cell sizes with
+% their corresponding cells.
 cellSizes = [];
 cellSizesIdx = 1;
 
@@ -50,8 +53,11 @@ for lane = 1:16
         laneData = uint16(zeros(30,7));
         continue;
     else
+        % cellSizesInLane stores the unconstricted cell sizes in the
+        % current lane from cellInfo. cellSizesInLaneIdx is a counter variable
         cellSizesInLane = [];
         cellSizesInLaneIdx = 1;
+        
         % For each cell in this lane's data
         for cellIndexInLane = 1:size(cellInfo{lane},1)
             % If the cell is touching line 2, and the previous cell already
@@ -62,7 +68,13 @@ for lane = 1:16
             if(currentLine == 0)
                break; 
             end
-
+            
+            % If a) the cell is touching line 1 or 
+            %    b) is touching line 2 and the data is 
+            %       from the is the first row in cellInfo, 
+            % store the unconstricted cell size from cellInfo size in cellSizesInLane
+            % The second case occurs when the video starts off with a cell
+            % touching line 2 but which has not touched line 1.
             if(currentLine == 1 || (cellIndexInLane == 1 && currentLine == 2))
                 cellSizesInLane(cellSizesInLaneIdx) = cellInfo{lane}(cellIndexInLane,5);
                 cellSizesInLaneIdx = cellSizesInLaneIdx + 1;
@@ -93,6 +105,11 @@ for lane = 1:16
         % Stores this lane's tracking data, eliminating any cells that
         % didn't fully transit through the device.
         trackingData{lane} = laneData(all(laneData, 2),:);
+        
+        % size(trackingData{lane}, 1) gives the number of cells which
+        % have successfully transited through all constrictions. We iterate
+        % until this number starting from 1 and load cellSizes with stored
+        % recorded cellSize.
         for q = 1:size(trackingData{lane}, 1)
             cellSizes(cellSizesIdx, 1) = cellSizesInLane(q);
             cellSizesIdx = cellSizesIdx + 1;
@@ -121,4 +138,6 @@ for ii = 1:size(transitData,1)
    transitData(ii,1) = sum(transitData(ii,2:7)); 
 end
 
+% Concatenates cellSizes with transitData to 'match' cell sizes with their
+% corresponding cells
 transitData = [transitData, cellSizes];
