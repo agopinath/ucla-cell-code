@@ -7,7 +7,6 @@
 %       longer requires defining the cropping and constriction regions
 %       - Eliminated redundant inputs and outputs from functions
 %       - Eliminated 'segments', nobody used them
-clear
 clc
 
 %% Initializations
@@ -90,7 +89,10 @@ for i = 1:size(videoNames,1)
     % Calls the MakeWaypoints function to define the constriction region.
     % This function draws a template with a line across each constriction;
     % these lines are used in calculating the transit time
-    currVideo = VideoReader([pathNames(i,1:pathNameLength(i)), videoNames(i,1:videoNameLength(i))]);
+    currPathName = pathNames(i,1:pathNameLength(i))
+    currVideoName = videoNames(i,1:videoNameLength(i));
+    
+    currVideo = VideoReader([currPathName, currVideoName]);
     startFrame = 1;
     endFrame = currVideo.NumberOfFrames;
     [mask, lineTemplate, xOffset] = MakeWaypoints(currVideo, templateSize(i));
@@ -98,7 +100,7 @@ for i = 1:size(videoNames,1)
     % Calls CellDetection to filter the images and store them in
     % 'processedFrames'.  These stored image are binary and should
     % (hopefully) only have the cells in them
-    [processedFrames] = CellDetection(currVideo, startFrame, endFrame, pathNames(i,1:pathNameLength(i)), videoNames(i,1:videoNameLength(i)), mask);
+    [processedFrames] = CellDetection(currVideo, startFrame, endFrame, frameRates(i), currPathName, currVideoName, mask);
     progressbar((i/(2*size(videoNames,1))), [], [])
     
     % Calls CellTracking to track the located cells.
@@ -117,13 +119,13 @@ for i = 1:size(videoNames,1)
         
         % plot histogram of compiled data
         figure(99)
-        [n,xout] = hist(compiledData(:,7), 100);
+        [n,xout] = hist(compiledData(:,7));
         bar(xout,n)
         
         % Writes out the transit time data in an excel file
         colHeader = {'Total Time (ms)', 'Constriction 1 to 2', 'Constriction 2 to 3', 'Constriction 3 to 4', 'Constriction 4 to 5', 'Constriction 5 to 6', 'Constriction 6 to 7'};
-        xlswrite([pathNames(1,1:pathNameLength(1)), 'compiled_data\data_xlscomp'],colHeader,'Sheet1','A1');
-        xlswrite([pathNames(1,1:pathNameLength(1)), 'compiled_data\data_xlscomp'],compiledData,'Sheet1','A2');
+        xlswrite([currPathName, 'compiled_data\data_xlscomp'],colHeader,'Sheet1','A1');
+        xlswrite([currPathName, 'compiled_data\data_xlscomp'],compiledData,'Sheet1','A2');
     end
 end
 

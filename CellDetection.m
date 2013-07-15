@@ -7,7 +7,7 @@
 % was unused and slowed down the user during execution.  Also added
 % comments to clarify the code. (Mike Scott)
 
-function processed = CellDetection(cellVideo, startFrame, endFrame, folderName, videoName, mask)
+function processed = CellDetection(cellVideo, startFrame, endFrame, fps, folderName, videoName, mask)
 
 %%% This code analyzes a video of cells passing through constrictions
 %%% to produce and return a binary array of the video's frames which
@@ -15,10 +15,10 @@ function processed = CellDetection(cellVideo, startFrame, endFrame, folderName, 
 
 progressbar([],0,[])
 
-DEBUG_FLAG = false; % flag for whether to show debug info
-WRITEMOVIE_FLAG = false; % flag for whether to write processed frames to movie on disk
+DEBUG_FLAG = true; % flag for whether to show debug info
+WRITEMOVIE_FLAG = true; % flag for whether to write processed frames to movie on disk
 USEMASK_FLAG = true; % flag whether to binary AND the processed frames with the supplied mask
-OVERLAYOUTLINE_FLAG = false; % flag whether to overlay detected outlines of cells on original frames
+OVERLAYOUTLINE_FLAG = true; % flag whether to overlay detected outlines of cells on original frames
 
 if(OVERLAYOUTLINE_FLAG)
     disp('!!Warning: OVERLAYOUTLINE_FLAG is set, frames will be for debugging and cannnot processed!!');
@@ -94,7 +94,7 @@ clear frameIdxs; clear backgroundImg; clear bgFrames; clear bgImgIdx; clear samp
 forClose = strel('disk', 10);
 
 % automatic calculation of threshold value for conversion from grayscale to binary image
-threshold = graythresh(uint8(mean(bgImgs, 3))) / 10;
+threshold = graythresh(uint8(mean(bgImgs, 3))) / 15;
 
 % preallocate memory for marix for speed
 if(OVERLAYOUTLINE_FLAG)
@@ -134,10 +134,11 @@ for frameIdx = startFrame:endFrame
     %% Cleanup 
     % clean the grayscale image of the cells to improve detection
     
-    cleanImg = bwareaopen(cleanImg, 15);
+    cleanImg = bwareaopen(cleanImg, 25);
     cleanImg = imclose(cleanImg, forClose);
     cleanImg = bwareaopen(cleanImg, 35);
     cleanImg = medfilt2(cleanImg, [5, 5]);
+    cleanImg = bwareaopen(cleanImg, 35);
     
     if(USEMASK_FLAG)
         cleanImg = cleanImg & mask; % binary 'OR' to find the union of the two imgs
