@@ -15,7 +15,7 @@ function processed = CellDetection(cellVideo, startFrame, endFrame, fps, folderN
 
 progressbar([],0,[])
 
-DEBUG_FLAG = true; % flag for whether to show debug info
+DEBUG_FLAG = false; % flag for whether to show debug info
 WRITEMOVIE_FLAG = false; % flag for whether to write processed frames to movie on disk
 USEMASK_FLAG = true; % flag whether to binary AND the processed frames with the supplied mask
 OVERLAYOUTLINE_FLAG = false; % flag whether to overlay detected outlines of cells on original frames

@@ -8,7 +8,7 @@ close all;
 progressbar([],[],0)
 % Change WRITEVIDEO_FLAG to true in order to print a video of the output,
 % defaults to false.
-WRITEVIDEO_FLAG = true;
+WRITEVIDEO_FLAG = false;
 
 %% Initializations
 firstFrame = true;
@@ -212,7 +212,7 @@ for ii = 1:numFrames
     % Save the labeled image
     %processedFrames(:,:,ii) = logical(workingFrame);
     
-    if(WRITEVIDEO_FLAG == true)
+    if(WRITEVIDEO_FLAG)
         tempFrame = imoverlay(read(cellVideo,ii), bwperim(logical(workingFrame)), [1 1 0]);
         writeVideo(outputVideo, tempFrame);
     end

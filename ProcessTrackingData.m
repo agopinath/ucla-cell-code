@@ -57,7 +57,7 @@ for lane = 1:16
                break; 
             end
             
-            if(currentLine == 1 && contactCount(1) == contactCount(2))
+            if(currentLine == 2 && contactCount(2) == contactCount(3))
                 % Increment the contact count
                 contactCount(1) = contactCount(1) + 1;
                 % Write the frame number to trackingData for that cell at
@@ -67,9 +67,9 @@ for lane = 1:16
             % previous line is greater than the current line (ie the cell
             % moved from the previous line), change the contactCount and
             % write the frame number to laneData 
-            elseif(currentLine ~= 1 && contactCount(currentLine) < contactCount(currentLine-1))
-                contactCount(currentLine) = contactCount(currentLine-1);
-                laneData(contactCount(currentLine), currentLine) = cellInfo{lane}(cellIndex,1);
+            elseif(currentLine > 2 && contactCount(currentLine-1) < contactCount(currentLine-2))
+                contactCount(currentLine-1) = contactCount(currentLine-2);
+                laneData(contactCount(currentLine-1), currentLine-1) = cellInfo{lane}(cellIndex,1);
             end
             
             % Checks to make sure that the array is not full, adds more
@@ -81,7 +81,7 @@ for lane = 1:16
  
         % Stores this lane's tracking data, eliminating any cells that
         % didn't fully transit through the device.
-        trackingData{lane} = laneData(all(laneData,2),:);
+        trackingData{lane} = laneData(all(laneData(2:8),2),:);
         laneData = uint16(zeros(30,7));
     end
 end
