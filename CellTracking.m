@@ -29,9 +29,10 @@ laneCoords = [16 48 81 113 146 178 210 243 276 308 341 373 406 438 471 503] + xO
 %   2) cell label number
 %   3) Grid line that the cell intersects
 %   4) Cell area (in pixels)
+%   5) Cell sizes (first value represents unconstricted cell size)
 cellInfo = cell(1,16);
 for ii = 1:16
-   cellInfo{ii} = zeros(300,4);
+   cellInfo{ii} = zeros(300,5);
 end
 
 % In order to remember which index to write to in each of the arrays in
@@ -47,16 +48,16 @@ laneIndex = ones(1,16);
 % cell is only stored as a cell if no cell was found in sequential previous
 % frames.  If the frame stored at that position is 0 or 2 less than the
 % current frame, the cell is counted (write is turned true)
-checkingArray = zeros(7,16);
+checkingArray = zeros(8,16);
 
 %% Labels each grid line in the template from 1-7 starting at the top
 [tempmask, ~] = bwlabel(template);
 
 % Preallocates an array to store the y coordinate of each line
-lineCoordinate = zeros(1,7);
+lineCoordinate = zeros(1,8);
 
 % Uses the labeled template to find the y coordinate of each line
-for jj = 1:7
+for jj = 1:8
     q = regionprops(ismember(tempmask, jj), 'PixelList');
     lineCoordinate(jj) = q(1,1).PixelList(1,2);
 end
@@ -88,7 +89,7 @@ for ii = 1:numFrames
         % (numLabels gives the number of cells found in that frame)
         [labeledFrame, numLabels] = bwlabel(currentFrame);
         % Compute their centroids
-        cellCentroids = regionprops(labeledFrame, 'centroid', 'area');
+        cellCentroids = regionprops(labeledFrame, 'centroid', 'area', 'MajorAxisLength', 'MinorAxisLength');
         
         %% Check which line the object intersects with
         % If firstFrame is true (meaning this is the first frame), looks
@@ -119,7 +120,7 @@ for ii = 1:numFrames
             else
                 % Goes through each labeled region in the current frame, and finds
                 % the line that the object intersects with 
-                for line = 1:7
+                for line = 1:8
                     % Find their intersection
                     if(sum(currentRegion(lineCoordinate(line),:)) ~= 0)
                         % workingFrame = workingFrame | currentRegion;
@@ -131,7 +132,7 @@ for ii = 1:numFrames
                     % If the cell is not touching any of the lines, set
                     % line = 0, so it is not included in the array
                     % cellInfo
-                    if(line == 7)
+                    if(line == 8)
                         write = false;
                         break;
                     end
@@ -169,7 +170,7 @@ for ii = 1:numFrames
                     % Also checks that the cell is not from the same frame
                     % as the previously found cell (cells should not be
                     % large enough to touch two lines simultaneously)
-                    if(line ~=1)
+                    if(line > 2)
                        if(checkingArray(line,lane) == checkingArray(line-1,lane)) 
                             continue;
                        end
@@ -183,6 +184,17 @@ for ii = 1:numFrames
                     cellInfo{lane}(laneIndex(lane),3) = line;
                     % Saves the area of the cell in pixels
                     cellInfo{lane}(laneIndex(lane),4) = cellCentroids(jj,1).Area(1);
+                    % If the first line has been hit, record unconstricted
+                    % cell size by using the major/minor axes to
+                    % approximate the diameter. TODO: implement a measure
+                    % for constricted cell size as well.
+                    if(line == 1)
+                        majLen = cellCentroids(jj,1).MajorAxisLength;
+                        minLen = cellCentroids(jj,1).MinorAxisLength;
+                        cellDiameter = (majLen + minLen)/2;
+                        cellInfo{lane}(laneIndex(lane), 5) = cellDiameter;
+                    end
+                    
                     % Updates the checking array and lane index
                     checkingArray(line,lane) = ii;
                     laneIndex(lane) = laneIndex(lane) + 1;
@@ -211,7 +223,7 @@ for ii = 1:numFrames
     % number of frames remaining.  
     for jj = 1:16
         if((size(cellInfo{jj},2) - laneIndex(jj)) <= 10)
-            vertcat(cellInfo{jj}, zeros(floor(((numFrames/ii-1)*size(cellInfo{jj},2))*1.1), 4));
+            vertcat(cellInfo{jj}, zeros(floor(((numFrames/ii-1)*size(cellInfo{jj},2))*1.1), 5));
         end
     end
     

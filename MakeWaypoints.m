@@ -96,12 +96,12 @@ lineTemplate = uint8(zeros(size(frame)));
 % for 5, 7, and 9 micron templates, and 28 for the 3 micron template.  
 if templateSize == 3
     %constrict = 47 + position(2);
-    zerothLinePos = 19 + position(2);
+    zerothLinePos = 21 + position(2);
     firstLinePos = 47 + position(2);
     spacing = 28;
 else
     %constrict = 46 + position(2);
-    zerothLinePos = 26 + position(2);
+    zerothLinePos = 31 + position(2);
     firstLinePos = 46 + position(2);
     spacing = 32;
 end
@@ -119,7 +119,7 @@ end
 
 % This loop writes the horizontal lines defining each constriction to the
 % template
-for i = 2:8
+for i = 1:8
     if(i ~= 1)
         lineTemplate(floor(firstLinePos+(i-2)*spacing),:) = uint8(ones(1,size(frame,2)));
     else

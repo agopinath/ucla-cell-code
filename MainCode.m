@@ -110,16 +110,16 @@ for i = 1:size(videoNames,1)
     % If data is generated (cells are found and tracked through the device)
     if (~isempty(data))
         % If the first row is zeros (has not been written to yet)
-        if (compiledData(1,1:7) == zeros(1,7))
+        if (compiledData(1,1:8) == zeros(1,8))
             compiledData = data;
         % Otherwise add the new data
         else
-            compiledData(end+1:end+size(data,1),1:7) = data;
+            compiledData(end+1:end+size(data,1),1:8) = data;
         end
         
-        % plot histogram of compiled data
+        % plot histogram of total transit times
         figure(99)
-        [n,xout] = hist(compiledData(:,7));
+        [n,xout] = hist(compiledData(:,1));
         bar(xout,n)
         
         % Writes out the transit time data in an excel file
