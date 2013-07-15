@@ -3,7 +3,7 @@
 %       -Cut out the preprocessing 50 frames (required editing indicies of
 %       the call for CellDetection
 %       - Rearranged and commented the code to make it clearer
-%       - Added the template.  Now Make_Waypoints is automatic and no
+%       - Added the template.  Now MakeWaypoints is automatic and no
 %       longer requires defining the cropping and constriction regions
 %       - Eliminated redundant inputs and outputs from functions
 %       - Eliminated 'segments', nobody used them
@@ -87,7 +87,7 @@ for i = 1:size(videoNames,1)
 end
 
 for i = 1:size(videoNames,1)
-    % Calls the Make_waypoints function to define the constriction region.
+    % Calls the MakeWaypoints function to define the constriction region.
     % This function draws a template with a line across each constriction;
     % these lines are used in calculating the transit time
     currVideo = VideoReader([pathNames(i,1:pathNameLength(i)), videoNames(i,1:videoNameLength(i))]);

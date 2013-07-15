@@ -226,9 +226,9 @@ if(WRITEVIDEO_FLAG)
     close(outputVideo);
 end
 
-%% Calls Process_Tracking_Data to process the raw data and return
+%% Calls ProcessTrackingData to process the raw data and return
 % transitTimeData, an nx7 array where n is the number of cells that
 % transited completely through the device.  The first column is the total
 % transit time, while columns 2-7 give the time taken to transit from
 % constriction 1-2, 2-3, etc.
-[transitTimeData] = Process_Tracking_Data(checkingArray, framerate, cellInfo);
+[transitTimeData] = ProcessTrackingData(checkingArray, framerate, cellInfo);
