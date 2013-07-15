@@ -8,7 +8,7 @@ close all;
 progressbar([],[],0)
 % Change WRITEVIDEO_FLAG to true in order to print a video of the output,
 % defaults to false.
-WRITEVIDEO_FLAG = false;
+WRITEVIDEO_FLAG = true;
 
 %% Initializations
 firstFrame = true;
@@ -64,7 +64,7 @@ clear tempmask;
 
 %% Opens a videowriter object if needed
 if(WRITEVIDEO_FLAG)
-   outputVideo = VideoWriter('C:\Users\Mike\Desktop\output_video.avi','Uncompressed AVI');
+   outputVideo = VideoWriter('G:\CellVideos\compiled_data\output_video.avi');
    outputVideo.FrameRate = cellVideo.FrameRate;
    open(outputVideo) 
 end
@@ -198,10 +198,10 @@ for ii = 1:numFrames
     
     %% Frame postprocessing
     % Save the labeled image
-    processedFrames(:,:,ii) = logical(workingFrame);
+    %processedFrames(:,:,ii) = logical(workingFrame);
     
     if(WRITEVIDEO_FLAG == true)
-        tempFrame = imoverlay(read(cellVideo,ii), bwperim(processedFrames(:,:,ii)), [1 1 0]);
+        tempFrame = imoverlay(read(cellVideo,ii), bwperim(logical(workingFrame)), [1 1 0]);
         writeVideo(outputVideo, tempFrame);
     end
     

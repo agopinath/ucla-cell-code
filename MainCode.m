@@ -89,7 +89,7 @@ for i = 1:size(videoNames,1)
     % Calls the MakeWaypoints function to define the constriction region.
     % This function draws a template with a line across each constriction;
     % these lines are used in calculating the transit time
-    currPathName = pathNames(i,1:pathNameLength(i))
+    currPathName = pathNames(i,1:pathNameLength(i));
     currVideoName = videoNames(i,1:videoNameLength(i));
     
     currVideo = VideoReader([currPathName, currVideoName]);
