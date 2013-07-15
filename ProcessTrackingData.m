@@ -1,6 +1,6 @@
 %% Cell Tacking
 
-function [transitTimeData] = ProcessTrackingData(checkingArray, framerate, cellInfo)
+function [transitData] = ProcessTrackingData(checkingArray, framerate, cellInfo)
 
 % Tracks the cells
 % Preallocation
@@ -38,38 +38,49 @@ laneData = uint16(zeros(30,7));
 % trackingData is a cell that contains the lane data for each lane
 trackingData = cell(1,16);
 
+% cellIndex stores the index of the current cell being processed
+cellSizes = [];
+cellSizesIdx = 1;
+
 % Goes through the data for each lane (1-16)
 for lane = 1:16
     contactCount = zeros(7,1);
-    if(any(checkingArray(:,lane) == 0))
+    if(any(checkingArray(2:8,lane) == 0))
         % Stores this lane's tracking data
         laneData = uint16(zeros(30,7));
         continue;
     else
+        cellSizesInLane = [];
+        cellSizesInLaneIdx = 1;
         % For each cell in this lane's data
-        for cellIndex = 1:size(cellInfo{lane},1)
-            % If the cell is touching line 1, and the previous cell already
-            % reached line 2
-            currentLine = cellInfo{lane}(cellIndex,3);
+        for cellIndexInLane = 1:size(cellInfo{lane},1)
+            % If the cell is touching line 2, and the previous cell already
+            % reached line 3
+            currentLine = cellInfo{lane}(cellIndexInLane,3);
             
             % Once all the cells are evaluated (current line is zero),
             if(currentLine == 0)
                break; 
             end
+
+            if(currentLine == 1 || (cellIndexInLane == 1 && currentLine == 2))
+                cellSizesInLane(cellSizesInLaneIdx) = cellInfo{lane}(cellIndexInLane,5);
+                cellSizesInLaneIdx = cellSizesInLaneIdx + 1;
+            end
             
             if(currentLine == 2 && contactCount(2) == contactCount(3))
                 % Increment the contact count
                 contactCount(1) = contactCount(1) + 1;
-                % Write the frame number to trackingData for that cell at
-                % line 1
-                laneData(contactCount(1), 1) = cellInfo{lane}(cellIndex,1);
-            % If the cell is below line 1, and the contact count for the
+                % Write the frame number to laneData for that cell at
+                % line 2
+                laneData(contactCount(1), 1) = cellInfo{lane}(cellIndexInLane,1);
+            % If the cell is below line 2, and the contact count for the
             % previous line is greater than the current line (ie the cell
             % moved from the previous line), change the contactCount and
             % write the frame number to laneData 
-            elseif(currentLine > 2 && contactCount(currentLine-1) < contactCount(currentLine-2))
+            elseif(currentLine > 2 && contactCount(currentLine-2) > contactCount(currentLine-1))
                 contactCount(currentLine-1) = contactCount(currentLine-2);
-                laneData(contactCount(currentLine-1), currentLine-1) = cellInfo{lane}(cellIndex,1);
+                laneData(contactCount(currentLine-1), currentLine-1) = cellInfo{lane}(cellIndexInLane,1);
             end
             
             % Checks to make sure that the array is not full, adds more
@@ -81,12 +92,15 @@ for lane = 1:16
  
         % Stores this lane's tracking data, eliminating any cells that
         % didn't fully transit through the device.
-        trackingData{lane} = laneData(all(laneData(2:8),2),:);
+        trackingData{lane} = laneData(all(laneData, 2),:);
+        for q = 1:size(trackingData{lane}, 1)
+            cellSizes(cellSizesIdx, 1) = cellSizesInLane(q);
+            cellSizesIdx = cellSizesIdx + 1;
+        end
         laneData = uint16(zeros(30,7));
     end
 end
-
-transitTimeData = double(vertcat(trackingData{1:16}));
+transitData = double(vertcat(trackingData{1:16}));
 
 % Convert the data from frames into delta time values.  After this loop,
 % column 1 will store the time at which the cell reached the line, and
@@ -94,15 +108,17 @@ transitTimeData = double(vertcat(trackingData{1:16}));
 % the lines. For example, column 2 stores the amount of time it took for
 % the cell to go from line 1 to line 2.
 
-transitTimeData = 1 / (framerate*10^-3) * transitTimeData;
+transitData = 1 / (framerate*10^-3) * transitData;
 
 for ii = 1:6
-   for jj = 1:size(transitTimeData,1)
-        transitTimeData(jj,8-ii) = transitTimeData(jj,8-ii) - transitTimeData(jj,7-ii);
+   for jj = 1:size(transitData,1)
+        transitData(jj,8-ii) = transitData(jj,8-ii) - transitData(jj,7-ii);
    end
 end
 
 % Overwrites the first column with the total time
-for ii = 1:size(transitTimeData,1)
-   transitTimeData(ii,1) = sum(transitTimeData(ii,2:7)); 
+for ii = 1:size(transitData,1)
+   transitData(ii,1) = sum(transitData(ii,2:7)); 
 end
+
+transitData = [transitData, cellSizes];

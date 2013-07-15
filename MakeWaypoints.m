@@ -101,7 +101,7 @@ if templateSize == 3
     spacing = 28;
 else
     %constrict = 46 + position(2);
-    zerothLinePos = 31 + position(2);
+    zerothLinePos = 33 + position(2);
     firstLinePos = 46 + position(2);
     spacing = 32;
 end

@@ -4,7 +4,6 @@
 
 function [transitTimeData] = CellTracking(numFrames, framerate, template, processedFrames, xOffset, cellVideo)
 
-close all;
 progressbar([],[],0)
 % Change WRITEVIDEO_FLAG to true in order to print a video of the output,
 % defaults to false.

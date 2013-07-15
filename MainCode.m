@@ -13,7 +13,7 @@ clc
 filename = 1;
 filePath = 'G:\CellVideos\';
 % Allocates an array for the data
-compiledData = zeros(1,7);
+compiledData = zeros(1,8);
 % Initializes a progress bar
 progressbar('Overall', 'Cell detection', 'Cell tracking');
 
@@ -124,8 +124,8 @@ for i = 1:size(videoNames,1)
         
         % Writes out the transit time data in an excel file
         colHeader = {'Total Time (ms)', 'Constriction 1 to 2', 'Constriction 2 to 3', 'Constriction 3 to 4', 'Constriction 4 to 5', 'Constriction 5 to 6', 'Constriction 6 to 7'};
-        xlswrite([currPathName, 'compiled_data\data_xlscomp'],colHeader,'Sheet1','A1');
-        xlswrite([currPathName, 'compiled_data\data_xlscomp'],compiledData,'Sheet1','A2');
+        xlswrite([currPathName, 'compiled_data\data_xlscomp'], colHeader,'Sheet1','A1');
+        xlswrite([currPathName, 'compiled_data\data_xlscomp'], compiledData,'Sheet1','A2');
     end
 end
 
