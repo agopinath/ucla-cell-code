@@ -49,7 +49,7 @@ laneIndex = ones(1,16);
 % current frame, the cell is counted (write is turned true)
 checkingArray = zeros(8,16);
 
-%% Labels each grid line in the template from 1-7 starting at the top
+%% Labels each grid line in the template from 1-8 starting at the top
 [tempmask, ~] = bwlabel(template);
 
 % Preallocates an array to store the y coordinate of each line
@@ -209,7 +209,7 @@ for ii = 1:numFrames
     
     %% Frame postprocessing
     % Save the labeled image
-    %processedFrames(:,:,ii) = logical(workingFrame);
+    % processedFrames(:,:,ii) = logical(workingFrame);
     
     if(WRITEVIDEO_FLAG)
         tempFrame = imoverlay(read(cellVideo,ii), bwperim(logical(workingFrame)), [1 1 0]);
