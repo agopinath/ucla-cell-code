@@ -88,16 +88,18 @@ for i = 1:length(videoNames)
             compiledData(end+1:end+size(data,1),1:numDataCols) = data;
         end
         
-        % plot histogram of total transit times
-        figure('name', 'Total Transit times');
-        [n,xout] = hist(compiledData(:,1));
+         % plot histogram of compiled data
+        figure(99)
+        [n,xout] = hist(compiledData(:,1,1));
         bar(xout,n)
         
+        compiledData(:,2,1) = compiledData(:,1,2);
+        
         % Writes out the transit time data in an excel file
-        colHeader = {'Total Time (ms)', 'Constriction 1 to 2', 'Constriction 2 to 3', 'Constriction 3 to 4', ... 
-                    'Constriction 4 to 5', 'Constriction 5 to 6', 'Constriction 6 to 7', 'Unconstricted cell size (pixels)'};
-        xlswrite(fullfile(compiledDataPath, 'compiled_data\data_xlscomp'), colHeader, 'Sheet1', 'A1');
-        xlswrite(fullfile(compiledDataPath, 'compiled_data\data_xlscomp'), compiledData, 'Sheet1', 'A2');
+        colHeader = {'Total Time (ms)', 'Unconstricted Area', 'C1 to C2', 'C2 to C3', 'C3 to C4', 'C4 to C5', 'C5 to C6', 'C6 to C7', [], [], 'Unconstricted Area', 'A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7'};
+        xlswrite([currPathName, 'compiled_data\data_xlscomp'],colHeader,'Sheet1','A1');
+        xlswrite([currPathName, 'compiled_data\data_xlscomp'],compiledData(:,:,1),'Sheet1','A2');
+        xlswrite([currPathName, 'compiled_data\data_xlscomp'],compiledData(:,:,2),'Sheet1','K2');
     end
 end
 
