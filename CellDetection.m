@@ -141,7 +141,9 @@ for frameIdx = startFrame:endFrame
     cleanImg = bwareaopen(cleanImg, 35);
     
     if(USEMASK_FLAG)
-        cleanImg = cleanImg & mask; % binary 'AND' to find the union of the two imgs
+        % binary 'AND' to find the intersection of the cleaned image and the mask
+        % to prevent the detected cell boundaries from being outside the microfluidic device
+        cleanImg = cleanImg & mask; 
     end
     
     if OVERLAYOUTLINE_FLAG == 1
