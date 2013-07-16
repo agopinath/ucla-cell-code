@@ -141,7 +141,7 @@ for frameIdx = startFrame:endFrame
     cleanImg = bwareaopen(cleanImg, 35);
     
     if(USEMASK_FLAG)
-        cleanImg = cleanImg & mask; % binary 'OR' to find the union of the two imgs
+        cleanImg = cleanImg & mask; % binary 'AND' to find the union of the two imgs
     end
     
     if OVERLAYOUTLINE_FLAG == 1
