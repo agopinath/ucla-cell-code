@@ -14,6 +14,7 @@ filename = 1;
 filePath = 'G:\CellVideos\';
 % Allocates an array for the data
 compiledData = zeros(1,8);
+compiledDataPath = 'G:\CellVideos\';
 % Initializes a progress bar
 progressbar('Overall', 'Cell detection', 'Cell tracking');
 
@@ -74,16 +75,8 @@ end
 
 tStart = tic;
 
-% Creates a directory for each video, followed by another set of folders
-% inside these for each segment of the video
-for i = 1:size(videoNames,1)
-    mkdir (pathNames(i,1:pathNameLength(i)), 'compiled_data\')
-    
-    % Makes folders
-    mkdir(pathNames(i,1:pathNameLength(i)), [videoNames(i,1:videoNameLength(i))])
-    [msg, msgid] = lastwarn;
-    
-end
+% Creates a directory for the compiled data
+mkdir(fullfile(compiledDataPath, 'compiled_data\'));
 
 for i = 1:size(videoNames,1)
     % Calls the MakeWaypoints function to define the constriction region.
@@ -124,8 +117,8 @@ for i = 1:size(videoNames,1)
         
         % Writes out the transit time data in an excel file
         colHeader = {'Total Time (ms)', 'Constriction 1 to 2', 'Constriction 2 to 3', 'Constriction 3 to 4', 'Constriction 4 to 5', 'Constriction 5 to 6', 'Constriction 6 to 7'};
-        xlswrite([currPathName, 'compiled_data\data_xlscomp'], colHeader,'Sheet1','A1');
-        xlswrite([currPathName, 'compiled_data\data_xlscomp'], compiledData,'Sheet1','A2');
+        xlswrite(fullfile(compiledDataPath, 'compiled_data\data_xlscomp'), colHeader,'Sheet1','A1');
+        xlswrite(fullfile(compiledDataPath, 'compiled_data\data_xlscomp'), compiledData,'Sheet1','A2');
     end
 end
 
