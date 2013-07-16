@@ -3,10 +3,6 @@
 function [transitData] = ProcessTrackingData(checkingArray, framerate, cellInfo)
 
 % Tracks the cells
-% Preallocation
-% Occupied_row stores which of the lines in the current lane are currently
-% occupied by a cell (for the frame being processed)
-% occupied_lines = zeros(7,1);
 
 % contactCount stores how many cells have touched a particular line in the
 % lane.  The behavior is a little complicated to avoid issues when two
