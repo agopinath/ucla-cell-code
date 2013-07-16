@@ -28,17 +28,19 @@ progressbar('Overall', 'Cell detection', 'Cell tracking');
 %% Load video files and prepare any metadata
 [pathNames, videoNames] = PromptForVideos('G:\CellVideos\');
 
-% Reads title of fps from title of file
-% Important that fps come after first underscore
-% Title format to follow
+% Extracts the template size and frame rates from the video name.
+%   The video names should include, anywhere in the name, the following:
+%   1) "devNx10" where N is constriction width / template size to use
+%       ex. "dev5x10..."
+%   2) "Mfps", where M is the frame rate in frames per second
+%       ex. "1200fps..."
+% Example of properly formatted video names:
 % 'dev5x10_1200fps_48hrppb_glass_4psi_20x_0.6ms_p12_041'
 for i = 1:length(videoNames)
     videoName = videoNames{i};
-    underscores = regexp(videoName, '_'); % get indices of underscores present in filename
-    toParse = videoName(1:underscores(2)-1); % get everything up until the framerate
-    [j,k] = regexp(videoName, '\d*x'); % store start/end indices of template size
+    [j,k] = regexp(videoName, 'dev\d*x'); % store start/end indices of template size
     [m, n] = regexp(videoName, '\d*fps'); % store start/end indices of frame rate
-    templateSize = videoName(j:(k-1)); % 'k-1' removes the 'x' character at the end
+    templateSize = videoName((j+3):(k-1)); % 'j+3' and 'k-1' shift it accordingly
     frameRate = videoName(m:(n-3)); % 'n-3' to removes the 'fps' characters at the end
     
     templateSizes(i) = str2double(templateSize);
