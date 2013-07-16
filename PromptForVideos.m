@@ -51,8 +51,8 @@ else
     else
         idx = 0;
         % go through every path to search
-        for pathToSearch = searchPaths
-            
+        for i = 1:length(searchPaths)
+            pathToSearch = searchPaths{i};
             % throw an error if pathToSearch doesn't exist
             if ~(exist(fullfile(pathToSearch), 'file') == 7)
                 disp(['Error: ', pathToSearch, ' doesnt exist']);
