@@ -287,7 +287,8 @@ if progdata(1).fractiondone > 0
     titlebarstr = sprintf('%2d%%    %s remaining', ...
         floor(100*progdata(1).fractiondone), timeleftstr);
 else
-    titlebarstr = ' 0%';
+    %titlebarstr = ' 0%';
+    titlebarstr = 'Code Progress';
 end
 set(progfig, 'Name', titlebarstr)
 
