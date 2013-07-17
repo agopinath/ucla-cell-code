@@ -7,7 +7,7 @@
 % was unused and slowed down the user during execution.  Also added
 % comments to clarify the code. (Mike Scott)
 
-function processed = CellDetection(cellVideo, startFrame, endFrame, fps, folderName, videoName, mask)
+function processed = CellDetection(cellVideo, startFrame, endFrame, folderName, videoName, mask)
 
 %%% This code analyzes a video of cells passing through constrictions
 %%% to produce and return a binary array of the video's frames which

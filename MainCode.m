@@ -73,7 +73,7 @@ for i = 1:length(videoNames)
     % Calls CellDetection to filter the images and store them in
     % 'processedFrames'.  These stored image are binary and should
     % (hopefully) only have the cells in them
-    [processedFrames] = CellDetection(currVideo, startFrame, endFrame, frameRates(i), currPathName, currVideoName, mask);
+    [processedFrames] = CellDetection(currVideo, startFrame, endFrame, currPathName, currVideoName, mask);
     progressbar((i/(2*size(videoNames,1))), [], [])
     
     % Calls CellTracking to track the detected cells.
