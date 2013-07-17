@@ -77,8 +77,8 @@ for i = 1:length(videoNames)
     videoName = videoNames{i};
     [j,k] = regexp(videoName, 'dev\d*x'); % store start/end indices of template size
     [m, n] = regexp(videoName, '\d*fps'); % store start/end indices of frame rate
-    templateSize = videoName((j+3):(k-1)); % 'j+3' and 'k-1' shift it accordingly
-    frameRate = videoName(m:(n-3)); % 'n-3' to removes the 'fps' characters at the end
+    templateSize = videoName((j+3):(k-1)); % removes 'dev' at the start, and 'x' at the end
+    frameRate = videoName(m:(n-3)); % removes 'fps'  at the end
     
     templateSizes(i) = str2double(templateSize);
     frameRates(i) = str2double(frameRate);
@@ -131,8 +131,6 @@ for i = 1:length(videoNames)
         figure(99)
         [n,xout] = hist(compiledData(:,1,1));
         bar(xout,n);
-        
-        compiledData(:,2,1) = compiledData(:,1,2);
         
         % Writes out the transit time data in an excel file
         colHeader1 = {'Total Time (ms)', 'Unconstricted Area'};

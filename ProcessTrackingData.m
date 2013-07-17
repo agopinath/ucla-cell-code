@@ -8,7 +8,7 @@
 
 % Code from Dr. Amy Rowat's Lab, UCLA Department of Integrative Biology and
 % Physiology
-% Updated written by Mike Scott (July 2013)
+% Written by Mike Scott (July 2013)
 
 % Inputs
 %   - checkingArray: an array that stores the frame that a cell last hit 
@@ -145,7 +145,10 @@ for ii = 1:6
    end
 end
 
-% Overwrites the first column with the total time
+% Overwrites first column of 1st dimension with the total time
 for ii = 1:size(transitData,1)
    transitData(ii,1,1) = sum(transitData(ii,3:8,1)); 
 end
+
+% Overwrites second column of 1st dimension with areas at each constriction
+transitData(:,2,1) = transitData(:,1,2);
