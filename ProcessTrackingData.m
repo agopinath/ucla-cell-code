@@ -67,14 +67,12 @@ trackingData = cell(1,16);
 for lane = 1:16
     contactCount = zeros(8,1);
     if(any(checkingArray(:,lane) == 0))
-        % Stores this lane's tracking data
+        % Does not store any data for the lane if no cells fully transited through the lane
         laneData = zeros(30,8,2);
         continue;
     else
         % For each cell in this lane's data
         for cellIndex = 1:size(cellInfo{lane},1)
-            % If the cell is touching line 1, and the previous cell already
-            % reached line 2
             currentLine = cellInfo{lane}(cellIndex,3);
             
             % Once all the cells are evaluated (current line is zero),
