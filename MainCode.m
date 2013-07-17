@@ -94,15 +94,20 @@ end
 
 tStart = tic;
 
-% Creates a directory for the compiled data if it doesn't already exist
-if ~(exist(fullfile(compiledDataPath, 'compiled_data\'), 'file') == 7)
-    mkdir(fullfile(compiledDataPath, 'compiled_data\'));
+% Create the folder in which to store the output data
+% The output folder name is a subfolder in the folder where the first videos
+% were selected. The folder name contains the time at which processing is
+% started.
+outputFolderName = fullfile(pathNames{1}, ['processed_', datestr(now, 'mm-dd-YY_HH-MM')]);
+if ~(exist(outputFolderName, 'file') == 7)
+    mkdir(outputFolderName);
 end
 
 %% Iterates through videos to filter, analyze, and output the compiled data
 for i = 1:length(videoNames)
     % Initializations
     currPathName = pathNames{i};
+    outputFilename = fullfile(outputFolderName, regexprep(currPathName, '[^a-zA-Z_0-9-]', '~'));
     currVideoName = videoNames{i};
     currVideo = VideoReader(fullfile(currPathName, currVideoName));
     startFrame = 1;
@@ -132,7 +137,7 @@ for i = 1:length(videoNames)
             compiledData = data;
         % Otherwise add the new data
         else
-            compiledData(end+1:end+size(data,1),1:numDataCols) = data;
+            compiledData(end+1:end+size(data,1),1:numDataCols,1:size(data,3)) = data;
         end
         
         % plot histogram of compiled data
@@ -146,21 +151,21 @@ for i = 1:length(videoNames)
         colHeader3 = {'Unconstricted Area', 'A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7'};
         colHeader4 = {'Unconstricted D', 'D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7'};
         colHeader5 = {'Unconstricted E', 'E1', 'E2', 'E3', 'E4', 'E5', 'E6', 'E7'};
-        xlswrite([compiledDataPath, 'compiled_data\data_xlscomp'],colHeader1,'Sheet1','A1');
-        xlswrite([compiledDataPath, 'compiled_data\data_xlscomp'],compiledData(:,1,1),'Sheet1','A2');
-        xlswrite([compiledDataPath, 'compiled_data\data_xlscomp'],compiledData(:,1,2),'Sheet1','B2');
+        xlswrite(outputFilename,colHeader1,'Sheet1','A1');
+        xlswrite(outputFilename,compiledData(:,1,1),'Sheet1','A2');
+        xlswrite(outputFilename,compiledData(:,1,2),'Sheet1','B2');
         
-        xlswrite([compiledDataPath, 'compiled_data\data_xlscomp'],colHeader2,'Sheet2','A1');
-        xlswrite([compiledDataPath, 'compiled_data\data_xlscomp'],compiledData(:,:,1),'Sheet2','A2');
+        xlswrite(outputFilename,colHeader2,'Sheet2','A1');
+        xlswrite(outputFilename,compiledData(:,:,1),'Sheet2','A2');
         
-        xlswrite([compiledDataPath, 'compiled_data\data_xlscomp'],colHeader3,'Sheet3','A1');
-        xlswrite([compiledDataPath, 'compiled_data\data_xlscomp'],compiledData(:,:,2),'Sheet3','A2');
+        xlswrite(outputFilename,colHeader3,'Sheet3','A1');
+        xlswrite(outputFilename,compiledData(:,:,2),'Sheet3','A2');
         
-        xlswrite([compiledDataPath, 'compiled_data\data_xlscomp'],colHeader4,'Sheet4','A1');
-        xlswrite([compiledDataPath, 'compiled_data\data_xlscomp'],compiledData(:,:,3),'Sheet4','A2');
+        xlswrite(outputFilename,colHeader4,'Sheet4','A1');
+        xlswrite(outputFilename,compiledData(:,:,3),'Sheet4','A2');
         
-        xlswrite([compiledDataPath, 'compiled_data\data_xlscomp'],colHeader5,'Sheet5','A1');
-        xlswrite([compiledDataPath, 'compiled_data\data_xlscomp'],compiledData(:,:,4),'Sheet5','A2');
+        xlswrite(outputFilename,colHeader5,'Sheet5','A1');
+        xlswrite(outputFilename,compiledData(:,:,4),'Sheet5','A2');
     end
 end
 
@@ -171,4 +176,25 @@ avgTimePerVideo = totalTime/length(videoNames);
 disp(sprintf('\n\n==========='));
 disp(['Total time to analyze ', num2str(length(videoNames)), ' video(s): ', num2str(totalTime), ' secs']);
 disp(['Average time per video: ', num2str(avgTimePerVideo), ' secs']);
-disp('');
+disp(sprintf('\nOutputting metadata...'));
+
+runOutputPaths = unique(pathNames);
+for i = 1:length(runOutputPaths)
+    runOutputFile = fopen(fullfile(runOutputPaths{i}, 'process_log.txt'), 'wt');
+    vidIndices = strcmp(runOutputPaths{i}, pathNames);
+    vidsProcessed = videoNames(vidIndices);
+    
+    fprintf(runOutputFile, '%s\n\n', 'The following files were processed from this folder:');
+    fprintf(runOutputFile, '%s\n', '============');
+    for j = 1:length(vidsProcessed)
+        fprintf(runOutputFile, '%s\n', vidsProcessed{1});
+    end
+    fprintf(runOutputFile, '%s\n\n', '============');
+    
+    fprintf(runOutputFile, '%s%s\n', 'Processing was finished at: ', datestr(now, 'mm-dd-YY HH:MM:SS'));
+    fprintf(runOutputFile, '%s%s\n', 'Output files are located at: ', outputFolderName);
+    
+    fclose(runOutputFile);
+end
+
+disp('Done.');
