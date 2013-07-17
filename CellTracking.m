@@ -213,9 +213,6 @@ for ii = 1:numFrames
                     cellInfo{lane}(laneIndex(lane),5) = cellCentroids(jj,1).MajorAxisLength;
                     % Store the length of the minor axis
                     cellInfo{lane}(laneIndex(lane),6) = cellCentroids(jj,1).MinorAxisLength;
-                    % cellDiameter = (majLen + minLen)/2;
-                    % cellInfo{lane}(laneIndex(lane), 5) = cellDiameter;
-                    % end
                     
                     % Updates the checking array and lane index
                     checkingArray(line,lane) = ii;
