@@ -1,3 +1,36 @@
+%% CellTracking.m
+% function [transitTimeData] = CellTracking(numFrames, framerate, template, processedFrames, xOffset)
+% Inputs the processed frames of a video, labels them, and stores the data.
+% Now evaluates data before storing it, eliminating storage of data that is
+% later unused.  Calls ProcessTrackingData to process the raw data.
+
+% Code from Dr. Amy Rowat's Lab, UCLA Department of Integrative Biology and
+% Physiology
+% Code originally by Bino Varghese (AnalysisCodeBAV.m) (October 2011)
+% Updated by David Hoelzle (January 2013)
+% Updated by Sam Bruce, Ajay Gopinath, and Mike Scott (July 2013)
+
+% Inputs
+%   - numFrames: an integer, the number of frames in the video
+%   - framerate: an integer, the framerate of the video
+%   - template: a logical array which specifies the horizontal lines used
+%       in tracking the cells
+%   - processedFrames: a 3 dimensional array that stores the processed
+%       frames
+%   - xOffset: an integer that stores the number of pixels the template is
+%       offset, used to calculate the x-coordinates of the lanes 
+
+% Outputs
+%   - transitTimeData: an array of data with dimensions (n x 8 x 4) where n
+%   is the number of cells found in the video
+%       - transitTimeData(:,:,1) is the transit time data
+%       - transitTimeData(:,:,2) is the area data
+%       - transitTimeData(:,:,3) is the equivalent diameter data
+%       - transitTimeData(:,:,4) is the eccentricity data
+
+% Functions called
+%   - ProcessTrackingData   (processes the raw data to track the cells)
+
 function [transitTimeData] = CellTracking(numFrames, framerate, template, processedFrames, xOffset)
 
 progressbar([],[],0)
@@ -163,7 +196,7 @@ for ii = 1:numFrames
                     % as the previously found cell (cells should not be
                     % large enough to touch two lines simultaneously)
                     if(line > 2)
-                       if(checkingArray(line,lane) == checkingArray(line-1,lane)) 
+                       if(checkingArray(line,lane) >= checkingArray(line-1,lane)) 
                             continue;
                        end
                     end
@@ -180,9 +213,6 @@ for ii = 1:numFrames
                     cellInfo{lane}(laneIndex(lane),5) = cellCentroids(jj,1).MajorAxisLength;
                     % Store the length of the minor axis
                     cellInfo{lane}(laneIndex(lane),6) = cellCentroids(jj,1).MinorAxisLength;
-                    % cellDiameter = (majLen + minLen)/2;
-                    % cellInfo{lane}(laneIndex(lane), 5) = cellDiameter;
-                    % end
                     
                     % Updates the checking array and lane index
                     checkingArray(line,lane) = ii;

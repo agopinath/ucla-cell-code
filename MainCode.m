@@ -1,5 +1,41 @@
-%% Code entry point; runs sequential segmentations and analyses; objective is minimal user input and to compile and output analysis data
-% Updated 7/09/2013 by Mike
+%% MainCode.m
+% Main loop of the cell deformer tracking code.  Designed to input .avi 
+% video files and track cells through the cell deformer device.  Designed
+% to run multiple videos with minimal user interaction.
+
+% Code from Dr. Amy Rowat's Lab, UCLA Department of Integrative Biology and
+% Physiology
+% Code originally by Bino Varghese (October 2011)
+% Updated by David Hoelzle (January 2013)
+% Updated by Sam Bruce, Ajay Gopinath, and Mike Scott (July 2013)
+
+% Inputs
+%   - .avi files are selected using a GUI
+%   - The video names should include, anywhere in the name, the following:
+%   1) "devNx10" where N is constriction width / template size to use
+%       ex. "dev5x10..."
+%   2) "Mfps", where M is the frame rate in frames per second
+%       ex. "1200fps..."
+%       Example of a properly formatted video name:
+%       'dev5x10_1200fps_48hrppb_glass_4psi_20x_0.6ms_p12_041'
+
+% Outputs
+%   - An excel file with 5 sheets at the specified compiledDataPath
+%       1) Total transit time (ms) and unconstricted area (pixels)
+%       2) Transit time data (ms)
+%       3) Area information at each constriction (pixels)
+%       4) Approximate diameter at each constriction (pixels), calculated
+%       as the average of major and minor axis of the cell
+%       5) Eccentricity of each cell at each constriction
+
+% Functions called
+%   - PromptForVideos   (opens a GUI to load videos)
+%   - MakeWaypoints     (Determines the constriction regions)
+%   - CellDetection     (Filters the video frames to isolate the cells)
+%   - CellTracking      (Labels and tracks cells through the device)
+%   - progressbar       (Gives an indication of how much time is left)
+
+% Updated 7/2013 by Mike
 %       -Cut out the preprocessing 50 frames (required editing indicies of
 %       the call for CellDetection
 %       - Rearranged and commented the code to make it clearer
@@ -14,6 +50,7 @@
 %       names by using regular expressions instead of ad-hoc parsing
 %       - cleaned up any remaining legacy code and comments
 %       - added better output of debugging information
+
 close all
 clc
 
