@@ -52,6 +52,7 @@
 %       - added better output of debugging information
 
 close all
+clear all
 clc
 
 %% Initializations
