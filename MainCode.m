@@ -103,6 +103,7 @@ if ~(exist(outputFolderName, 'file') == 7)
     mkdir(outputFolderName);
 end
 
+lastPathName = pathNames{i};
 %% Iterates through videos to filter, analyze, and output the compiled data
 for i = 1:length(videoNames)
     % Initializations
@@ -133,7 +134,7 @@ for i = 1:length(videoNames)
     % If data is generated (cells are found and tracked through the device)
     if (~isempty(data))
         % If the first row is zeros (has not been written to yet)
-        if (compiledData(1,1:numDataCols) == zeros(1,numDataCols))
+        if ((strcmpi(lastPathName, currPathName) == 0) | compiledData(1,1:numDataCols) == zeros(1,numDataCols))
             compiledData = data;
         % Otherwise add the new data
         else
@@ -166,6 +167,8 @@ for i = 1:length(videoNames)
         
         xlswrite(outputFilename,colHeader5,'Sheet5','A1');
         xlswrite(outputFilename,compiledData(:,:,4),'Sheet5','A2');
+        
+        lastPathName = currPathName;
     end
 end
 
