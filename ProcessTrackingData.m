@@ -67,7 +67,7 @@ trackingData = cell(1,16);
 for lane = 1:16
     contactCount = zeros(8,1);
     if(any(checkingArray(:,lane) == 0))
-        % Stores this lane's tracking data
+        % Does not store any data for the lane if no cells fully transited through the lane
         laneData = zeros(30,8,2);
         continue;
     else
