@@ -73,8 +73,6 @@ for lane = 1:16
     else
         % For each cell in this lane's data
         for cellIndex = 1:size(cellInfo{lane},1)
-            % If the cell is touching line 1, and the previous cell already
-            % reached line 2
             currentLine = cellInfo{lane}(cellIndex,3);
             
             % Once all the cells are evaluated (current line is zero),
