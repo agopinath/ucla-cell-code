@@ -1,23 +1,37 @@
-%% Image Template Maker (Modified as of 10/05/2011) by Bino Abel Varghese
+%% MakeWaypoints.m
+% function [mask, lineTemplate, xOffset] = MakeWaypoints(cellVideo, templateSize)
+% This code uses the first frame of the video to make a template that is
+% used to calculate transit time.  The template has 8 horizontal lines to
+% define a preconstriction area (where unconstricted area is calculated) as
+% well as the 7 constriction areas.  Automatically detects the regions
+% using a template and numerical correlation.  Outputs a figure to enable
+% quick determination of whether or not the correlation was successful.
+
+% Code from Dr. Amy Rowat's Lab, UCLA Department of Integrative Biology and
+% Physiology
+% Code originally by Bino Varghese (October 2011)
+% Updated by David Hoelzle (January 2013)
+% Updated by Sam Bruce, Ajay Gopinath, and Mike Scott (July 2013)
+
+% Inputs
+%   - cellVideo: a videoReader object for the video specified by the user
+%   - templateSize: an integer that specifies the constriction size of the
+%       template to be used.  Options are 3, 5, 7, or 9 microns.
+
+% Outputs
+%   - mask: a logical array that defines the lanes, and is loaded as a .tif 
+%       file from the specified filepath
+%   - lineTemplate: a logical array with the same size as the input video, 
+%        with horizontal lines defining the constriction regions
+%   - xOffset: an integer specifying the number of pixels the template must
+%        be offset horizontally in order to match with the video.
+
 % Updated by David Hoelzle (2013/01/07)
 % Updated 7/2/13 by Mike Scott.  Made the code more automatic, so no
 % regions need to be selected for cropping or defining the constriction
 % region.  Also, replaced the 'video_num input' (which was unused) with a
 % 'templateSize' variable to decide which template is to be used (5, 7, or
 % 9 micron).
-
-% This code uses the first frame of the video and a template file to
-% automatically crop the frame and make a template for the lines that are
-% used to calculate transit time.  This generated template is saved in the
-% video's folder as a .tif
-
-% The variable 'originalFrame' is, strictly speaking', unecessary.  It is
-% only used to display the original image with the lines superimposed in a
-% figure at the end of this function.  However, this is a great way to
-% verify this function is working correctly and the lines placed in the
-% right places.  Once this code is confirmed to work well, it can be
-% deleted (and it must be deleted in the event the code were to be used on
-% the cluster!)
 
 function [mask, lineTemplate, xOffset] = MakeWaypoints(cellVideo, templateSize)
 close all;
