@@ -21,7 +21,7 @@ USEMASK_FLAG = true; % flag whether to binary AND the processed frames with the 
 OVERLAYOUTLINE_FLAG = false; % flag whether to overlay detected outlines of cells on original frames
 
 if(OVERLAYOUTLINE_FLAG)
-    disp('!!Warning: OVERLAYOUTLINE_FLAG is set, frames will be for debugging and cannnot processed!!');
+    disp('!!Warning: OVERLAYOUTLINE_FLAG is set, frames cannnot be processed!!');
 end
 
 startTime1 = tic;
