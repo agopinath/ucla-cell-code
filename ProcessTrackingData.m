@@ -1,9 +1,8 @@
-%% Cell Tacking
+%% Cell Tracking
 
 function [transitData] = ProcessTrackingData(checkingArray, framerate, cellInfo)
 
 % Tracks the cells
-
 % contactCount stores how many cells have touched a particular line in the
 % lane.  The behavior is a little complicated to avoid issues when two
 % cells independently enter the lane, but later 'merge' and are detected as
@@ -29,90 +28,83 @@ function [transitData] = ProcessTrackingData(checkingArray, framerate, cellInfo)
 % device.  Each column corresponds to a line (1-7), and each row is a new 
 % cell.  The numerical entry is the frame in which the cell hit the line,
 % and will later be converted to times based on the framerate.
-laneData = uint16(zeros(30,7));
+% dim1 = transit time data
+% dim2 = area data
+% dim3 = diameter data
+% dim4 = eccentrity data
+laneData = zeros(30,8,4);
 
 % trackingData is a cell that contains the lane data for each lane
 trackingData = cell(1,16);
 
-% cellSizes stores the unconstricted cell sizes values for all cells in the
-% current video. Later, the code concatenates these values with the
-% corresponding data rows in transitData to 'match' the cell sizes with
-% their corresponding cells.
-cellSizes = [];
-cellSizesIdx = 1;
-
 % Goes through the data for each lane (1-16)
 for lane = 1:16
-    contactCount = zeros(7,1);
-    if(any(checkingArray(2:8,lane) == 0))
+    contactCount = zeros(8,1);
+    if(any(checkingArray(:,lane) == 0))
         % Stores this lane's tracking data
-        laneData = uint16(zeros(30,7));
+        laneData = zeros(30,8,2);
         continue;
     else
-        % cellSizesInLane stores the unconstricted cell sizes in the
-        % current lane from cellInfo. cellSizesInLaneIdx is a counter variable
-        cellSizesInLane = [];
-        cellSizesInLaneIdx = 1;
-        
         % For each cell in this lane's data
-        for cellIndexInLane = 1:size(cellInfo{lane},1)
-            % If the cell is touching line 2, and the previous cell already
-            % reached line 3
-            currentLine = cellInfo{lane}(cellIndexInLane,3);
+        for cellIndex = 1:size(cellInfo{lane},1)
+            % If the cell is touching line 1, and the previous cell already
+            % reached line 2
+            currentLine = cellInfo{lane}(cellIndex,3);
             
             % Once all the cells are evaluated (current line is zero),
             if(currentLine == 0)
                break; 
             end
             
-            % If a) the cell is touching line 1 or 
-            %    b) is touching line 2 and the data is 
-            %       from the is the first row in cellInfo, 
-            % store the unconstricted cell size from cellInfo size in cellSizesInLane
-            % The second case occurs when the video starts off with a cell
-            % touching line 2 but which has not touched line 1.
-            if(currentLine == 1 || (cellIndexInLane == 1 && currentLine == 2))
-                cellSizesInLane(cellSizesInLaneIdx) = cellInfo{lane}(cellIndexInLane,5);
-                cellSizesInLaneIdx = cellSizesInLaneIdx + 1;
-            end
-            
-            if(currentLine == 2 && contactCount(2) == contactCount(3))
+            if(currentLine == 1 && contactCount(1) == contactCount(2))
                 % Increment the contact count
                 contactCount(1) = contactCount(1) + 1;
-                % Write the frame number to laneData for that cell at
-                % line 2
-                laneData(contactCount(1), 1) = cellInfo{lane}(cellIndexInLane,1);
-            % If the cell is below line 2, and the contact count for the
+                % Write the frame number to trackingData for that cell at
+                % line 1
+                laneData(contactCount(1), 1, 1) = cellInfo{lane}(cellIndex,1);
+                % Write the cell's area to the entry "behind" the frame
+                laneData(contactCount(1), 1, 2) = cellInfo{lane}(cellIndex,4);
+                % Diameter (from axis lengths)
+                laneData(contactCount(1), 1, 3) = (cellInfo{lane}(cellIndex,5) + cellInfo{lane}(cellIndex,6))/2;
+                % Eccentricity
+                laneData(contactCount(1), 1, 4) = sqrt(1 - (((cellInfo{lane}(cellIndex,6))^2) / ((cellInfo{lane}(cellIndex,5))^2)));
+            % If the cell is below line 1, and the contact count for the
             % previous line is greater than the current line (ie the cell
             % moved from the previous line), change the contactCount and
             % write the frame number to laneData 
-            elseif(currentLine > 2 && contactCount(currentLine-2) > contactCount(currentLine-1))
-                contactCount(currentLine-1) = contactCount(currentLine-2);
-                laneData(contactCount(currentLine-1), currentLine-1) = cellInfo{lane}(cellIndexInLane,1);
+            elseif(currentLine ~= 1 && contactCount(currentLine) < contactCount(currentLine-1))
+                contactCount(currentLine) = contactCount(currentLine-1);
+                % Frame number
+                laneData(contactCount(currentLine), currentLine, 1) = cellInfo{lane}(cellIndex,1);
+                % Area
+                laneData(contactCount(currentLine), currentLine, 2) = cellInfo{lane}(cellIndex,4);
+                % Diameter
+                laneData(contactCount(currentLine), currentLine, 3) = (cellInfo{lane}(cellIndex,5) + cellInfo{lane}(cellIndex,6))/2;
+                % Eccentricity
+                laneData(contactCount(currentLine), currentLine, 4) = sqrt(1 - (((cellInfo{lane}(cellIndex,6))^2) / ((cellInfo{lane}(cellIndex,5))^2)));
             end
             
             % Checks to make sure that the array is not full, adds more
             % space if necessary
             if(size(laneData,1) <= (contactCount(1) + 2))
-               laneData = vertcat(laneData, uint16(zeros(10,7))); 
+               laneData = vertcat(laneData, zeros(10,8,4)); 
             end
         end
  
         % Stores this lane's tracking data, eliminating any cells that
         % didn't fully transit through the device.
-        trackingData{lane} = laneData(all(laneData, 2),:);
-        
-        % size(trackingData{lane}, 1) gives the number of cells which
-        % have successfully transited through all constrictions. We iterate
-        % until this number starting from 1 and load cellSizes with stored
-        % recorded cellSize.
-        for q = 1:size(trackingData{lane}, 1)
-            cellSizes(cellSizesIdx, 1) = cellSizesInLane(q);
-            cellSizesIdx = cellSizesIdx + 1;
-        end
-        laneData = uint16(zeros(30,7));
+        yyy = laneData(all(laneData(:,:,2),2),:);
+        zzz(:,:,1) = yyy(:, 1:8);
+        zzz(:,:,2) = yyy(:, 9:16);
+        zzz(:,:,3) = yyy(:, 17:24);
+        zzz(:,:,4) = yyy(:, 25:32);
+        % trackingData{lane} = laneData(all(laneData,2),:);
+        trackingData{lane} = zzz;
+        laneData = zeros(30,8,4);
+        clear zzz;
     end
 end
+
 transitData = double(vertcat(trackingData{1:16}));
 
 % Convert the data from frames into delta time values.  After this loop,
@@ -121,19 +113,15 @@ transitData = double(vertcat(trackingData{1:16}));
 % the lines. For example, column 2 stores the amount of time it took for
 % the cell to go from line 1 to line 2.
 
-transitData = 1 / (framerate*10^-3) * transitData;
+transitData(:,:,1) = 1 / (framerate*10^-3) * transitData(:,:,1);
 
 for ii = 1:6
    for jj = 1:size(transitData,1)
-        transitData(jj,8-ii) = transitData(jj,8-ii) - transitData(jj,7-ii);
+        transitData(jj,9-ii,1) = transitData(jj,9-ii,1) - transitData(jj,8-ii,1);
    end
 end
 
 % Overwrites the first column with the total time
 for ii = 1:size(transitData,1)
-   transitData(ii,1) = sum(transitData(ii,2:7)); 
+   transitData(ii,1,1) = sum(transitData(ii,3:8,1)); 
 end
-
-% Concatenates cellSizes with transitData to 'match' cell sizes with their
-% corresponding cells
-transitData = [transitData, cellSizes];

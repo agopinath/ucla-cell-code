@@ -1,8 +1,4 @@
-%%% Bino Abel Varghese
-%%% Code to track cells
-%%% First part of the code
-
-function [transitTimeData] = CellTracking(numFrames, framerate, template, processedFrames, xOffset, cellVideo)
+function [transitTimeData] = CellTracking(numFrames, framerate, template, processedFrames, xOffset)
 
 progressbar([],[],0)
 % Change WRITEVIDEO_FLAG to true in order to print a video of the output,
@@ -25,13 +21,14 @@ laneCoords = [16 48 81 113 146 178 210 243 276 308 341 373 406 438 471 503] + xO
 % of 1,500 rows, and the code checks that the array is not full at the end 
 % of each loop.  If the array is full, it is enlarged. The columns are:
 %   1) Frame number
-%   2) cell label number
+%   2) Cell label number
 %   3) Grid line that the cell intersects
 %   4) Cell area (in pixels)
-%   5) Cell sizes (first value represents unconstricted cell size)
+%   5) Major axis length
+%   6) Minor axis length
 cellInfo = cell(1,16);
 for ii = 1:16
-   cellInfo{ii} = zeros(300,5);
+   cellInfo{ii} = zeros(300,6);
 end
 
 % In order to remember which index to write to in each of the arrays in
@@ -138,10 +135,6 @@ for ii = 1:numFrames
                 end
             end
             
-            % To implement: check if the last cell is already touching the line
-            % the current cell is touching (ie same cell touching same
-            % line), if so, change write to false
-            
             if(counter > 0 && write == true && line ~= 0)
                 % Determines which lane the current cell is in
                 [~, lane] = min(abs(laneCoords-cellCentroids(jj,1).Centroid(1)));
@@ -183,16 +176,13 @@ for ii = 1:numFrames
                     cellInfo{lane}(laneIndex(lane),3) = line;
                     % Saves the area of the cell in pixels
                     cellInfo{lane}(laneIndex(lane),4) = cellCentroids(jj,1).Area(1);
-                    % If the first line has been hit, record unconstricted
-                    % cell size by using the major/minor axes to
-                    % approximate the diameter. TODO: implement a measure
-                    % for constricted cell size as well.
-                    if(line == 1)
-                        majLen = cellCentroids(jj,1).MajorAxisLength;
-                        minLen = cellCentroids(jj,1).MinorAxisLength;
-                        cellDiameter = (majLen + minLen)/2;
-                        cellInfo{lane}(laneIndex(lane), 5) = cellDiameter;
-                    end
+                    % Store the length of the major axis
+                    cellInfo{lane}(laneIndex(lane),5) = cellCentroids(jj,1).MajorAxisLength;
+                    % Store the length of the minor axis
+                    cellInfo{lane}(laneIndex(lane),6) = cellCentroids(jj,1).MinorAxisLength;
+                    % cellDiameter = (majLen + minLen)/2;
+                    % cellInfo{lane}(laneIndex(lane), 5) = cellDiameter;
+                    % end
                     
                     % Updates the checking array and lane index
                     checkingArray(line,lane) = ii;
@@ -222,7 +212,7 @@ for ii = 1:numFrames
     % number of frames remaining.  
     for jj = 1:16
         if((size(cellInfo{jj},2) - laneIndex(jj)) <= 10)
-            vertcat(cellInfo{jj}, zeros(floor(((numFrames/ii-1)*size(cellInfo{jj},2))*1.1), 5));
+            vertcat(cellInfo{jj}, zeros(floor(((numFrames/ii-1)*size(cellInfo{jj},2))*1.1), 6));
         end
     end
     
