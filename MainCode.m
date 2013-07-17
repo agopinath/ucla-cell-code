@@ -66,6 +66,13 @@ progressbar('Overall', 'Cell detection', 'Cell tracking');
 %% Load video files and prepare any metadata
 [pathNames, videoNames] = PromptForVideos('G:\CellVideos\');
 
+% Checks to make sure at least one video was selected for processing
+if(isempty(videoNames{1}))
+    disp('No videos selected.');
+    close all;
+    return;
+end
+
 % Extracts the template size and frame rates from the video name.
 %   The video names should include, anywhere in the name, the following:
 %   1) "devNx10" where N is constriction width / template size to use
