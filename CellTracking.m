@@ -196,7 +196,7 @@ for ii = 1:numFrames
                     % as the previously found cell (cells should not be
                     % large enough to touch two lines simultaneously)
                     if(line > 2)
-                       if(checkingArray(line,lane) >= checkingArray(line-1,lane)) 
+                       if(checkingArray(line,lane) == checkingArray(line-1,lane)) 
                             continue;
                        end
                     end
