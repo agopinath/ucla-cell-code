@@ -1,4 +1,30 @@
-%% Cell Tracking
+%% ProcessTrackingData.m
+% function [transitData] = ProcessTrackingData(checkingArray, framerate, cellInfo)
+% This function inputs the raw data about the cell objects found in
+% cellTracking and fills an output data array with transit information for
+% cells.  To be counted, a cell must begin at line 1 and touch every line
+% from 1-8.  This function is designed to run quickly, and replaces an
+% older version where nested 'for' loops searched through the code.  
+
+% Code from Dr. Amy Rowat's Lab, UCLA Department of Integrative Biology and
+% Physiology
+% Updated written by Mike Scott (July 2013)
+
+% Inputs
+%   - checkingArray: an array that stores the frame that a cell last hit 
+%       each constriction generated in CellTracking 
+%   - framerate: an integer that stores the framerate, used to calculate
+%       the transit times
+%   - cellInfo: a 16 entry cell structure that stores information about
+%       cells from each of the 16 lanes. 
+
+% Outputs
+%   - transitTimeData: an array of data with dimensions (n x 8 x 4) where n
+%   is the number of cells found in the video
+%       - transitTimeData(:,:,1) is the transit time data
+%       - transitTimeData(:,:,2) is the area data
+%       - transitTimeData(:,:,3) is the equivalent diameter data
+%       - transitTimeData(:,:,4) is the eccentricity data
 
 function [transitData] = ProcessTrackingData(checkingArray, framerate, cellInfo)
 
