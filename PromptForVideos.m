@@ -1,7 +1,22 @@
-%% Prompt User for Videos (if not debugging)
+%% PromptForVideos.m
+% function [pathNames, videoNames] = PromptForVideos(videoSearchPath)
 % Opens a GUI to select videos, user can select a single file at a time and
 % ends selection by clicking 'cancel'. Video and path names returned
 % are loaded into and returned by the cell arrays 'pathNames' and 'videoNames'.
+
+% Code from Dr. Amy Rowat's Lab, UCLA Department of Integrative Biology and
+% Physiology
+% Code by Ajay Gopinath (July 2013)
+
+% Inputs
+%   - videoSearchPath: specifies the default directory to select videos
+
+% Outputs
+%   - pathNames: a string or array of strings that specifies the filepaths
+%       of the videos.
+%   - videoNames: a string or array of strings that specifies the names of
+%       the videos
+
 function [pathNames, videoNames] = PromptForVideos(videoSearchPath)
 
 DEBUG_FLAG = false;
