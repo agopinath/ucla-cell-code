@@ -187,7 +187,7 @@ for i = 1:length(runOutputPaths)
     fprintf(runOutputFile, '%s\n\n', 'The following files were processed from this folder:');
     fprintf(runOutputFile, '%s\n', '============');
     for j = 1:length(vidsProcessed)
-        fprintf(runOutputFile, '%s\n', vidsProcessed{1});
+        fprintf(runOutputFile, '%s\n', vidsProcessed{j});
     end
     fprintf(runOutputFile, '%s\n\n', '============');
     
