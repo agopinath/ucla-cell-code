@@ -1,5 +1,5 @@
 %% CellTracking.m
-% function [transitTimeData] = CellTracking(numFrames, framerate, template, processedFrames, xOffset)
+% function [transitData] = CellTracking(numFrames, framerate, template, processedFrames, xOffset)
 % Inputs the processed frames of a video, labels them, and stores the data.
 % Now evaluates data before storing it, eliminating storage of data that is
 % later unused.  Calls ProcessTrackingData to process the raw data.
@@ -21,17 +21,17 @@
 %       offset, used to calculate the x-coordinates of the lanes 
 
 % Outputs
-%   - transitTimeData: an array of data with dimensions (n x 8 x 4) where n
+%   - transitData: an array of data with dimensions (n x 8 x 4) where n
 %   is the number of cells found in the video
-%       - transitTimeData(:,:,1) is the transit time data
-%       - transitTimeData(:,:,2) is the area data
-%       - transitTimeData(:,:,3) is the equivalent diameter data
-%       - transitTimeData(:,:,4) is the eccentricity data
+%       - transitData(:,:,1) is the transit time data
+%       - transitData(:,:,2) is the area data
+%       - transitData(:,:,3) is the equivalent diameter data
+%       - transitData(:,:,4) is the eccentricity data
 
 % Functions called
 %   - ProcessTrackingData   (processes the raw data to track the cells)
 
-function [transitTimeData] = CellTracking(numFrames, framerate, template, processedFrames, xOffset)
+function [transitData] = CellTracking(numFrames, framerate, template, processedFrames, xOffset)
 
 progressbar([],[],0)
 % Change WRITEVIDEO_FLAG to true in order to print a video of the output,
@@ -258,8 +258,8 @@ if(WRITEVIDEO_FLAG)
 end
 
 %% Calls ProcessTrackingData to process the raw data and return
-% transitTimeData, an nx7 array where n is the number of cells that
+% transitData, an nx8 array where n is the number of cells that
 % transited completely through the device.  The first column is the total
-% transit time, while columns 2-7 give the time taken to transit from
-% constriction 1-2, 2-3, etc.
-[transitTimeData] = ProcessTrackingData(checkingArray, framerate, cellInfo);
+% transit time, the second gives the areas at each constriction, and columns 
+% 3-8 give the time taken to transit from constriction 1-2, 2-3, etc.
+[transitData] = ProcessTrackingData(checkingArray, framerate, cellInfo);

@@ -19,12 +19,12 @@
 %       cells from each of the 16 lanes. 
 
 % Outputs
-%   - transitTimeData: an array of data with dimensions (n x 8 x 4) where n
+%   - transitData: an array of data with dimensions (n x 8 x 4) where n
 %   is the number of cells found in the video
-%       - transitTimeData(:,:,1) is the transit time data
-%       - transitTimeData(:,:,2) is the area data
-%       - transitTimeData(:,:,3) is the equivalent diameter data
-%       - transitTimeData(:,:,4) is the eccentricity data
+%       - transitData(:,:,1) is the transit time data
+%       - transitData(:,:,2) is the area data
+%       - transitData(:,:,3) is the equivalent diameter data
+%       - transitData(:,:,4) is the eccentricity data
 
 function [transitData] = ProcessTrackingData(checkingArray, framerate, cellInfo)
 
