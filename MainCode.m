@@ -59,7 +59,6 @@ clc
 % Allocates an array for the data
 numDataCols = 8;
 compiledData = zeros(1, numDataCols);
-compiledDataPath = 'G:\CellVideos\';
 % Initializes a progress bar
 progressbar('Overall', 'Cell detection', 'Cell tracking');
 
