@@ -131,6 +131,12 @@ end
 
 transitData = double(vertcat(trackingData{1:16}));
 
+% If no cells were found in a video, gives proper dimensions to the empty 
+transitData so as not to give an indexing error.
+if (isempty(transitData))
+    transitData = zeros(0,8,4);
+end
+
 % Convert the data from frames into delta time values.  After this loop,
 % column 1 will store the time at which the cell reached the line, and
 % columns 2-7 will store the length of time the cell took to pass between
