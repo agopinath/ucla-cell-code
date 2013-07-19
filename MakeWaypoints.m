@@ -51,19 +51,40 @@ frame = read(cellVideo,1);
 % have been placed correctly)
 originalFrame = frame;
 
+
 %% Filtering
 % Defines a sharpening filter hSharp (sum of the entries == 1, so the
 % brightness of the frame overall will be unchanged).
 % Filtering scheme:
 %   1) Sharpen
-%   2) Enhance contrast
-%   3) Convert to grayscale with automatic thresholding
-%   4) Perform a median filter (gets rid of noise)
+%   2) Detect edges
+%   3) Enhance contrast
+%   4) Convert to grayscale with automatic thresholding
+%   5) Perform a median filter (gets rid of noise)
+%   6) Inverts binary image
+
 hSharp = [-1 -1 -1; -1 12 -1; -1 -1 -1]/4;
 frame = imfilter(frame, hSharp);
+h = fspecial('prewitt');
+frame = imfilter(frame, h');
 frame = imadjust(frame,stretchlim(frame, [0.05 0.99]), []);
 frame = im2bw(frame, graythresh(frame));
 frame = medfilt2(frame);
+frame = ~frame;
+
+
+%% Image Registration
+%Registers the processed first frame to the template and
+%translates the frame to match the template.
+[optimizer, metric] = imregconfig('multimodal');
+
+    optimizer.GrowthFactor = 1.0000001;
+    optimizer.Epsilon = 1.5e-7;
+    optimizer.MaximumIterations = 200;
+    optimizer.InitialRadius = 6.25e-4;
+    
+registeredFrame = imregister(double(frame), double(template),'translation',optimizer,metric);
+
 
 %% Cross Correlation
 % Computes the 2D normal cross correlation between the first frame and the
