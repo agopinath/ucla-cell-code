@@ -125,7 +125,6 @@ for ii = 1:numFrames
         % for the first frame with an object intersecting the top line.
         for jj = 1:numLabels
             currentRegion = ismember(labeledFrame, jj);
-            
             % For the first frame
             if firstFrame
                 % If the cell intersects line 1, add it to workingFrame,
@@ -148,11 +147,20 @@ for ii = 1:numFrames
             % but looks at every line, not just the top line.    
             else
                 % Goes through each labeled region in the current frame, and finds
-                % the line that the object intersects with 
-                for line = 1:8
+                % the line that the object intersects with
+                % The reason for reverse iteration through the lines is
+                % because a cell passaging may very well intersect both lines 1 
+                % (the line for finding "unconstricted cell size") and line 2, 
+                % the cell may very well intersect both at the same time. 
+                % To fix this, we want to find when the cell is intersecting  
+                % line 2 no matter whether it is also intersecting line 1,
+                % and iterating in reverse will let us check for line 2's
+                % intersection before that of line 1.
+                
+                for line = 8:-1:1
                     % Find their intersection
                     if(sum(currentRegion(lineCoordinate(line),:)) ~= 0)
-                        % workingFrame = workingFrame | currentRegion;
+                        
                         counter = counter + 1;
                         % Breaks to preserve line, the line intersection
                         write = true;
@@ -161,7 +169,7 @@ for ii = 1:numFrames
                     % If the cell is not touching any of the lines, set
                     % line = 0, so it is not included in the array
                     % cellInfo
-                    if(line == 8)
+                    if(line == 1)
                         write = false;
                         break;
                     end
