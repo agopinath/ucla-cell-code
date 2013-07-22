@@ -108,8 +108,10 @@ xOffset = corrOffset(2);
 
 % Shows how well the correlation worked by overlaying the image template in
 % green over the processed frame.
-figure(52)
+figure(2)
 imshow(originalFrame(max([1 position(2)]):min([size(frame,1) position(2)+position(4)-1]), max([1 position(1)]):min([size(frame,2) position(1)+position(3)-1]),:), 'InitialMag', 'fit')
+g = imgcf;
+set(g,'name','Template Correlation Verification')
 % Makes an all green image, then by using 'AlphaData', only shows green
 % pixels where the template was black (since the template was binary).
 green = cat(3, zeros(size(template)), ones(size(template)), zeros(size(template)));
@@ -117,6 +119,7 @@ hold on
 h = imshow(green);
 hold off
 set(h, 'AlphaData', imcomplement(template))
+title(regexprep(cellVideo.Name,'_',' '))
 
 %% Line template generation
 % Preallocates an array for storing the template
@@ -170,5 +173,9 @@ end
 for counter=1:length(Xcoords)
     originalFrame(Xcoords(counter),Ycoords(counter),1:3)= ones(1,3)*255;
 end
-figure(11);
+
+figure(3);
 imshow(originalFrame);
+h = imgcf;
+set(h,'name','Line Template Verification')
+title(regexprep(cellVideo.Name,'_',' '))
