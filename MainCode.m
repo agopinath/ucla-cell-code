@@ -52,13 +52,15 @@
 %       - added better output of debugging information
 
 close all
-clear all
+clear variables
 clc
 
 %% Initializations
 % Allocates an array for the data
 numDataCols = 8;
-compiledData = zeros(1, numDataCols);
+lonelyCompiledData = zeros(1, numDataCols);
+pairedCompiledData = zeros(1, numDataCols);
+compiledDataPath = 'C:\Users\Mike\Desktop\';
 % Initializes a progress bar
 progressbar('Overall', 'Cell detection', 'Cell tracking');
 
@@ -124,23 +126,29 @@ for i = 1:length(videoNames)
     % 'processedFrames'.  These stored image are binary and should
     % (hopefully) only have the cells in them
     [processedFrames] = CellDetection(currVideo, startFrame, endFrame, currPathName, currVideoName, mask);
-    progressbar((i/(2*size(videoNames,1))), [], [])
     
     % Calls CellTracking to track the detected cells.
-    [data] = CellTracking((endFrame-startFrame+1), frameRates(i), lineTemplate, processedFrames, xOffset);
-    progressbar((i/(size(videoNames,1))), 0, 0)
+    [lonelyData, pairedData] = CellTrackingNoFirst((endFrame-startFrame+1), frameRates(i), lineTemplate, processedFrames, xOffset);
+    progressbar((i/(size(videoNames,2))), 0, 0)
     
     % If data is generated (cells are found and tracked through the device)
-    if (~isempty(data))
+    if (~isempty(lonelyData))
         % If the first row is zeros (has not been written to yet)
-        if ((strcmpi(lastPathName, currPathName) == 0) | compiledData(1,1:numDataCols) == zeros(1,numDataCols))
-            compiledData = data;
+        if ((strcmpi(lastPathName, currPathName) == 0) | lonelyCompiledData(1,1:numDataCols) == zeros(1,numDataCols))
+            lonelyCompiledData = lonelyData;
         % Otherwise add the new data
         else
-            compiledData(end+1:end+size(data,1),1:numDataCols,1:size(data,3)) = data;
+            lonelyCompiledData(end+1:end+size(lonelyData,1),1:numDataCols,1:size(lonelyData,3)) = lonelyData;
         end
         
-         % Plots histograms of the paired and unpaired cells total times
+        if ((strcmpi(lastPathName, currPathName) == 0) | pairedCompiledData(1,1:numDataCols) == zeros(1,numDataCols))
+            pairedCompiledData = pairedData;
+        % Otherwise add the new data
+        else
+            pairedCompiledData(end+1:end+size(pairedData,1),1:numDataCols,1:size(pairedData,3)) = pairedData;
+        end
+        
+        % Plots histograms of the paired and unpaired cells total times
         figure(5)
         s(1) = subplot(2,2,1);
         s(2) = subplot(2,2,2);
@@ -160,30 +168,8 @@ for i = 1:length(videoNames)
         xlabel(s(4), 'Area (pixels)')
         linkaxes([s(1) s(3)],'xy');
         linkaxes([s(2) s(4)],'xy');
-        h = gcf;
-        set(h,'name','Last Video Data Histogram')
         
-        % Writes out the transit time data in an excel file
-        colHeader1 = {'Total Time (ms)', 'Unconstricted Area'};
-        colHeader2 = {'Total Time (ms)', 'Unconstricted Area', 'C1 to C2', 'C2 to C3', 'C3 to C4', 'C4 to C5', 'C5 to C6', 'C6 to C7'};
-        colHeader3 = {'Unconstricted Area', 'A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7'};
-        colHeader4 = {'Unconstricted D', 'D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7'};
-        colHeader5 = {'Unconstricted E', 'E1', 'E2', 'E3', 'E4', 'E5', 'E6', 'E7'};
-        xlswrite(outputFilename,colHeader1,'Sheet1','A1');
-        xlswrite(outputFilename,compiledData(:,1,1),'Sheet1','A2');
-        xlswrite(outputFilename,compiledData(:,1,2),'Sheet1','B2');
-        
-        xlswrite(outputFilename,colHeader2,'Sheet2','A1');
-        xlswrite(outputFilename,compiledData(:,:,1),'Sheet2','A2');
-        
-        xlswrite(outputFilename,colHeader3,'Sheet3','A1');
-        xlswrite(outputFilename,compiledData(:,:,2),'Sheet3','A2');
-        
-        xlswrite(outputFilename,colHeader4,'Sheet4','A1');
-        xlswrite(outputFilename,compiledData(:,:,3),'Sheet4','A2');
-        
-        xlswrite(outputFilename,colHeader5,'Sheet5','A1');
-        xlswrite(outputFilename,compiledData(:,:,4),'Sheet5','A2');
+        writeExcelOutputFast(outputFilename, lonelyCompiledData, pairedCompiledData);
         
         lastPathName = currPathName;
     end

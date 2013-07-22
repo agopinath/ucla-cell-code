@@ -26,7 +26,7 @@
 %       - transitData(:,:,3) is the equivalent diameter data
 %       - transitData(:,:,4) is the eccentricity data
 
-function [transitData] = ProcessTrackingData(checkingArray, framerate, cellInfo)
+function [unpairedTransitData, pairedTransitData] = ProcessTrackingData(checkingArray, framerate, cellInfo)
 
 % Tracks the cells
 % contactCount stores how many cells have touched a particular line in the
@@ -58,17 +58,17 @@ function [transitData] = ProcessTrackingData(checkingArray, framerate, cellInfo)
 % dim2 = area data
 % dim3 = diameter data
 % dim4 = eccentrity data
-laneData = zeros(30,8,4);
+laneData = zeros(30,9,4);
 
 % trackingData is a cell that contains the lane data for each lane
-trackingData = cell(1,16);
+trackingData = cell(2,16);
 
 % Goes through the data for each lane (1-16)
 for lane = 1:16
     contactCount = zeros(8,1);
     if(any(checkingArray(:,lane) == 0))
         % Does not store any data for the lane if no cells fully transited through the lane
-        laneData = zeros(30,8,2);
+        laneData = zeros(30,9,2);
         continue;
     else
         % For each cell in this lane's data
@@ -111,31 +111,43 @@ for lane = 1:16
             % Checks to make sure that the array is not full, adds more
             % space if necessary
             if(size(laneData,1) <= (contactCount(1) + 2))
-               laneData = vertcat(laneData, zeros(10,8,4)); 
+               laneData = vertcat(laneData, zeros(10,9,4)); 
             end
         end
  
-        % Stores this lane's tracking data, eliminating any cells that
-        % didn't fully transit through the device.
-        yyy = laneData(all(laneData(:,:,2),2),:);
-        zzz(:,:,1) = yyy(:, 1:8);
-        zzz(:,:,2) = yyy(:, 9:16);
-        zzz(:,:,3) = yyy(:, 17:24);
-        zzz(:,:,4) = yyy(:, 25:32);
-        % trackingData{lane} = laneData(all(laneData,2),:);
-        trackingData{lane} = zzz;
-        laneData = zeros(30,8,4);
-        clear zzz;
+        % Eliminate any rows with zeros in the 8th column (did not transit)
+        [row, ~] = find(laneData(:,8,1) ~= 0);
+        laneData = laneData(row,:,:);
+        
+        % Check for "paired" cells, and mark any paired cells with the
+        % maximum number of cells concurrently in the lane with them
+        for index = 2:size(laneData,1)
+            % If not already paired, set to 1
+            if(laneData(index,9,1) == 0)
+                laneData(index,9,1) = 1;
+            end
+            % If the current cell hits line 2 before the previous clears
+            % line 8
+            if(laneData(index,2,1) < laneData(index-1,8,1))
+                laneData(index,9,1) = 2;
+                laneData(index-1,9,1) = 2;
+            end
+        end
+        
+        % Writes the lonely cells to the first row of trackingData
+        [row, ~] = find(laneData(:,9,1) == 1);
+        trackingData{1,lane} = laneData(row,:,:);
+        
+        % Writes paired cells to the second row of trackingData
+        [row, ~] = find(laneData(:,9,1) == 2);
+        trackingData{2,lane} = laneData(row,:,:);
+        
+        laneData = zeros(30,9,4);
     end
 end
 
-transitData = double(vertcat(trackingData{1:16}));
-
-% If no cells were found in a video, gives proper dimensions to the empty 
-transitData so as not to give an indexing error.
-if (isempty(transitData))
-    transitData = zeros(0,8,4);
-end
+unpairedTransitData = double(vertcat(trackingData{1, 1:16}));
+pairedTransitData = double(vertcat(trackingData{2, 1:16}));
 
 % Convert the data from frames into delta time values.  After this loop,
 % column 1 will store the time at which the cell reached the line, and
@@ -143,18 +155,31 @@ end
 % the lines. For example, column 2 stores the amount of time it took for
 % the cell to go from line 1 to line 2.
 
-transitData(:,:,1) = 1 / (framerate*10^-3) * transitData(:,:,1);
+unpairedTransitData(:,1:8,1) = 1 / (framerate*10^-3) * unpairedTransitData(:,1:8,1);
+pairedTransitData(:,1:8,1) = 1 / (framerate*10^-3) * pairedTransitData(:,1:8,1);
 
 for ii = 1:6
-   for jj = 1:size(transitData,1)
-        transitData(jj,9-ii,1) = transitData(jj,9-ii,1) - transitData(jj,8-ii,1);
+   for jj = 1:size(unpairedTransitData,1)
+        unpairedTransitData(jj,9-ii,1) = unpairedTransitData(jj,9-ii,1) - unpairedTransitData(jj,8-ii,1);
+   end
+end
+
+for ii = 1:6
+   for jj = 1:size(pairedTransitData,1)
+        pairedTransitData(jj,9-ii,1) = pairedTransitData(jj,9-ii,1) - pairedTransitData(jj,8-ii,1);
    end
 end
 
 % Overwrites first column of 1st dimension with the total time
-for ii = 1:size(transitData,1)
-   transitData(ii,1,1) = sum(transitData(ii,3:8,1)); 
+for ii = 1:size(unpairedTransitData,1)
+   unpairedTransitData(ii,1,1) = sum(unpairedTransitData(ii,3:8,1));
+end
+
+% Overwrites first column of 1st dimension with the total time
+for ii = 1:size(pairedTransitData,1)
+   pairedTransitData(ii,1,1) = sum(pairedTransitData(ii,3:8,1));
 end
 
 % Overwrites second column of 1st dimension with areas at each constriction
-transitData(:,2,1) = transitData(:,1,2);
+unpairedTransitData(:,2,1) = unpairedTransitData(:,1,2);
+pairedTransitData(:,2,1) = pairedTransitData(:,1,2);
