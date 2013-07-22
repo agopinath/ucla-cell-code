@@ -140,10 +140,28 @@ for i = 1:length(videoNames)
             compiledData(end+1:end+size(data,1),1:numDataCols,1:size(data,3)) = data;
         end
         
-        % plot histogram of compiled data
-        figure(99)
-        [n,xout] = hist(compiledData(:,1,1));
-        bar(xout,n);
+         % Plots histograms of the paired and unpaired cells total times
+        figure(5)
+        s(1) = subplot(2,2,1);
+        s(2) = subplot(2,2,2);
+        s(3) = subplot(2,2,3);
+        s(4) = subplot(2,2,4);
+        % Transit times
+        hist(s(1),lonelyCompiledData(:,1,1))
+        hist(s(3),pairedCompiledData(:,1,1))
+        title(s(1), 'Unpaired Cells','FontWeight','bold')
+        title(s(3), 'Paired Cells','FontWeight','bold')
+        xlabel(s(3), 'Total Transit Time (ms)')
+        % Areas
+        hist(s(2),lonelyCompiledData(:,1,2))
+        hist(s(4),pairedCompiledData(:,1,2))
+        title(s(2), 'Unpaired Cells','FontWeight','bold')
+        title(s(4), 'Paired Cells','FontWeight','bold')
+        xlabel(s(4), 'Area (pixels)')
+        linkaxes([s(1) s(3)],'xy');
+        linkaxes([s(2) s(4)],'xy');
+        h = gcf;
+        set(h,'name','Last Video Data Histogram')
         
         % Writes out the transit time data in an excel file
         colHeader1 = {'Total Time (ms)', 'Unconstricted Area'};
