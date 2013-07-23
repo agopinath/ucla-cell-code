@@ -1,5 +1,5 @@
-% writeExcelOutput
-function writeExcelOutput(outputFilename, lonelyData, pairedData)
+% WriteExcelOutput
+function WriteExcelOutput(outputFilename, lonelyData, pairedData)
 
 % Writes out the transit time data in an excel file
 %% Sheet 1: Total Transit Time and Unconstricted Area

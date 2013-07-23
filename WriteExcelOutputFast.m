@@ -1,5 +1,5 @@
-% writeExcelOutput
-function writeExcelOutputFast(outputFilename, lonelyData, pairedData)
+% WriteExcelOutput
+function WriteExcelOutputFast(outputFilename, lonelyData, pairedData)
 % Opens an Excel object to write to
 Excel = actxserver ('Excel.Application'); 
 File=outputFilename; 

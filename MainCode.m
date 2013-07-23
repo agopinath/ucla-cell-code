@@ -169,7 +169,7 @@ for i = 1:length(videoNames)
         linkaxes([s(1) s(3)],'xy');
         linkaxes([s(2) s(4)],'xy');
         
-        writeExcelOutputFast(outputFilename, lonelyCompiledData, pairedCompiledData);
+        WriteExcelOutputFast(outputFilename, lonelyCompiledData, pairedCompiledData);
         
         lastPathName = currPathName;
     end
