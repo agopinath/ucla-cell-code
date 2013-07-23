@@ -39,11 +39,10 @@ progressbar([],[],0)
 WRITEVIDEO_FLAG = false;
 
 %% Initializations
-firstFrame = true;
 counter = 0;
 line = 0;
 write = true;
-highest_line = 0;
+line = 0;
 
 % HARD CODED x coordinates for the center of each lane (1-16), shifted by
 % the offset found in 'MakeWaypoints'
@@ -122,58 +121,50 @@ for ii = 1:numFrames
         cellCentroids = regionprops(labeledFrame, 'centroid', 'area', 'MajorAxisLength', 'MinorAxisLength');
         
         %% Check which line the object intersects with
-        % If firstFrame is true (meaning this is the first frame), looks
-        % for the first frame with an object intersecting the top line.
         for jj = 1:numLabels
             currentRegion = ismember(labeledFrame, jj);
+            % Goes through each labeled region in the current frame, and finds
+            % the line that the object intersects with
+            % Goes through each labeled region in the current frame, and finds
+            % the line that the object intersects with
+            % The reason for reverse iteration through the lines is
+            % because a cell passaging may very well intersect both lines 1
+            % (the line for finding "unconstricted cell size") and line 2,
+            % the cell may very well intersect both at the same time.
+            % To fix this, we want to find when the cell is intersecting
+            % line 2 no matter whether it is also intersecting line 1,
+            % and iterating in reverse will let us check for line 2's
+            % intersection before that of line 1.
             
-            % For the first frame
-            if firstFrame
-                % If the cell intersects line 1, add it to workingFrame,
-                % and set firstFrame = false.
-                if(sum(currentRegion(lineCoordinate(1),:)) ~= 0)
-                    % workingFrame = workingFrame | currentRegion;
+            linesOneAndTwo = false;
+            for line = 8:-1:1
+                % Find their intersection
+                if(sum(currentRegion(lineCoordinate(line),:)) ~= 0)
                     counter = counter + 1;
-                    % Indicates that the cell intersects the top line
-                    line = 1;
+                    % Makes sure if the cell is touching line 2, it is not also
+                    % touching line 1 (often line 1 is skipped due to its
+                    % proximity to line 2)
+                    if(line == 2)
+                        if(sum(currentRegion(lineCoordinate(1),:)) ~= 0)
+                            linesOneAndTwo = true;
+                        end
+                    end
+                    % Breaks to preserve line, the line intersection
+                    write = true;
+                    break;
                 end
                 
-                % If any cells were found in the first frame, set firstFrame false
-                % so future frames are checked for cells that intersect any line,
-                % not just the top line
-                if(jj == numLabels && counter > 0)
-                    firstFrame = false;
-                end
                 
-                % For frames other than the first frame (same as first frame,
-                % but looks at every line, not just the top line.
-            else
-                % Goes through each labeled region in the current frame, and finds
-                % the line that the object intersects with
-                highest_line = 0;
-                for line = 1:8
-                    % Find their intersection
-                    if(sum(currentRegion(lineCoordinate(line),:)) ~= 0)
-                        highest_line = line;
-                        % If at the "area" line (1), check if it is also at
-                        % line 2, if so, count it as line 2
-                        % workingFrame = workingFrame | currentRegion;
-                        counter = counter + 1;
-                        % Breaks to preserve line, the line intersection
-                        write = true;
-                        
-                    end
-                    % If the cell is not touching any of the lines, set
-                    % line = 0, so it is not included in the array
-                    % cellInfo
-                    if(line == 8 && highest_line == 0)
-                        write = false;
-                        break;
-                    end
+                % If the cell is not touching any of the lines, set
+                % line = 0, so it is not included in the array
+                % cellInfo
+                if(line == 1)
+                    write = false;
+                    break;
                 end
             end
             
-            if(counter > 0 && write == true && highest_line ~= 0)
+            if(counter > 0 && write == true && line ~= 0)
                 % Determines which lane the current cell is in
                 [offCenter, lane] = min(abs(laneCoords-cellCentroids(jj,1).Centroid(1)));
                 
@@ -191,28 +182,40 @@ for ii = 1:numFrames
                 %       array in cellInfo.
                 % In case 1:
                 if(offCenter <= 12)
-                    if(checkingArray(highest_line,lane) == ii - 1 && (checkingArray(highest_line,lane) ~= 0 || ii ~= 1))
+                    if(checkingArray(line,lane) == ii - 1 && (checkingArray(line,lane) ~= 0 || ii ~= 1))
                         % If the cell was in the same place as the line before
                         % And a cell was previously found at this line
                         % ~=0 since if the cell is the first to be found on
                         % line 1 in that lane, it will be zero (if in frame 1)
-                        checkingArray(highest_line,lane) = ii;
+                        checkingArray(line,lane) = ii;
                     else
-                        % Also checks that the cell is not from the same frame
-                        % as the previously found cell (cells should not be
-                        % large enough to touch two lines simultaneously)
-                        %                     if(line > 2)
-                        %                        if(checkingArray(line,lane) == checkingArray(line-1,lane))
-                        %                             continue;
-                        %                        end
-                        %                     end
+                        % If the cell touches lines one and two at the same
+                        % time, save information at line 1 and line 2!
+                        if(linesOneAndTwo)
+                            % Frame number
+                            cellInfo{lane}(laneIndex(lane),1) = ii;
+                            % Cell number
+                            cellInfo{lane}(laneIndex(lane),2) = counter;
+                            % Line intersection
+                            cellInfo{lane}(laneIndex(lane),3) = 1;
+                            % Saves the area of the cell in pixels
+                            cellInfo{lane}(laneIndex(lane),4) = cellCentroids(jj,1).Area(1);
+                            % Store the length of the major axis
+                            cellInfo{lane}(laneIndex(lane),5) = cellCentroids(jj,1).MajorAxisLength;
+                            % Store the length of the minor axis
+                            cellInfo{lane}(laneIndex(lane),6) = cellCentroids(jj,1).MinorAxisLength;
+                            
+                            % Updates the checking array and lane index
+                            checkingArray(1,lane) = ii;
+                            laneIndex(lane) = laneIndex(lane) + 1;
+                        end
                         % Save data about the cell:
                         % Frame number
                         cellInfo{lane}(laneIndex(lane),1) = ii;
                         % Cell number
                         cellInfo{lane}(laneIndex(lane),2) = counter;
                         % Line intersection
-                        cellInfo{lane}(laneIndex(lane),3) = highest_line;
+                        cellInfo{lane}(laneIndex(lane),3) = line;
                         % Saves the area of the cell in pixels
                         cellInfo{lane}(laneIndex(lane),4) = cellCentroids(jj,1).Area(1);
                         % Store the length of the major axis
@@ -221,7 +224,7 @@ for ii = 1:numFrames
                         cellInfo{lane}(laneIndex(lane),6) = cellCentroids(jj,1).MinorAxisLength;
                         
                         % Updates the checking array and lane index
-                        checkingArray(highest_line,lane) = ii;
+                        checkingArray(line,lane) = ii;
                         laneIndex(lane) = laneIndex(lane) + 1;
                         % Update workingFrame
                         workingFrame = workingFrame | currentRegion;

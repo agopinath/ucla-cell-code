@@ -36,7 +36,7 @@
 function [mask, lineTemplate, xOffset] = MakeWaypoints(cellVideo, templateSize)
 
 %% Loading
-templateFolder = 'C:\Users\Ajay\Documents\ucla-cell-code\Masks';%'C:\Users\Mike\Desktop\Microfluidic Code Testing\071913 SimplifiedLonelyCellDetection\Masks';
+templateFolder = 'Y:\072213 Cell Deformer V2 (Stable Release)\Masks';
 
 % Reads in the specified template
 template = imread(fullfile(templateFolder, [num2str(templateSize), 'micron_thin.tif']));
@@ -109,6 +109,8 @@ xOffset = corrOffset(2);
 % green over the processed frame.
 figure(2)
 imshow(originalFrame(max([1 position(2)]):min([size(frame,1) position(2)+position(4)-1]), max([1 position(1)]):min([size(frame,2) position(1)+position(3)-1]),:), 'InitialMag', 'fit')
+g = imgcf;
+set(g,'name','Template Correlation Verification')
 % Makes an all green image, then by using 'AlphaData', only shows green
 % pixels where the template was black (since the template was binary).
 green = cat(3, zeros(size(template)), ones(size(template)), zeros(size(template)));
@@ -170,6 +172,9 @@ end
 for counter=1:length(Xcoords)
     originalFrame(Xcoords(counter),Ycoords(counter),1:3)= ones(1,3)*255;
 end
+
 figure(3);
 imshow(originalFrame);
+h = imgcf;
+set(h,'name','Line Template Verification')
 title(regexprep(cellVideo.Name,'_',' '))

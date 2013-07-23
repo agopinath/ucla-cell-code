@@ -19,8 +19,7 @@
 %       cells from each of the 16 lanes. 
 
 % Outputs
-%   - transitData: an array of data with dimensions (n x 8 x 4) where n
-%   is the number of cells found in the video
+%   - transitData: one for unpaired cells, another for paired cells
 %       - transitData(:,:,1) is the transit time data
 %       - transitData(:,:,2) is the area data
 %       - transitData(:,:,3) is the equivalent diameter data
@@ -115,12 +114,38 @@ for lane = 1:16
             end
         end
  
+        % Sets laneData(:,9,2) to the current lane (useful in debugging)
+        laneData(:,9,2) = lane;
+        
         % Eliminate any rows with zeros in the 8th column (did not transit)
         [row, ~] = find(laneData(:,8,1) ~= 0);
         laneData = laneData(row,:,:);
         
-        % Check for "paired" cells, and mark any paired cells with the
-        % maximum number of cells concurrently in the lane with them
+        % Make sure the first cells were not paired (with cells already in
+        % the device that are not counted because they did not touch every
+        % line).  Basic principle:  Frame where the first cell hits
+        % constriction 8 is known.  Look back for the previous cell at
+        % frame 8, and see if this frame is greater than the frame where
+        % the first cell hits line 1.  If so, pair.
+        
+        % Looks back from the frame the first cell is at line 8
+        index = 1;
+        lastEight = 0;
+        while (~isempty(laneData) && (index < size(cellInfo{1,lane}, 1)) && (cellInfo{1,lane}(index,1) < laneData(1,8,1)))
+            % If there is a cell at line 8 (other than the first counted
+            % cell), store the frame at which it hit line 8.
+            if(cellInfo{1,lane}(index,3) == 8)
+               lastEight = cellInfo{1,lane}(index,1);
+            end
+            index = index + 1;
+        end
+        
+        % Pair the first cell if it coincides with another (uncounted) cell
+        if(~isempty(laneData) && laneData(1,2,1) <= lastEight)
+           laneData(1,9,1) = 2;
+        end
+        
+        % Paired cells after the initial cells
         for index = 2:size(laneData,1)
             % If not already paired, set to 1
             if(laneData(index,9,1) == 0)
