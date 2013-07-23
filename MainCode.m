@@ -54,7 +54,7 @@
 close all
 clear variables
 clc
-
+ 
 addpath(genpath(fullfile(pwd, '/Helpers')));
 
 %% Initializations
@@ -62,7 +62,17 @@ addpath(genpath(fullfile(pwd, '/Helpers')));
 numDataCols = 8;
 lonelyCompiledData = zeros(1, numDataCols);
 pairedCompiledData = zeros(1, numDataCols);
-compiledDataPath = 'C:\Users\Mike\Desktop\';
+
+% Checks to see if Excel sheets or CSV files will be the output medium
+% If an error is thrown when trying to initialize the Excel server, Excel
+% is not available and CSV should be used instead
+try
+    actxserver ('Excel.Application'); 
+    shouldUseExcel = true;
+catch
+    shouldUseExcel = false;
+end
+
 % Initializes a progress bar
 progressbar('Overall', 'Cell detection', 'Cell tracking');
 
@@ -130,7 +140,7 @@ for i = 1:length(videoNames)
     [processedFrames] = CellDetection(currVideo, startFrame, endFrame, currPathName, currVideoName, mask);
     
     % Calls CellTracking to track the detected cells.
-    [lonelyData, pairedData] = CellTrackingNoFirst((endFrame-startFrame+1), frameRates(i), lineTemplate, processedFrames, xOffset);
+    [lonelyData, pairedData] = CellTracking((endFrame-startFrame+1), frameRates(i), lineTemplate, processedFrames, xOffset);
     progressbar((i/(size(videoNames,2))), 0, 0)
     
     % If data is generated (cells are found and tracked through the device)
@@ -171,7 +181,11 @@ for i = 1:length(videoNames)
         linkaxes([s(1) s(3)],'xy');
         linkaxes([s(2) s(4)],'xy');
         
-        WriteExcelOutput(outputFilename, lonelyCompiledData, pairedCompiledData);
+        if(shouldUseExcel)
+            WriteExcelOutputFast(outputFilename, lonelyCompiledData, pairedCompiledData);
+        else
+            WriteCSVOutput(outputFolderName, lonelyCompiledData, pairedCompiledData);
+        end
         
         lastPathName = currPathName;
     end
