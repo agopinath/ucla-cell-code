@@ -182,7 +182,7 @@ for i = 1:length(videoNames)
         linkaxes([s(2) s(4)],'xy');
         
         if(shouldUseExcel)
-            WriteExcelOutputFast(outputFilename, lonelyCompiledData, pairedCompiledData);
+            WriteExcelOutput(outputFilename, lonelyCompiledData, pairedCompiledData);
         else
             WriteCSVOutput(outputFolderName, lonelyCompiledData, pairedCompiledData);
         end
