@@ -55,6 +55,8 @@ close all
 clear variables
 clc
 
+addpath(genpath(fullfile(pwd, '/Helpers')));
+
 %% Initializations
 % Allocates an array for the data
 numDataCols = 8;
