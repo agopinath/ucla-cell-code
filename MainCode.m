@@ -36,7 +36,7 @@
 %   - progressbar       (Gives an indication of how much time is left)
 
 % Updated 7/2013 by Mike
-%       -Cut out the preprocessing 50 frames (required editing indicies of
+%       - Cut out the preprocessing 50 frames (required editing indicies of
 %       the call for CellDetection
 %       - Rearranged and commented the code to make it clearer
 %       - Added the template.  Now MakeWaypoints is automatic and no
@@ -59,9 +59,9 @@ addpath(genpath(fullfile(pwd, '/Helpers')));
 
 %% Initializations
 % Allocates an array for the data
-numDataCols = 8;
-lonelyCompiledData = zeros(1, numDataCols);
-pairedCompiledData = zeros(1, numDataCols);
+numDataCols = 9;
+lonelyCompiledData = zeros(1, numDataCols, 4);
+pairedCompiledData = zeros(1, numDataCols, 4);
 
 % Checks to see if Excel sheets or CSV files will be the output medium
 % If an error is thrown when trying to initialize the Excel server, Excel
@@ -150,41 +150,44 @@ for i = 1:length(videoNames)
             lonelyCompiledData = lonelyData;
         % Otherwise add the new data
         else
-            lonelyCompiledData(end+1:end+size(lonelyData,1),1:numDataCols,1:size(lonelyData,3)) = lonelyData;
+            lonelyCompiledData = vertcat(lonelyCompiledData, lonelyData);
         end
         
-        if ((strcmpi(lastPathName, currPathName) == 0) | pairedCompiledData(1,1:numDataCols) == zeros(1,numDataCols))
-            pairedCompiledData = pairedData;
+        if(isempty(pairedData))
+            % Don't to anything! (pairedCompiledData = pairedCompiledData)
+        elseif ((strcmpi(lastPathName, currPathName) == 0) | pairedCompiledData(1,1:numDataCols) == zeros(1,numDataCols))
+                pairedCompiledData = pairedData;
         % Otherwise add the new data
         else
-            pairedCompiledData(end+1:end+size(pairedData,1),1:numDataCols,1:size(pairedData,3)) = pairedData;
+            pairedCompiledData = vertcat(pairedCompiledData, pairedData);
         end
         
-        % Plots histograms of the paired and unpaired cells total times
-        figure(5)
-        s(1) = subplot(2,2,1);
-        s(2) = subplot(2,2,2);
-        s(3) = subplot(2,2,3);
-        s(4) = subplot(2,2,4);
-        % Transit times
-        hist(s(1),lonelyCompiledData(:,1,1))
-        hist(s(3),pairedCompiledData(:,1,1))
-        title(s(1), 'Unpaired Cells','FontWeight','bold')
-        title(s(3), 'Paired Cells','FontWeight','bold')
-        xlabel(s(3), 'Total Transit Time (ms)')
-        % Areas
-        hist(s(2),lonelyCompiledData(:,1,2))
-        hist(s(4),pairedCompiledData(:,1,2))
-        title(s(2), 'Unpaired Cells','FontWeight','bold')
-        title(s(4), 'Paired Cells','FontWeight','bold')
-        xlabel(s(4), 'Area (pixels)')
-        linkaxes([s(1) s(3)],'xy');
-        linkaxes([s(2) s(4)],'xy');
-        
-        if(shouldUseExcel)
-            WriteExcelOutput(outputFilename, lonelyCompiledData, pairedCompiledData);
-        else
-            WriteCSVOutput(outputFolderName, lonelyCompiledData, pairedCompiledData);
+%         % Plots histograms of the paired and unpaired cells total times
+%         figure(5)
+%         s(1) = subplot(2,2,1);
+%         s(2) = subplot(2,2,2);
+%         s(3) = subplot(2,2,3);
+%         s(4) = subplot(2,2,4);
+%         % Transit times
+%         hist(s(1),lonelyCompiledData(:,1,1))
+%         hist(s(3),pairedCompiledData(:,1,1))
+%         title(s(1), 'Unpaired Cells','FontWeight','bold')
+%         title(s(3), 'Paired Cells','FontWeight','bold')
+%         xlabel(s(3), 'Total Transit Time (ms)')
+%         % Areas
+%         hist(s(2),lonelyCompiledData(:,1,2))
+%         hist(s(4),pairedCompiledData(:,1,2))
+%         title(s(2), 'Unpaired Cells','FontWeight','bold')
+%         title(s(4), 'Paired Cells','FontWeight','bold')
+%         xlabel(s(4), 'Area (pixels)')
+%         linkaxes([s(1) s(3)],'xy');
+%         linkaxes([s(2) s(4)],'xy');
+        if((i == length(videoNames)) || ~strcmp(pathNames{i}, pathNames{i+1}))
+            if(shouldUseExcel)
+                WriteExcelOutput(outputFilename, lonelyCompiledData, pairedCompiledData);
+            else
+                WriteCSVOutput(outputFolderName, lonelyCompiledData, pairedCompiledData);
+            end
         end
         
         lastPathName = currPathName;

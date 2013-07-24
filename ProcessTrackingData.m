@@ -174,6 +174,15 @@ end
 unpairedTransitData = double(vertcat(trackingData{1, 1:16}));
 pairedTransitData = double(vertcat(trackingData{2, 1:16}));
 
+% If no cells are in video, fill unpaired and paired transit data with
+% zeros to indicate as such
+if (isempty(unpairedTransitData))
+    unpairedTransitData = zeros(0,9,4);
+end
+if (isempty(pairedTransitData))
+    pairedTransitData = zeros(0,9,4);
+end
+
 % Convert the data from frames into delta time values.  After this loop,
 % column 1 will store the time at which the cell reached the line, and
 % columns 2-7 will store the length of time the cell took to pass between
