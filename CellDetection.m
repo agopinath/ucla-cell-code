@@ -141,9 +141,8 @@ for frameIdx = startFrame:endFrame
     %% Cleanup 
     % clean the grayscale image of the cells to improve detection
     cleanImg = bwareaopen(cleanImg, 20);
-    cleanImg = imclose(cleanImg, forClose);
-    cleanImg = bwareaopen(cleanImg, 35);
-    cleanImg = medfilt2(cleanImg, [7, 7]);
+    cleanImg = imbothat(cleanImg, forClose);
+    cleanImg = medfilt2(cleanImg, [5, 5]);
     cleanImg = bwareaopen(cleanImg, 35);
     
     if(USEMASK_FLAG)
