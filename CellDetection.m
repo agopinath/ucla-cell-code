@@ -63,7 +63,6 @@ startTime1 = tic;
 
 isVideoGrayscale = (strcmp(cellVideo.VideoFormat, 'Grayscale') == 1);
 
-%clc;
 disp(sprintf(['\nStarting cell detection for ', videoName, '...']));
 
 % stores the number of frames that will be processed
@@ -73,51 +72,38 @@ effectiveFrameCount = (endFrame-startFrame+1) ;
 height = cellVideo.Height;
 width = cellVideo.Width;
 
-%% Calculate background image(s)
-numSections = 2; % the number of sections to "divide" the video into
-numSamples = 100; % the number of samples to take from each section
+%% Calculate initial background image
+sampleWindow = 100;
 
-bgSections = 1:ceil(cellVideo.NumberOfFrames/numSections):cellVideo.NumberOfFrames; % indices of the frames which separate the sections
-bgSections(numSections+1) = cellVideo.NumberOfFrames;  % add on the last frame to signal the end of the last section
-bgImgs = zeros(height, width, length(bgSections)-1, 'uint8'); % 3D array to store the background image for each section
-
-bgImgIdx = 1;
-
-% loop through each 'section'
-for i = 2:length(bgSections)
-    sectionStart = bgSections(i-1); % the starting frame of each section
-    sectionEnd = bgSections(i); % the ending frame of each section
-    sampleInterval = ceil((sectionEnd-sectionStart)/numSamples); % the interval using which the samples are taken
-    frameIdxs = sectionStart:sampleInterval:sectionEnd; % stores the indices of the frames to sample in each section
-    
-    bgFrames = zeros(height, width, length(frameIdxs), 'uint8');
-    for j = 1:length(frameIdxs)
-        if(isVideoGrayscale)
-            bgFrames(:,:,j) = read(cellVideo, frameIdxs(j)); % store the frame that was read in bgFrames
-        else
-            temp = read(cellVideo, frameIdxs(j));
-            bgFrames(:,:,j) = temp(:,:,1);
-        end
-    end
-    
-    % calculate the 'background' frame for the current section by
-    % storing the corresponding pixel value as the mean value of
-    % each corresponding pixel of the background frames in bgFrames
-    backgroundImg = mean(bgFrames, 3);
-    
-    bgImgs(:,:,bgImgIdx) = backgroundImg;
-    bgImgIdx = bgImgIdx + 1;
+if((sampleWindow+startFrame) > endFrame)
+    sampleWindow = effectiveFrameCount-1;
 end
 
+bgFrames = zeros(height, width, sampleWindow, 'uint8');
+for j = startFrame:(startFrame+sampleWindow-1)
+    if(isVideoGrayscale)
+        bgFrames(:,:,j) = read(cellVideo, j); % store the frame that was read in bgFrames
+    else
+        temp = read(cellVideo, j);
+        bgFrames(:,:,j) = temp(:,:,1);
+    end
+end
+
+% calculate the initial 'background' frame for the first n
+% (n = sampleWindow) frames by storing the corresponding
+% pixel value as the mean value of each corresponding
+% pixel of the background frames in bgFrames
+backgroundImg = uint8(mean(bgFrames, 3));
+
 % clear variables for better memory management
-clear frameIdxs; clear backgroundImg; clear bgFrames; clear bgImgIdx; clear sampleInterval;
+clear frameIdxs;
 
 %% Prepare for Cell Detection
 % create structuring elements used in cleanup of grayscale image
 forClose = strel('disk', 10);
 
 % automatic calculation of threshold value for conversion from grayscale to binary image
-threshold = graythresh(uint8(mean(bgImgs, 3))) / 20;
+threshold = graythresh(backgroundImg) / 20;
 
 % preallocate memory for marix for speed
 if(OVERLAYOUTLINE_FLAG)
@@ -128,7 +114,7 @@ end
 
 bgProcessTime = toc(startTime1);
 startTime2 = tic;
-
+lastBackgroundImg = double(backgroundImg);
 %% Step through video
 % iterates through each video frame in the range [startFrame, endFrame]
 for frameIdx = startFrame:endFrame
@@ -140,23 +126,20 @@ for frameIdx = startFrame:endFrame
         currFrame = temp(:,:,1);
     end
     
-    %% Determine which background image to use
-    imgIdx = 0;
-    for idx = 2:length(bgSections)
-        if (frameIdx - bgSections(idx)) <= 0
-            imgIdx = idx-1;
-            break;
-        end
+    if(frameIdx >= sampleWindow+startFrame)
+        bgImgDbl = lastBackgroundImg - double(bgFrames(:,:,(mod(frameIdx-1,sampleWindow)+1)))/sampleWindow + double(currFrame)/sampleWindow;
+        backgroundImg = uint8(bgImgDbl);
+        lastBackgroundImg = bgImgDbl;
+        bgFrames(:,:,mod(frameIdx-1,sampleWindow)+1) = currFrame;
     end
     
     %% Do cell detection
     % subtracts the background in bgImgs from each frame, hopefully leaving
     % just the cells
-    cleanImg = im2bw(imsubtract(bgImgs(:,:,imgIdx), currFrame), threshold);
+    cleanImg = im2bw(imsubtract(backgroundImg, currFrame), threshold);
     
     %% Cleanup 
     % clean the grayscale image of the cells to improve detection
-    
     cleanImg = bwareaopen(cleanImg, 20);
     cleanImg = imclose(cleanImg, forClose);
     cleanImg = bwareaopen(cleanImg, 35);
