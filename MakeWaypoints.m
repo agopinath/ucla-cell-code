@@ -69,6 +69,8 @@ frame = imfilter(frame, h');
 frame = imadjust(frame,stretchlim(frame, [0.05 0.99]), []);
 frame = im2bw(frame, graythresh(frame));
 frame = medfilt2(frame);
+frame = bwareaopen(frame, 25);
+frame = bwmorph(frame, 'bridge', Inf);
 frame = ~frame;
 
 
