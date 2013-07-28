@@ -75,10 +75,13 @@ width = cellVideo.Width;
 %% Calculate initial background image
 sampleWindow = 100;
 
+% if the sampling window is larger than the number of frames present,
+% the number is set to all the frames present instead
 if((sampleWindow+startFrame) > endFrame)
     sampleWindow = effectiveFrameCount-1;
 end
 
+% Store the first sampleWindow frames into bgFrames
 bgFrames = zeros(height, width, sampleWindow, 'uint8');
 for j = startFrame:(startFrame+sampleWindow-1)
     if(isVideoGrayscale)
@@ -89,10 +92,9 @@ for j = startFrame:(startFrame+sampleWindow-1)
     end
 end
 
-% calculate the initial 'background' frame for the first n
-% (n = sampleWindow) frames by storing the corresponding
-% pixel value as the mean value of each corresponding
-% pixel of the background frames in bgFrames
+% calculate the initial 'background' frame for the first sampleWindow
+% frames by storing the corresponding pixel value as the mean value of each 
+% corresponding pixel of the background frames in bgFrames
 backgroundImg = uint8(mean(bgFrames, 3));
 
 % clear variables for better memory management
@@ -126,6 +128,13 @@ for frameIdx = startFrame:endFrame
         currFrame = temp(:,:,1);
     end
     
+    % if the current frame is after the first sampleWindow frames,
+    % start adjusting the backgroundImage so that it represents a 'moving'
+    % average of the pixel values of the frames in the interval
+    % [frameIdx-sampleWindow, frameIdx]. This better localizes the background 
+    % imageso it 'adapts' to the local frames and appears to better segment 
+    % the cells. bgFrames is used to store the previous sampleWindow frames
+    % so that memory is recycled.
     if(frameIdx >= sampleWindow+startFrame)
         bgImgDbl = lastBackgroundImg - double(bgFrames(:,:,(mod(frameIdx-1,sampleWindow)+1)))/sampleWindow + double(currFrame)/sampleWindow;
         backgroundImg = uint8(bgImgDbl);
