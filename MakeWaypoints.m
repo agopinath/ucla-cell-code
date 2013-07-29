@@ -36,7 +36,7 @@
 function [mask, lineTemplate, xOffset] = MakeWaypoints(cellVideo, templateSize)
 
 %% Loading
-templateFolder = 'C:\Users\Ajay\Documents\ucla-cell-code\Masks';%'Y:\072213 Cell Deformer V2 (Stable Release)\Masks';
+templateFolder = [pwd '\Masks'];
 
 % Reads in the specified template
 template = imread(fullfile(templateFolder, [num2str(templateSize), 'micron_thin.tif']));
