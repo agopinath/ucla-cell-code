@@ -50,7 +50,7 @@
 %       names by using regular expressions instead of ad-hoc parsing
 %       - cleaned up any remaining legacy code and comments
 %       - added better output of debugging information
-
+dbstop in MainCode at 147;
 close all
 clear variables
 clc
@@ -111,7 +111,7 @@ tStart = tic;
 % The output folder name is a subfolder in the folder where the first videos
 % were selected. The folder name contains the time at which processing is
 % started.
-outputFolderName = fullfile(pathNames{1}, ['processed_', datestr(now, 'mm-dd-YY_HH-MM')]);
+outputFolderName = fullfile(pathNames{1}, ['processed']);%', datestr(now, 'mm-dd-YY_HH-MM')]);
 if ~(exist(outputFolderName, 'file') == 7)
     mkdir(outputFolderName);
 end
@@ -139,8 +139,9 @@ for i = 1:length(videoNames)
     % (hopefully) only have the cells in them
     [processedFrames] = CellDetection(currVideo, startFrame, endFrame, currPathName, currVideoName, mask);
     
-    % Calls CellTracking to track the detected cells.
-    [lonelyData, pairedData] = CellTracking((endFrame-startFrame+1), frameRates(i), lineTemplate, processedFrames, xOffset);
+    % Calls CellTrackingEveryFrame to track the detected cells.
+    %[lonelyData, pairedData] = 
+    CellTrackingEveryFrame((endFrame-startFrame+1), frameRates(i), lineTemplate, processedFrames, xOffset);
     progressbar((i/(size(videoNames,2))), 0, 0)
     
     % If data is generated (cells are found and tracked through the device)
