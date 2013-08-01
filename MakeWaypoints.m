@@ -75,15 +75,14 @@ frame = ~frame;
 %% Image Registration
 %Registers the processed first frame to the template and
 %translates the frame to match the template.
-[optimizer, metric] = imregconfig('multimodal');
-
-    optimizer.GrowthFactor = 1.0000001;
-    optimizer.Epsilon = 1.5e-7;
-    optimizer.MaximumIterations = 200;
-    optimizer.InitialRadius = 6.25e-4;
-    
-registeredFrame = imregister(double(frame), double(template),'translation',optimizer,metric);
-
+% [optimizer, metric] = imregconfig('multimodal');
+% 
+%     optimizer.GrowthFactor = 1.0000001;
+%     optimizer.Epsilon = 1.5e-7;
+%     optimizer.MaximumIterations = 200;
+%     optimizer.InitialRadius = 6.25e-4;
+%     
+% registeredFrame = imregister(double(frame), double(template),'translation',optimizer,metric);
 
 %% Cross Correlation
 % Computes the 2D normal cross correlation between the first frame and the
