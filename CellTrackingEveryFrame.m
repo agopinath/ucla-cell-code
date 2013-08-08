@@ -14,14 +14,11 @@ laneCoords = [16 48 81 113 146 178 210 243 276 308 341 373 406 438 471 503] + xO
 %% Labels each grid line in the template from 1-8 starting at the top
 [tempmask, ~] = bwlabel(template);
 
-% Preallocates an array to store the y coordinate of each line
-lineCoordinate = zeros(1,8);
-
 % Uses the labeled template to find the y coordinate of each line
-for jj = 1:8
-    q = regionprops(ismember(tempmask, jj), 'PixelList');
-    lineCoordinate(jj) = q(1,1).PixelList(1,2);
-end
+q = regionprops(ismember(tempmask, 1), 'PixelList');
+tripWireStart = q(1,1).PixelList(1,2);
+q = regionprops(ismember(tempmask, 9), 'PixelList');
+tripWireEnd = q(1,1).PixelList(1,2);
 clear tempmask;
 
 %% Opens a videowriter object if needed

@@ -138,7 +138,7 @@ if templateSize == 3
 else
     %constrict = 46 + position(2);
     firstLinePos = 33 + position(2);
-    secondLinePos = 46 + position(2);
+    secondLinePos = 52 + position(2);
     spacing = 32;
 end
 
@@ -162,6 +162,8 @@ for i = 1:8
         lineTemplate(floor(firstLinePos),:) = uint8(ones(1,size(frame,2)));
     end
 end
+
+lineTemplate(floor(secondLinePos+(7)*spacing-12),:) = uint8(ones(1,size(frame,2)));
 
 %% Check: Displays the template overlaid on the background image 
 % Stores the value of every white point (line on template) in a vector
