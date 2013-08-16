@@ -67,7 +67,8 @@ for currFrameIdx = 1:numFrames
         % (numLabels gives the number of cells found in that frame)
         [labeledFrame, numLabels] = bwlabel(currentFrame);
         % Compute their centroids
-        cellProps = regionprops(labeledFrame, 'centroid', 'area', 'MajorAxisLength', 'MinorAxisLength');
+        cellProps = regionprops(labeledFrame, 'centroid', 'area', 'BoundingBox',...
+                                              'MajorAxisLength', 'MinorAxisLength');
         
         %% Check which line the object intersects with
         for currCellIdx = 1:numLabels
@@ -93,11 +94,11 @@ for currFrameIdx = 1:numFrames
             for i = 1:length(cellPassingIndices)
                 checkCell = cellData{currLane}{cellPassingIndices(i)}(end, :);
                 if(currCell.Centroid(2) - (checkCell(3)-3) > 0 &&...
-                   ((abs(checkCell(4) - currCell.Area(1))) < 0.5*currCell.Area(1)) &&...
+                   ((abs(checkCell(4) - currCell.Area)) < 0.5*currCell.Area) &&...
                    (currFrameIdx > checkCell(1)))
                     disp(['Found match in lane ', num2str(currLane), ': ']);
                     checkCell
-                    [currFrameIdx, currCell.Centroid(1), currCell.Centroid(2), currCell.Area(1)...
+                    [currFrameIdx, currCell.Centroid(1), currCell.Centroid(2), currCell.Area...
                      currCell.MajorAxisLength, currCell.MinorAxisLength]
                     matchFound = true;
                     foundIndex = cellPassingIndices(i);
@@ -114,9 +115,11 @@ for currFrameIdx = 1:numFrames
                 cellData{currLane}{cellID(currLane)}(newEntryIdx, 1) = currFrameIdx;
                 cellData{currLane}{cellID(currLane)}(newEntryIdx, 2) = currCell.Centroid(1);
                 cellData{currLane}{cellID(currLane)}(newEntryIdx, 3) = currCell.Centroid(2);
-                cellData{currLane}{cellID(currLane)}(newEntryIdx, 4) = currCell.Area(1);
+                cellData{currLane}{cellID(currLane)}(newEntryIdx, 4) = currCell.Area;
                 cellData{currLane}{cellID(currLane)}(newEntryIdx, 5) = currCell.MajorAxisLength;
                 cellData{currLane}{cellID(currLane)}(newEntryIdx, 6) = currCell.MinorAxisLength;
+                cellData{currLane}{cellID(currLane)}(newEntryIdx, 7) = currCell.BoundingBox(3);
+                cellData{currLane}{cellID(currLane)}(newEntryIdx, 8) = currCell.BoundingBox(4);
             % Else if a match was found
             elseif(matchFound)
                 % If the cell intersects the "end" tripwire, "cap" the
@@ -135,6 +138,8 @@ for currFrameIdx = 1:numFrames
                 cellData{currLane}{cellID(currLane)}(newEntryIdx, 4) = currCell.Area(1);
                 cellData{currLane}{cellID(currLane)}(newEntryIdx, 5) = currCell.MajorAxisLength;
                 cellData{currLane}{cellID(currLane)}(newEntryIdx, 6) = currCell.MinorAxisLength;
+                cellData{currLane}{cellID(currLane)}(newEntryIdx, 7) = currCell.BoundingBox(3);
+                cellData{currLane}{cellID(currLane)}(newEntryIdx, 8) = currCell.BoundingBox(4);
             end
         end
     end
