@@ -77,7 +77,7 @@ end
 progressbar('Overall', 'Cell detection', 'Cell tracking');
 
 %% Load video files and prepare any metadata
-[pathNames, videoNames] = PromptForVideos('F:\CellVideos\');
+[pathNames, videoNames] = PromptForVideos('F:\CellVideos\sams');
 
 % Checks to make sure at least one video was selected for processing
 if(isempty(videoNames{1}))
