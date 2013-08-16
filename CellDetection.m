@@ -153,6 +153,7 @@ for frameIdx = startFrame:endFrame
     cleanImg = imbothat(cleanImg, forClose);
     cleanImg = medfilt2(cleanImg, [5, 5]);
     cleanImg = bwareaopen(cleanImg, 35);
+    cleanImg = bwmorph(cleanImg, 'bridge');
     cleanImg = imfill(cleanImg, 'holes');
     
     if(USEMASK_FLAG)
