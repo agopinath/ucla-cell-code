@@ -1,4 +1,4 @@
-function CellTrackingEveryFrame(numFrames, framerate, template, processedFrames, xOffset)
+function [cellData] = CellTrackingEveryFrame(numFrames, framerate, template, processedFrames, xOffset)
 currFrameIdx = 1;
 %dbstop in CellTrackingEveryFrame at 68 if (currFrameIdx == 78)
 dbstop if error
