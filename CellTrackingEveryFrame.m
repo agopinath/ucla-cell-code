@@ -139,22 +139,19 @@ for currFrameIdx = 1:numFrames
                 end
                 
                 bestCellIdx = -1;
-%                 bestCellDist = 1000000;
                 matchScores = [];
                 matchScoreIdx = 1;
                 if(~isempty(potentialMatches{currLane}))
                     toCheck = potentialMatches{currLane}(potentialMatches{currLane}(:, 1) == lastEntry(1), :);
+                    if(isempty(toCheck)) 
+                        continue;
+                    end
                     for matchIdx = 1:size(toCheck, 1)
                         currCell = cellProps(toCheck(matchIdx, 2));
                         distScore = norm(currCell.Centroid(1)-lastEntry(2), currCell.Centroid(2)-lastEntry(3));
                         areaScore = abs(currCell.Area - lastEntry(4));
                         matchScores(matchScoreIdx, 1) = toCheck(matchIdx, 2);
-                        matchScores(matchScoreIdx, 2) = 0.75*distScore + 0.25*areaScore;
-%                         if(currDist < bestCellDist)
-%                             bestCellIdx = toCheck(matchIdx, 2);
-%                             bestCellDist = currDist;
-%                             disp(['Best dist: ', num2str(bestCellDist), ' at cell ', num2str(bestCellIdx)]);
-%                         end
+                        matchScores(matchScoreIdx, 2) = distScore;%0.75*distScore + 0.25*areaScore;
                     end
                     
                     lowestScoreIdx = find(min(matchScores));
