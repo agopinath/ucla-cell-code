@@ -140,7 +140,7 @@ for i = 1:length(videoNames)
     [processedFrames] = CellDetection(currVideo, startFrame, endFrame, currPathName, currVideoName, mask);
     
     % Calls CellTracking to track the detected cells.
-    [lonelyData, pairedData] = CellTracking((endFrame-startFrame+1), frameRates(i), lineTemplate, processedFrames, xOffset);
+    [lonelyData, pairedData] = CellTracking((endFrame-startFrame+1), frameRates(i), lineTemplate, processedFrames, xOffset, currVideo);
     progressbar((i/(size(videoNames,2))), 0, 0)
     
     % If data is generated (cells are found and tracked through the device)

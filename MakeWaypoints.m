@@ -84,7 +84,7 @@ frame = ~frame;
     optimizer.MaximumIterations = 200;
     optimizer.InitialRadius = 6.25e-4;
     
-registeredFrame = imregister(double(frame), double(template),'translation',optimizer,metric);
+% registeredFrame = imregister(double(frame), double(template),'translation',optimizer,metric);
 
 
 %% Cross Correlation
@@ -96,30 +96,64 @@ registeredFrame = imregister(double(frame), double(template),'translation',optim
 % Perform the cross correlation to determine offset.
 % This code is from the matlab documentation for normxcorr2.
 % corrOffset contains [yOffset, xOffset].
-cc = normxcorr2(template, frame);
-[~, imax] = max(abs(cc(:)));
-[ypeak, xpeak] = ind2sub(size(cc),imax(1));
-corrOffset = [ (ypeak-size(template,1)) (xpeak-size(template,2)) ];
+positions = zeros(8,4);
+lastXOff = 0;
+templateHeight = size(template, 1);
+templateWidth = 520;
+for i = 1:8
+    cc = normxcorr2(template, frame(:, (((i-1)*64)+1):(((i-1)*64)+64))); 
+    [~, imax] = max(abs(cc(:)));
+    [ypeak, xpeak] = ind2sub(size(cc),imax(1));
+    corrOffset = [ (ypeak-size(template,1)) (xpeak-size(template,2)) ];
 
-% Defines the position vector [Xmin Ymin width height]
-% Max functions are there to prevent negative numbers which will become
-% indicies 
-position = [max(0,corrOffset(2)), max(0,corrOffset(1)), size(template,2), size(template,1)];
-xOffset = corrOffset(2);
-
+    % Defines the position vector [Xmin Ymin width height]
+    % Max functions are there to prevent negative numbers which will become
+    % indicies 
+    %position = [max(0,corrOffset(2)), max(0,corrOffset(1)), size(template,2), size(template,1)];
+    
+    positions(i,1) = ((i-1)*64+1)+max(0,corrOffset(2));
+    positions(i,2) = max(0,corrOffset(1));
+    positions(i,3) = positions(i,1)+61;
+    positions(i,4) = templateHeight;
+    xOffset = corrOffset(2);
+    %lastXOff = lastXOff + positions(i,1);
+end
+positions = sortrows(positions); 
 % Shows how well the correlation worked by overlaying the image template in
 % green over the processed frame.
-figure(2)
-imshow(originalFrame(max([1 position(2)]):min([size(frame,1) position(2)+position(4)-1]), max([1 position(1)]):min([size(frame,2) position(1)+position(3)-1]),:), 'InitialMag', 'fit')
+figure(2);
+% pos = positions(1, :);
+% imshow(originalFrame(max([1 pos(2)]):min([size(frame,1) pos(2)+pos(4)-1]),... 
+%                     max([1 pos(1)]):min([size(frame,2) pos(1)+pos(3)-1]),:),...
+%                     'InitialMag', 'fit');
+%pos = positions(1, :);
+pos = positions(1, :);
+bounds = [pos(1) pos(2) pos(1)+templateWidth-1 pos(2)+templateHeight-1];
+imshow(originalFrame(bounds(2):bounds(4), bounds(1):bounds(3)));
+% imshow(originalFrame(pos(2):templateHeight, pos(1):templateWidth), 'InitialMag', 'fit');
 g = imgcf;
 set(g,'name','Template Correlation Verification')
 % Makes an all green image, then by using 'AlphaData', only shows green
 % pixels where the template was black (since the template was binary).
-green = cat(3, zeros(size(template)), ones(size(template)), zeros(size(template)));
+green = cat(3, zeros(size(originalFrame)),... 
+                ones(size(originalFrame)),...
+                zeros(size(originalFrame)));
 hold on
 h = imshow(green);
 hold off
-set(h, 'AlphaData', imcomplement(template))
+
+hold on;
+combinedTemplate = true(templateHeight, templateWidth);
+for i = 1:8
+    p = positions(i, :);
+    %rectangle('Position',[p(1) p(2) (p(3)-p(1)+1) p(4)], 'EdgeColor','r')
+    combinedTemplate(p(2):(p(2)+p(4)-1), p(1):min([(61+p(1)-1), (p(1)+p(3)-1)]) ) = template(:,:);
+end
+hold off;
+combinedTemplate = ~combinedTemplate;
+figure; imshow(combinedTemplate)
+imshow(imoverlay(originalFrame(bounds(2):bounds(4), bounds(1):bounds(3)),...
+        combinedTemplate, [0 1 0]));%set(h, 'AlphaData', imcomplement(combinedTemplate))
 title(regexprep(cellVideo.Name,'_',' '))
 
 %% Line template generation

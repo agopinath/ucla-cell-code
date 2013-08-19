@@ -31,12 +31,12 @@
 % Functions called
 %   - ProcessTrackingData   (processes the raw data to track the cells)
 
-function [lonelyData, pairedData] = CellTracking(numFrames, framerate, template, processedFrames, xOffset)
+function [lonelyData, pairedData] = CellTracking(numFrames, framerate, template, processedFrames, xOffset, cellVideo)
 
 progressbar([],[],0)
 % Change WRITEVIDEO_FLAG to true in order to print a video of the output,
 % defaults to false.
-WRITEVIDEO_FLAG = false;
+WRITEVIDEO_FLAG = true;
 
 %% Initializations
 counter = 0;
@@ -94,7 +94,7 @@ clear tempmask;
 
 %% Opens a videowriter object if needed
 if(WRITEVIDEO_FLAG)
-    outputVideo = VideoWriter('G:\CellVideos\compiled_data\output_video.avi');
+    outputVideo = VideoWriter('F:\CellVideos\output_video.avi');
     outputVideo.FrameRate = cellVideo.FrameRate;
     open(outputVideo)
 end
