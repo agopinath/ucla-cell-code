@@ -132,12 +132,12 @@ lineTemplate = uint8(zeros(size(frame)));
 % value = 32 pixels for 5, 7, and 9 micron templates, and 28 for the 3 micron template.  
 if templateSize == 3
     %constrict = 47 + position(2);
-    firstLinePos = 21 + position(2);
+    firstLinePos = 33 + position(2);
     secondLinePos = 47 + position(2);
     spacing = 28;
 else
     %constrict = 46 + position(2);
-    firstLinePos = 33 + position(2);
+    firstLinePos = 31 + position(2);
     secondLinePos = 52 + position(2);
     spacing = 32;
 end
@@ -163,7 +163,11 @@ for i = 1:8
     end
 end
 
-lineTemplate(floor(secondLinePos+(7)*spacing-12),:) = uint8(ones(1,size(frame,2)));
+if templateSize == 3
+    lineTemplate(floor(secondLinePos+(7)*spacing-10),:) = uint8(ones(1,size(frame,2)));
+else
+    lineTemplate(floor(secondLinePos+(7)*spacing-12),:) = uint8(ones(1,size(frame,2)));
+end
 
 %% Check: Displays the template overlaid on the background image 
 % Stores the value of every white point (line on template) in a vector
