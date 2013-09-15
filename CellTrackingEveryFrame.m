@@ -1,4 +1,4 @@
-function [cellData] = CellTrackingEveryFrame(numFrames, framerate, template, processedFrames, xOffset)
+function [cellData, cellPerimsData] = CellTrackingEveryFrame(numFrames, framerate, template, processedFrames, xOffset)
 currFrameIdx = 1;
 %dbstop in CellTrackingEveryFrame at 68 if (currFrameIdx == 78)
 dbstop if error
@@ -15,11 +15,15 @@ WRITEVIDEO_FLAG = false;
 %   cellData{lane#}{cellID}
 cellData = cell(1, 16);
 
+cellPerimsData = cell(1, 16);
+
 for i = 1:16
     %for j = 1:length(temp)
     %    temp{j} = zeros(1, 6);
     %end
     cellData{i} = {};
+    cellPerimsData{i} = {};
+    cellPerimsData{i}{1} = {};
 end
 
 % % Initialize vector cellID to store the current ID to use to label
@@ -78,11 +82,18 @@ for currFrameIdx = 1:1064
         
         newCells = false(1, 16);
         cellsPassing = cell(1, 16);
+        perimPoints = bwboundaries(currentFrame, 'noholes');
         %% Check which line the object intersects with
         for currCellIdx = 1:numLabels
             currCell = cellProps(currCellIdx);
             [offCenter, cellLane] = min(abs(laneCoords-currCell.Centroid(1)));
+            
+            cellPoints = perimPoints{currCellIdx};
+            cellPoints(:,[1,2]) = cellPoints(:,[2,1]);
+            currCell.BoundaryPoints = cellPoints; % store points of cell boundary
+            
             cellsPassing{cellLane}{length(cellsPassing{cellLane})+1} = currCell;
+            
 %             % Find the indices of all "open" cells - those which have
 %             % already hit the "start" tripwire but have not yet hit the
 %             % "end" tripwire (i.e. those which are still passing)
@@ -130,6 +141,8 @@ for currFrameIdx = 1:1064
                     cellData{cellLane}{newCellIdx}(1, 6) = currCell.MinorAxisLength;
                     cellData{cellLane}{newCellIdx}(1, 7) = currCell.BoundingBox(3);
                     cellData{cellLane}{newCellIdx}(1, 8) = currCell.BoundingBox(4);
+                    
+                    cellPerimsData{cellLane}{newCellIdx}{1} = currCell.BoundaryPoints;
                     
                     checkingArray(cellLane) = 1;
                     newCells(cellLane) = 1;
@@ -192,6 +205,8 @@ for currFrameIdx = 1:1064
                 cellData{currLane}{i}(newEntryIdx, 6) = bestCell.MinorAxisLength;
                 cellData{currLane}{i}(newEntryIdx, 7) = bestCell.BoundingBox(3);
                 cellData{currLane}{i}(newEntryIdx, 8) = bestCell.BoundingBox(4);
+                
+                cellPerimsData{currLane}{i}{newEntryIdx} = bestCell.BoundaryPoints;
                 
                 if(bestCell.Centroid(2) > tripWireEnd)
                     newEntryIdx = newEntryIdx + 1;
