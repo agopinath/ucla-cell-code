@@ -289,7 +289,19 @@ for currFrameIdx = 1:1064
     end
 end
 
+%% Do post-processing of cell data
+% remove the "cap" entry (row of -1's) at the end of every tracked cell
+for r = 1:16
+    numCells = length(cellData{r});
+    for j = 1:numCells
+        if(cellData{r}{j}(end, 1) == -1)
+            cellData{r}{j}(end, :) = [];
+        end
+    end
+end
+
 % Closes the video if it is open
 if(WRITEVIDEO_FLAG)
     close(outputVideo);
 end
+
