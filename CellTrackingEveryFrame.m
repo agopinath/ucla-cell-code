@@ -180,8 +180,8 @@ for currFrameIdx = 1:1064
                         continue;
                     end
                     
-                    currDist = sqrt(currPassingCell.Centroid(1)-lastFrameCell(2) +...
-                                    currPassingCell.Centroid(2)-lastFrameCell(3));
+                    currDist = sqrt((currPassingCell.Centroid(1)-lastFrameCell(2))^2 +...
+                                    (currPassingCell.Centroid(2)-lastFrameCell(3))^2);
                     if(currDist < lowestDist)
                         bestCellIdx = m;
                         lowestDist = currDist;
