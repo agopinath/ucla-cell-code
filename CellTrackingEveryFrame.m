@@ -82,7 +82,7 @@ for currFrameIdx = 1:1064
         for currCellIdx = 1:numLabels
             currCell = cellProps(currCellIdx);
             [offCenter, cellLane] = min(abs(laneCoords-currCell.Centroid(1)));
-            cellsPassing{cellLane}{size(cellsPassing{cellLane}, 1)+1} = currCell;
+            cellsPassing{cellLane}{length(cellsPassing{cellLane})+1} = currCell;
 %             % Find the indices of all "open" cells - those which have
 %             % already hit the "start" tripwire but have not yet hit the
 %             % "end" tripwire (i.e. those which are still passing)
@@ -139,6 +139,7 @@ for currFrameIdx = 1:1064
             end
         end
         clear cellLane;
+        
         for currLane = 1:16
             % numTrackedCells = length(cellfun(@isempty, cellData{currLane}));
             for i = 1:length(cellData{currLane})
