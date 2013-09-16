@@ -39,6 +39,7 @@ end
 
 newCells = false(1, 16);
 checkingArray = false(1, 16);
+numPassing = zeros(1, 16);
 cellsPassing = cell(1, 16);
 
 % HARD CODED x coordinates for the center of each lane (1-16), shifted by
@@ -131,6 +132,7 @@ for currFrameIdx = 1:1064
                 if(any(forIntersection(tripWireStart,:)))
                     % cellID(cellLane) = cellID(cellLane) + 1;
                     newCellIdx = length(cellData{cellLane}) + 1;
+                    numPassing(cellLane) = numPassing(cellLane)+1;
                     % passageStatus{cellLane}(cellID(cellLane)) = true;
                     % newEntryIdx = size(cellData{cellLane}{cellID(cellLane)}, 1) + 1;
                     cellData{cellLane}{newCellIdx}(1, 1) = currFrameIdx;
@@ -141,6 +143,12 @@ for currFrameIdx = 1:1064
                     cellData{cellLane}{newCellIdx}(1, 6) = currCell.MinorAxisLength;
                     cellData{cellLane}{newCellIdx}(1, 7) = currCell.BoundingBox(3);
                     cellData{cellLane}{newCellIdx}(1, 8) = currCell.BoundingBox(4);
+                    
+                    if(numPassing(cellLane) > 1)
+                        cellData{cellLane}{newCellIdx}(1, 9) = 1;
+                    else
+                        cellData{cellLane}{newCellIdx}(1, 9) = 0;
+                    end
                     
                     cellPerimsData{cellLane}{newCellIdx}{1} = currCell.BoundaryPoints;
                     
@@ -206,11 +214,21 @@ for currFrameIdx = 1:1064
                 cellData{currLane}{i}(newEntryIdx, 7) = bestCell.BoundingBox(3);
                 cellData{currLane}{i}(newEntryIdx, 8) = bestCell.BoundingBox(4);
                 
+                if(numPassing(currLane) > 1)
+                    cellData{currLane}{i}(newEntryIdx, 9) = 1;
+                else
+                    cellData{currLane}{i}(newEntryIdx, 9) = 0;
+                end
+                    
                 cellPerimsData{currLane}{i}{newEntryIdx} = bestCell.BoundaryPoints;
                 
                 if(bestCell.Centroid(2) > tripWireEnd)
                     newEntryIdx = newEntryIdx + 1;
                     cellData{currLane}{i}(newEntryIdx, 1) = -1;
+                    numPassing(currLane) = numPassing(currLane)-1;
+                    if(numPassing(currLane) <= 0)
+                        numPassing(currLane) = 0;
+                    end
                 end
             end
         end
