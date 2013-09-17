@@ -1,4 +1,4 @@
-function [pcoords] = ProcessPerimeterData(currCell)
+function [pcoords] = PreprocessPerimData(currCell)
     %% Convert boundary points data to polar coords
     numPts = size(currCell.BoundaryPoints, 1);
     pcoords = zeros(numPts, 2);

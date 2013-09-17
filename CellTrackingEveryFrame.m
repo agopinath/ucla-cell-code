@@ -65,7 +65,6 @@ for currFrameIdx = 51:1064
         % Compute their centroids
         cellProps = regionprops(labeledFrame, 'centroid', 'area', 'BoundingBox',...
                                               'MajorAxisLength', 'MinorAxisLength');
-%         potentialMatches = cell(1,16);
         
         newCells = false(1, 16);
         cellsPassing = cell(1, 16);
@@ -114,7 +113,7 @@ for currFrameIdx = 51:1064
                         cellData{cellLane}{newCellIdx}(1, 9) = 0;
                     end
                     
-                    pcoords = ProcessPerimeterData(currCell);
+                    pcoords = PreprocessPerimData(currCell);
                     cellPerimsData{cellLane}{newCellIdx}{1} = pcoords;
                     
                     checkingArray(cellLane) = 1;
@@ -182,7 +181,7 @@ for currFrameIdx = 51:1064
                     cellData{currLane}{i}(newEntryIdx, 9) = 0;
                 end
                 
-                pcoords = ProcessPerimeterData(bestCell);
+                pcoords = PreprocessPerimData(bestCell);
                 cellPerimsData{currLane}{i}{newEntryIdx} = pcoords;
                 
                 %cellPerimsData{currLane}{i}{newEntryIdx} = bestCell.BoundaryPoints;

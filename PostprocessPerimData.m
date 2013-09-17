@@ -1,4 +1,4 @@
-function fftData = CellDataProcessing(cellVideo, cellData, cellPerimsData)
+function fftData = PostprocessPerimData(cellVideo, cellData, cellPerimsData)
 
 fftData = cell(1, 16);
 
