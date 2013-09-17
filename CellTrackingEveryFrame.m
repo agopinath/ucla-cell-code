@@ -53,7 +53,7 @@ if(WRITEVIDEO_FLAG)
 end
 
 %% Cell Labeling
-for currFrameIdx = 51:1064
+for currFrameIdx = 120:1273
     currentFrame = processedFrames(:,:,currFrameIdx);
     
     % If the current frame has any objects in it.  Skips any empty frames.
@@ -113,8 +113,10 @@ for currFrameIdx = 51:1064
                         cellData{cellLane}{newCellIdx}(1, 9) = 0;
                     end
                     
-                    pcoords = PreprocessPerimData(currCell);
-                    cellPerimsData{cellLane}{newCellIdx}{1} = pcoords;
+                    if(length(currCell.BoundaryPoints) > 5)
+                        pcoords = PreprocessPerimData(currCell);
+                        cellPerimsData{cellLane}{newCellIdx}{1} = pcoords;
+                    end
                     
                     checkingArray(cellLane) = 1;
                     newCells(cellLane) = 1;
@@ -181,8 +183,10 @@ for currFrameIdx = 51:1064
                     cellData{currLane}{i}(newEntryIdx, 9) = 0;
                 end
                 
-                pcoords = PreprocessPerimData(bestCell);
-                cellPerimsData{currLane}{i}{newEntryIdx} = pcoords;
+                if(length(bestCell.BoundaryPoints) > 5)
+                    pcoords = PreprocessPerimData(bestCell);
+                    cellPerimsData{currLane}{i}{newEntryIdx} = pcoords;
+                end
                 
                 %cellPerimsData{currLane}{i}{newEntryIdx} = bestCell.BoundaryPoints;
                 
