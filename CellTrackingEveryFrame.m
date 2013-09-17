@@ -67,7 +67,7 @@ if(WRITEVIDEO_FLAG)
 end
 
 %% Cell Labeling
-for currFrameIdx = 1:1064
+for currFrameIdx = 51:1064
     currentFrame = processedFrames(:,:,currFrameIdx);
     
     % If the current frame has any objects in it.  Skips any empty frames.
@@ -150,7 +150,20 @@ for currFrameIdx = 1:1064
                         cellData{cellLane}{newCellIdx}(1, 9) = 0;
                     end
                     
-                    cellPerimsData{cellLane}{newCellIdx}{1} = currCell.BoundaryPoints;
+%                     for currPtIdx = 1:numPts
+%                         currPtX = currCell.BoundaryPoints(currPtIdx, 1);
+%                         currPtY = currCell.BoundaryPoints(currPtIdx, 2);
+%                         
+%                         polarCoords(currPtIdx, 1) = sqrt((currCell.Centroid(1)-currPtX)^2 +...
+%                                                          (currCell.Centroid(2)-currPtY)^2);
+%                         polarCoords(currPtIdx, 2) = arctan(currPtY-currCell.Centroid(2), currPtX-currCell.Centroid(1));
+%                     end
+                    %cellPerimsData{cellLane}{newCellIdx}{1} = currCell.BoundaryPoints;
+                    
+                    %cellLane
+                    %currFrameIdx
+                    pcoords = ProcessPerimeterData(currCell);
+                    cellPerimsData{cellLane}{newCellIdx}{1} = pcoords;
                     
                     checkingArray(cellLane) = 1;
                     newCells(cellLane) = 1;
@@ -219,8 +232,13 @@ for currFrameIdx = 1:1064
                 else
                     cellData{currLane}{i}(newEntryIdx, 9) = 0;
                 end
-                    
-                cellPerimsData{currLane}{i}{newEntryIdx} = bestCell.BoundaryPoints;
+                %currLane
+                %    currFrameIdx
+                
+                pcoords = ProcessPerimeterData(bestCell);
+                cellPerimsData{currLane}{i}{newEntryIdx} = pcoords;
+                
+                %cellPerimsData{currLane}{i}{newEntryIdx} = bestCell.BoundaryPoints;
                 
                 if(bestCell.Centroid(2) > tripWireEnd)
                     newEntryIdx = newEntryIdx + 1;
