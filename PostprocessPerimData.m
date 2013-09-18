@@ -1,4 +1,4 @@
-function fftData = PostprocessPerimData(cellVideo, cellData, cellPerimsData)
+function fftData = PostprocessPerimData(currVideo, cellData, cellPerimsData)
 
 fftData = cell(1, 16);
 
@@ -7,38 +7,40 @@ for i = 1:16
     fftData{i}{1} = {};
 end
 
-for currLane = 9:16
+for currLane = 1:16
     numCells = length(cellData{currLane});
+    
     for currCellIdx = 1:numCells
         currCell = cellData{currLane}{currCellIdx};
         currCellPerim = cellPerimsData{currLane}{currCellIdx};
-        
+        figure(currCellIdx+20); hold on;
         numFrames = size(currCell, 1);
         for currFrameIdx = 1:numFrames
             frameData = currCell(currFrameIdx, :);
             framePerim = currCellPerim{currFrameIdx};
-            
             numPoints = size(framePerim, 1);
-            frequency = 1 / numPoints;
-            centrX = frameData(2);
-            centrY = frameData(3);
-            
-            dists = [];
-            for currPointIdx = 1:numPoints
-                dists(currPointIdx) = sqrt((centrX-framePerim(currPointIdx, 1))^2 +...
-                                           (centrY-framePerim(currPointIdx, 2))^2);
+            if(numPoints == 0)
+                continue;
             end
             
-            times = (0:numPoints-1)*frequency;
-            fftData{currLane}{currCellIdx}{currFrameIdx} = dists;
-            if currFrameIdx == 1
-                figure; plot(times, dists);
-            else
-                hold on; plot(times, dists);
-            end
+            % Prepare parameters for FFT
+            Fs = size(framePerim, 1);
+            T = 1 / numPoints;
+            L = Fs;
+            t = (1:numPoints)*T;
+             %plot(t, framePerim(:,2));
+            
+            %NFFT = 2^nextpow2(L); % Next power of 2 from length of y
+            Y = fft(framePerim(:,2))/L;
+            f = Fs/2*linspace(0,1,L/2);
+
+            % Plot single-sided amplitude spectrum.
+            plot(f,2*abs(Y(1:L/2))); 
+            
+            fftData{currLane}{currCellIdx}{currFrameIdx} = fft(framePerim);
             qq=1+1;
         end
+        hold off;
     end
 end
-
 qq=1+1;
