@@ -40,7 +40,7 @@ progressbar([],0,[])
 
 DEBUG_FLAG = false; % flag for whether to show debug info
 WRITEMOVIE_FLAG = false; % flag for whether to write processed frames to movie on disk
-USEMASK_FLAG = true; % flag whether to binary AND the processed frames with the supplied mask
+USEMASK_FLAG = false; % flag whether to binary AND the processed frames with the supplied mask
 OVERLAYOUTLINE_FLAG = false; % flag whether to overlay detected outlines of cells on original frames
 
 if(OVERLAYOUTLINE_FLAG)
@@ -102,10 +102,10 @@ clear frameIdxs;
 
 %% Prepare for Cell Detection
 % create structuring elements used in cleanup of grayscale image
-forClose = strel('disk', 10);
+forClose = strel('disk', 8);
 
 % automatic calculation of threshold value for conversion from grayscale to binary image
-threshold = graythresh(backgroundImg) / 20;
+threshold = graythresh(backgroundImg) / 30;
 
 % preallocate memory for marix for speed
 if(OVERLAYOUTLINE_FLAG)
@@ -149,12 +149,18 @@ for frameIdx = startFrame:endFrame
     
     %% Cleanup 
     % clean the grayscale image of the cells to improve detection
-    cleanImg = bwareaopen(cleanImg, 20);
-    cleanImg = imbothat(cleanImg, forClose);
-    cleanImg = medfilt2(cleanImg, [5, 5]);
-    cleanImg = bwareaopen(cleanImg, 35);
-    cleanImg = bwmorph(cleanImg, 'bridge');
+%     cleanImg = bwareaopen(cleanImg, 20);
+%     cleanImg = imbothat(cleanImg, forClose);
+%     cleanImg = medfilt2(cleanImg, [5, 5]);
+%     cleanImg = bwareaopen(cleanImg, 35);
+%     cleanImg = bwmorph(cleanImg, 'bridge');
+%     cleanImg = imfill(cleanImg, 'holes');
+    cleanImg = bwareaopen(cleanImg, 10);
+    cleanImg = imclose(cleanImg, forClose);
     cleanImg = imfill(cleanImg, 'holes');
+    cleanImg = bwareaopen(cleanImg, 20);
+    cleanImg = medfilt2(cleanImg, [3, 3]);
+    cleanImg = bwareaopen(cleanImg, 20);
     
     if(USEMASK_FLAG)
         % binary 'AND' to find the intersection of the cleaned image and the mask
