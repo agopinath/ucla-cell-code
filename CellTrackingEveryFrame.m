@@ -6,7 +6,7 @@ dbstop if error
 % Change WRITEVIDEO_FLAG to true in order to print a video of the output,
 % defaults to false.
 WRITEVIDEO_FLAG = false;
-
+CONV_FACTOR = 1.06; % conversion factor in um per pixel.
 %% Initializations
 
 % Initialize cell array cellData to store the cell data
@@ -53,7 +53,7 @@ if(WRITEVIDEO_FLAG)
 end
 
 %% Cell Labeling
-for currFrameIdx = 120:1273
+for currFrameIdx = 1:numFrames
     currentFrame = processedFrames(:,:,currFrameIdx);
     
     % If the current frame has any objects in it.  Skips any empty frames.
@@ -101,11 +101,11 @@ for currFrameIdx = 120:1273
                     cellData{cellLane}{newCellIdx}(1, 1) = currFrameIdx;
                     cellData{cellLane}{newCellIdx}(1, 2) = currCell.Centroid(1);
                     cellData{cellLane}{newCellIdx}(1, 3) = currCell.Centroid(2);
-                    cellData{cellLane}{newCellIdx}(1, 4) = currCell.Area;
-                    cellData{cellLane}{newCellIdx}(1, 5) = currCell.MajorAxisLength;
-                    cellData{cellLane}{newCellIdx}(1, 6) = currCell.MinorAxisLength;
-                    cellData{cellLane}{newCellIdx}(1, 7) = currCell.BoundingBox(3);
-                    cellData{cellLane}{newCellIdx}(1, 8) = currCell.BoundingBox(4);
+                    cellData{cellLane}{newCellIdx}(1, 4) = currCell.Area*CONV_FACTOR^2;
+                    cellData{cellLane}{newCellIdx}(1, 5) = currCell.MajorAxisLength*CONV_FACTOR;
+                    cellData{cellLane}{newCellIdx}(1, 6) = currCell.MinorAxisLength*CONV_FACTOR;
+                    cellData{cellLane}{newCellIdx}(1, 7) = currCell.BoundingBox(3)*CONV_FACTOR;
+                    cellData{cellLane}{newCellIdx}(1, 8) = currCell.BoundingBox(4)*CONV_FACTOR;
                     
                     if(numPassing(cellLane) > 1)
                         cellData{cellLane}{newCellIdx}(1, 9) = 1;
@@ -114,7 +114,7 @@ for currFrameIdx = 120:1273
                     end
                     
                     if(length(currCell.BoundaryPoints) > 5)
-                        pcoords = PreprocessPerimData(currCell);
+                        pcoords = PreprocessPerimData(currCell, CONV_FACTOR);
                         cellPerimsData{cellLane}{newCellIdx}{1} = pcoords;
                     end
                     
@@ -171,11 +171,11 @@ for currFrameIdx = 120:1273
                 cellData{currLane}{i}(newEntryIdx, 1) = currFrameIdx;
                 cellData{currLane}{i}(newEntryIdx, 2) = bestCell.Centroid(1);
                 cellData{currLane}{i}(newEntryIdx, 3) = bestCell.Centroid(2);
-                cellData{currLane}{i}(newEntryIdx, 4) = bestCell.Area(1);
-                cellData{currLane}{i}(newEntryIdx, 5) = bestCell.MajorAxisLength;
-                cellData{currLane}{i}(newEntryIdx, 6) = bestCell.MinorAxisLength;
-                cellData{currLane}{i}(newEntryIdx, 7) = bestCell.BoundingBox(3);
-                cellData{currLane}{i}(newEntryIdx, 8) = bestCell.BoundingBox(4);
+                cellData{currLane}{i}(newEntryIdx, 4) = bestCell.Area*CONV_FACTOR^2;
+                cellData{currLane}{i}(newEntryIdx, 5) = bestCell.MajorAxisLength*CONV_FACTOR;
+                cellData{currLane}{i}(newEntryIdx, 6) = bestCell.MinorAxisLength*CONV_FACTOR;
+                cellData{currLane}{i}(newEntryIdx, 7) = bestCell.BoundingBox(3)*CONV_FACTOR;
+                cellData{currLane}{i}(newEntryIdx, 8) = bestCell.BoundingBox(4)*CONV_FACTOR;
                 
                 if(numPassing(currLane) > 1)
                     cellData{currLane}{i}(newEntryIdx, 9) = 1;
@@ -184,7 +184,7 @@ for currFrameIdx = 120:1273
                 end
                 
                 if(length(bestCell.BoundaryPoints) > 5)
-                    pcoords = PreprocessPerimData(bestCell);
+                    pcoords = PreprocessPerimData(bestCell, CONV_FACTOR);
                     cellPerimsData{currLane}{i}{newEntryIdx} = pcoords;
                 end
                 

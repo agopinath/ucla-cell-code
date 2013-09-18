@@ -1,4 +1,4 @@
-function [pcoords] = PreprocessPerimData(currCell)
+function [pcoords] = PreprocessPerimData(currCell, convFactor)
     %% Convert boundary points data to polar coords
     numPts = size(currCell.BoundaryPoints, 1);
     pcoords = zeros(numPts, 2);
@@ -69,5 +69,7 @@ function [pcoords] = PreprocessPerimData(currCell)
         mm = interp1(edgeThetas, edgeRs, (pcoords(secNan:end,1)-(2*pi)));
         pcoords(secNan:end, 2) = mm;
     end
+   
+    pcoords(:, 2) = pcoords(:, 2) * convFactor;
 end
 

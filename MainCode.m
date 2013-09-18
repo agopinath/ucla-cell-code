@@ -141,7 +141,8 @@ for i = 1:length(videoNames)
     
     % Calls CellTrackingEveryFrame to track the detected cells.
     %[lonelyData, pairedData] = 
-    [cellData, cellPerimsData] = CellTrackingEveryFrame((endFrame-startFrame+1), frameRates(i), lineTemplate, processedFrames, xOffset);
+    numFrames = (endFrame-startFrame+1);
+    [cellData, cellPerimsData] = CellTrackingEveryFrame(numFrames, frameRates(i), lineTemplate, processedFrames, xOffset);
     [fftData] = PostprocessPerimData(currVideo, cellData, cellPerimsData);
     progressbar((i/(size(videoNames,2))), 0, 0)
     
