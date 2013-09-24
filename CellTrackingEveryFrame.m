@@ -43,6 +43,11 @@ q = regionprops(ismember(tempmask, 9), 'PixelList');
 tripWireEnd = q(1,1).PixelList(1,2);
 q = regionprops(ismember(tempmask, 2), 'PixelList');
 tripWireCheck = q(1,1).PixelList(1,2);
+
+for jj = 1:8
+    q = regionprops(ismember(tempmask, jj), 'PixelList');
+    conLines(jj) = q(1,1).PixelList(1,2);
+end
 clear tempmask;
 
 %% Opens a videowriter object if needed
@@ -77,6 +82,7 @@ for currFrameIdx = 1:numFrames
             cellPoints = perimPoints{currCellIdx};
             cellPoints(:,[1,2]) = cellPoints(:,[2,1]);
             currCell.BoundaryPoints = cellPoints; % store points of cell boundary
+            currCell.LocalIndex = currCellIdx;
             
             cellsPassing{cellLane}{length(cellsPassing{cellLane})+1} = currCell;
             
@@ -106,11 +112,12 @@ for currFrameIdx = 1:numFrames
                     cellData{cellLane}{newCellIdx}(1, 6) = currCell.MinorAxisLength*CONV_FACTOR;
                     cellData{cellLane}{newCellIdx}(1, 7) = currCell.BoundingBox(3)*CONV_FACTOR;
                     cellData{cellLane}{newCellIdx}(1, 8) = currCell.BoundingBox(4)*CONV_FACTOR;
+                    cellData{cellLane}{newCellIdx}(1, 9) = 1;
                     
                     if(numPassing(cellLane) > 1)
-                        cellData{cellLane}{newCellIdx}(1, 9) = 1;
+                        cellData{cellLane}{newCellIdx}(1, 10) = 1;
                     else
-                        cellData{cellLane}{newCellIdx}(1, 9) = 0;
+                        cellData{cellLane}{newCellIdx}(1, 10) = 0;
                     end
                     
                     if(length(currCell.BoundaryPoints) > 5)
@@ -177,10 +184,20 @@ for currFrameIdx = 1:numFrames
                 cellData{currLane}{i}(newEntryIdx, 7) = bestCell.BoundingBox(3)*CONV_FACTOR;
                 cellData{currLane}{i}(newEntryIdx, 8) = bestCell.BoundingBox(4)*CONV_FACTOR;
                 
+                intersectCons = ismember(labeledFrame, bestCell.LocalIndex);
+                consIdx = 0;
+                for currConIdx = length(conLines):-1:1
+                    if(any(intersectCons(conLines(currConIdx), :)))
+                        consIdx = currConIdx;
+                        break;
+                    end
+                end
+                cellData{currLane}{i}(newEntryIdx, 9) = consIdx;
+                
                 if(numPassing(currLane) > 1)
-                    cellData{currLane}{i}(newEntryIdx, 9) = 1;
+                    cellData{currLane}{i}(newEntryIdx, 10) = 1;
                 else
-                    cellData{currLane}{i}(newEntryIdx, 9) = 0;
+                    cellData{currLane}{i}(newEntryIdx, 10) = 0;
                 end
                 
                 if(length(bestCell.BoundaryPoints) > 5)
