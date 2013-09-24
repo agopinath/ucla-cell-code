@@ -192,6 +192,13 @@ for currFrameIdx = 1:numFrames
                         break;
                     end
                 end
+                if consIdx == 0
+                    if(mod(cellData{currLane}{i}(end-1, 9), 0.2) == 0)
+                        consIdx = cellData{currLane}{i}(end-1, 9) + 0.5;
+                    else
+                        consIdx = cellData{currLane}{i}(end-1, 9);
+                    end
+                end
                 cellData{currLane}{i}(newEntryIdx, 9) = consIdx;
                 
                 if(numPassing(currLane) > 1)
