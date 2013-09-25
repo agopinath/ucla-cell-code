@@ -42,6 +42,7 @@ else
         end
         plot(avgs(:,1), avgs(:,2), 'color', curColor, 'LineWidth', 2);
     end
+    legend('None', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', 'Location', 'SouthEast');
     hold off;
     1+1
 end
