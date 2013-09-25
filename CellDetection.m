@@ -43,7 +43,7 @@ OVERLAYOUTLINE_FLAG = false; % flag whether to overlay detected outlines of cell
 
 flags = [DEBUG_FLAG, WRITEMOVIE_FLAG, USEMASK_FLAG, OVERLAYOUTLINE_FLAG];
 
-USE_DEFAULT_DETECT = false;
+USE_DEFAULT_DETECT = true;
 
 if ~USE_DEFAULT_DETECT
     processed = RBCDetection(cellVideo, startFrame, endFrame, folderName, videoName, mask, flags);
