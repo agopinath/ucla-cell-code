@@ -30,7 +30,7 @@ for llane = 1:16
                 ys = ys + currYs(:, 2);
             end
             ys = ys/(cend-cstart+1);
-            curColor = colors{jj};ys = ys/cellData{llane}{celll}(1, 4); % normalize by dividing by uncon. cell area
+            ys = ys/cellData{llane}{celll}(1, 4); % normalize by dividing by uncon. cell area
             avgs(:, i) = avgs(:, i) + ys;
             nums(i) = nums(i) + 1;
         end
