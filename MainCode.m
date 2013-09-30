@@ -143,7 +143,7 @@ for i = 1:length(videoNames)
     %[lonelyData, pairedData] = 
     numFrames = (endFrame-startFrame+1);
     [cellData, cellPerimsData] = CellTrackingEveryFrame(numFrames, frameRates(i), lineTemplate, processedFrames, xOffset);
-    [fftData] = PostprocessPerimData(currVideo, cellData, cellPerimsData);
+    %[fftData] = PostprocessPerimData(currVideo, cellData, cellPerimsData);
     progressbar((i/(size(videoNames,2))), 0, 0)
     
     % If data is generated (cells are found and tracked through the device)

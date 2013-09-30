@@ -41,9 +41,13 @@ WRITEMOVIE_FLAG = false; % flag for whether to write processed frames to movie o
 USEMASK_FLAG = false; % flag whether to binary AND the processed frames with the supplied mask
 OVERLAYOUTLINE_FLAG = false; % flag whether to overlay detected outlines of cells on original frames
 
-flags = [DEBUG_FLAG, WRITEMOVIE_FLAG, USEMASK_FLAG, OVERLAYOUTLINE_FLAG];
-
 USE_DEFAULT_DETECT = true;
+
+if USE_DEFAULT_DETECT
+    flags = [DEBUG_FLAG, WRITEMOVIE_FLAG, true, OVERLAYOUTLINE_FLAG];
+else
+    flags = [DEBUG_FLAG, WRITEMOVIE_FLAG, false, OVERLAYOUTLINE_FLAG];
+end
 
 if ~USE_DEFAULT_DETECT
     processed = RBCDetection(cellVideo, startFrame, endFrame, folderName, videoName, mask, flags);
