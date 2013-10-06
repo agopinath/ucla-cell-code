@@ -41,16 +41,23 @@ WRITEMOVIE_FLAG = false; % flag for whether to write processed frames to movie o
 USEMASK_FLAG = false; % flag whether to binary AND the processed frames with the supplied mask
 OVERLAYOUTLINE_FLAG = false; % flag whether to overlay detected outlines of cells on original frames
 
-USE_DEFAULT_DETECT = true;
+% 0 -> for normal fps hl60/large cells
+% 1 -> for RBC cells
+% 2 -> for high fps hl60/large cells
+DETECT_TYPE = 2;
 
-if USE_DEFAULT_DETECT
+if DETECT_TYPE == 0
+    flags = [DEBUG_FLAG, WRITEMOVIE_FLAG, false, OVERLAYOUTLINE_FLAG];
+elseif DETECT_TYPE == 1
     flags = [DEBUG_FLAG, WRITEMOVIE_FLAG, true, OVERLAYOUTLINE_FLAG];
-else
+elseif DETECT_TYPE == 2
     flags = [DEBUG_FLAG, WRITEMOVIE_FLAG, false, OVERLAYOUTLINE_FLAG];
 end
 
-if ~USE_DEFAULT_DETECT
-    processed = RBCDetection(cellVideo, startFrame, endFrame, folderName, videoName, mask, flags);
-else
+if DETECT_TYPE == 0
     processed = DefaultDetection(cellVideo, startFrame, endFrame, folderName, videoName, mask, flags);
+elseif DETECT_TYPE == 1
+    processed = RBCDetection(cellVideo, startFrame, endFrame, folderName, videoName, mask, flags);    
+elseif DETECT_TYPE == 2
+    processed = HighFPSDetection(cellVideo, startFrame, endFrame, folderName, videoName, mask, flags);
 end
