@@ -44,20 +44,32 @@ OVERLAYOUTLINE_FLAG = false; % flag whether to overlay detected outlines of cell
 % 0 -> for normal fps hl60/large cells
 % 1 -> for RBC cells
 % 2 -> for high fps hl60/large cells
-DETECT_TYPE = 2;
+% 3 -> for clear high fps droplet vids
+DETECT_TYPE = 3;
 
 if DETECT_TYPE == 0
     flags = [DEBUG_FLAG, WRITEMOVIE_FLAG, false, OVERLAYOUTLINE_FLAG];
 elseif DETECT_TYPE == 1
     flags = [DEBUG_FLAG, WRITEMOVIE_FLAG, true, OVERLAYOUTLINE_FLAG];
-elseif DETECT_TYPE == 2
-    flags = [DEBUG_FLAG, WRITEMOVIE_FLAG, false, OVERLAYOUTLINE_FLAG];
+elseif DETECT_TYPE == 2 || DETECT_TYPE == 3 
+    flags = [DEBUG_FLAG, WRITEMOVIE_FLAG, true, OVERLAYOUTLINE_FLAG];
 end
+
+% Start/END
+% ...07:2100, 2249
+% ...08: 1185, 1215
+% ...08:
+%minoil 002.001: 730, 803
+
+startBG = 1250;%2100;
+endBG = 1300;%2249;
 
 if DETECT_TYPE == 0
     processed = DefaultDetection(cellVideo, startFrame, endFrame, folderName, videoName, mask, flags);
 elseif DETECT_TYPE == 1
     processed = RBCDetection(cellVideo, startFrame, endFrame, folderName, videoName, mask, flags);    
 elseif DETECT_TYPE == 2
-    processed = HighFPSDetection(cellVideo, startFrame, endFrame, folderName, videoName, mask, flags);
+    processed = HighFPSDetection(cellVideo, startFrame, endFrame, folderName, videoName, mask, flags, startBG, endBG);
+elseif DETECT_TYPE == 3
+    processed = DropletHighFPSDetection(cellVideo, startFrame, endFrame, folderName, videoName, mask, flags, startBG, endBG);
 end

@@ -1,4 +1,4 @@
-llane = 15; celll = 4; numCons = 8;
+llane = 3; celll = 1; numCons = 8;
 colors = {'black', 'blue', 'magenta', 'red', [1, 0.5, 0], 'cyan', 'green', 'yellow'};
 
 USE_AVGS = true;

@@ -1,6 +1,6 @@
 %% HighFPSDetection.m
 
-function processed = HighFPSDetection(cellVideo, startFrame, endFrame, folderName, videoName, mask, flags, startBG, endBG)
+function processed = DropletHighFPSDetection(cellVideo, startFrame, endFrame, folderName, videoName, mask, flags, startBG, endBG)
 
 %%% This code analyzes a video of cells passing through constrictions
 %%% to produce and return a binary array of the video's frames which
@@ -67,10 +67,10 @@ clear frameIdxs; clear bgFrames;
 %% Prepare for Cell Detection
 % create structuring elements used in cleanup of grayscale image
 forClose1 = strel('disk', 2);
-forClose2 = strel('disk', 10);
+forClose2 = strel('disk', 12);
 
 % automatic calculation of threshold value for conversion from grayscale to binary image
-threshold = graythresh(backgroundImg) / 25;
+threshold = graythresh(backgroundImg) / 30;
 
 % preallocate memory for marix for speed
 if(OVERLAYOUTLINE_FLAG)
@@ -96,13 +96,13 @@ for frameIdx = startFrame:endFrame
     % subtracts the background in bgImgs from each frame, hopefully leaving
     % just the cells
     cleanImg = im2bw(imsubtract(backgroundImg, currFrame), threshold);
-    cleanImg = bwareaopen(cleanImg, 2);
-    cleanImg = imclose(cleanImg, forClose1);
-    cleanImg = imfill(cleanImg, 'holes');
-    cleanImg = bwareaopen(cleanImg, 6);
+    cleanImg = bwareaopen(cleanImg, 45);
     cleanImg = imclose(cleanImg, forClose2);
-    cleanImg = bwareaopen(cleanImg, 30);
-    cleanImg = medfilt2(cleanImg, [3, 3]);
+    cleanImg = imfill(cleanImg, 'holes');
+    cleanImg = bwareaopen(cleanImg, 60);
+    %cleanImg = imclose(cleanImg, forClose2);
+    %cleanImg = bwareaopen(cleanImg, 30);
+    %cleanImg = medfilt2(cleanImg, [3, 3]);
     %cleanImg = imsubtract(backgroundImg, currFrame);
     %% Cleanup 
     % clean the grayscale image of the cells to improve detection

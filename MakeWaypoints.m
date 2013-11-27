@@ -100,7 +100,7 @@ corrOffset = [ (ypeak-size(template,1)) (xpeak-size(template,2)) ];
 
 % Defines the position vector [Xmin Ymin width height]
 % Max functions are there to prevent negative numbers which will become
-% indicies 
+% indicies
 position = [max(0,corrOffset(2)), max(0,corrOffset(1)), size(template,2), size(template,1)];
 xOffset = corrOffset(2);
 
