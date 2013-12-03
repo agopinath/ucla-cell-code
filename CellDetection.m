@@ -45,13 +45,13 @@ OVERLAYOUTLINE_FLAG = false; % flag whether to overlay detected outlines of cell
 % 1 -> for RBC cells
 % 2 -> for high fps hl60/large cells
 % 3 -> for clear high fps droplet vids
-DETECT_TYPE = 3;
+DETECT_TYPE = 4;
 
 if DETECT_TYPE == 0
     flags = [DEBUG_FLAG, WRITEMOVIE_FLAG, false, OVERLAYOUTLINE_FLAG];
 elseif DETECT_TYPE == 1
     flags = [DEBUG_FLAG, WRITEMOVIE_FLAG, true, OVERLAYOUTLINE_FLAG];
-elseif DETECT_TYPE == 2 || DETECT_TYPE == 3 
+elseif DETECT_TYPE == 2 || DETECT_TYPE == 3 || DETECT_TYPE == 4 
     flags = [DEBUG_FLAG, WRITEMOVIE_FLAG, true, OVERLAYOUTLINE_FLAG];
 end
 
@@ -72,4 +72,6 @@ elseif DETECT_TYPE == 2
     processed = HighFPSDetection(cellVideo, startFrame, endFrame, folderName, videoName, mask, flags, startBG, endBG);
 elseif DETECT_TYPE == 3
     processed = DropletHighFPSDetection(cellVideo, startFrame, endFrame, folderName, videoName, mask, flags, startBG, endBG);
+elseif DETECT_TYPE == 4
+    processed = MultiDropletHighFPSDetection(cellVideo, startFrame, endFrame, folderName, videoName, mask, flags);
 end
