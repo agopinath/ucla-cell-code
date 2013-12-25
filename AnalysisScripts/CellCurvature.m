@@ -1,18 +1,19 @@
 clear xs; clear ys;
 llane = 1; celll = 1;
-ttheta = {[3*pi/4, 5*pi/4]};
+ttheta = {[3*pi/4, 5*pi/4]};%, [pi/4, 3*pi/4]};
 avgRun = 3;
-colors = {'magenta', 'black', 'blue', 'magenta', 'red', [1, 0.5, 0], 'cyan', 'green', 'yellow'};
+colors = {'magenta', 'blue', 'black', 'magenta', 'red', [1, 0.5, 0], 'cyan', 'green', 'yellow'};
 pData = cellPerimsDataH;
 cData = cellDataH;
+fps = 2000;
+%figure;
+
 if(~isempty(ttheta))
     frameCount = length(pData{llane}{celll});
-    xs = 1:frameCount;
+    xs = (1:frameCount)/fps*1000;
     for i = 1:length(ttheta)
-        if(i ~= 1)
-            %hold on;
-        else
-            %figure;
+        if i > 1
+            hold on;
         end
         currInt = ttheta{i};
         [delta, thetaSt] = min(abs(pData{llane}{celll}{1}(:,1)-currInt(1)));
@@ -37,6 +38,7 @@ if(~isempty(ttheta))
         end
         subplot(2,1,2); 
         plot(xs, ys, 'color', colors{i}, 'LineWidth', 1);
+        clear ys;
     end
 %     legend(arrayfun(@num2str, ttheta, 'unif', 0), 'Location', 'SouthEast');
     
@@ -56,6 +58,7 @@ if(~isempty(ttheta))
         end
     end
     
+    indices = indices/fps*1000;
     for j = 1:length(indices)
         if(~isnan(indices(j, 1)))
             line([indices(j, 1), indices(j, 1)], [-100 1000], 'color', 'black');
