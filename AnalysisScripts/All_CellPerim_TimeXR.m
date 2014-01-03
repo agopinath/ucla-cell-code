@@ -1,22 +1,27 @@
-llane = 9; celll = 1;
-ttheta = [0, pi/2, pi, 3/2*pi];
-colors = {'black', 'blue', 'magenta', 'red', [1, 0.5, 0], 'cyan', 'green', 'yellow'};
+consNum = 8;
+cData = cellDataMock;
 
-if(~isempty(ttheta))
-    frameCount = length(cellPerimsData{llane}{celll});
-    xs = 1:frameCount;
-    for i = 1:length(ttheta)
-        if(i ~= 1)
-            hold on;
-        else
-            figure;
-        end
+idx = 1;
+xs = [];
+ys = [];
+
+for laneNum = 1:16
+    numCells = length(cData{laneNum});
+    for cellNum = 1:numCells
+        llane = laneNum; celll = cellNum;
+        %%ys(idx) = size(cData{laneNum}{cellNum}, 1);
+        %xs(idx) = cData{laneNum}{cellNum}(1, 4);
+        %idx = idx + 1;
+        %figure;
         
-        [delta, thetaIdx] = min(abs(cellPerimsData{llane}{celll}{1}(:,1)-ttheta(i)));
-        for j = 1:frameCount
-            ys(j) = cellPerimsData{llane}{celll}{j}(thetaIdx, 2);
-        end
-        plot(xs, ys, 'color', colors{i});
+        CellPerim_TimeXR
+        hold off;
+        %i = 1;
     end
-    legend(arrayfun(@num2str, ttheta, 'unif', 0), 'Location', 'SouthEast');
 end
+
+%figure;
+%scatter(xs, ys);
+
+hold off;
+1+1

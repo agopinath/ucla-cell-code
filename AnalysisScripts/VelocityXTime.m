@@ -1,6 +1,6 @@
-llane = 3; celll = 1;
-cData = cellDataM;
-fps = 2000;
+llane = 14; celll = 1;
+cData = cellData;
+fps = 1000;
 
 frameCount = length(cData{llane}{celll});
 xs = (1:frameCount)/fps*1000;
@@ -23,7 +23,7 @@ end
 ys(1) = ys(2); % get rid of sudden "jump" from unknown initial velocity
 ys = ys*fps/1000 % convert from um/frame to um/ms
 
-%figure; 
+figure; 
 subplot(2,1,1);
 %hold on;
 plot(xs, ys, 'red');

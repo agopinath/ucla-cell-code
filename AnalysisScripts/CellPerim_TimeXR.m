@@ -1,15 +1,15 @@
 clear xs; clear ys;
-llane = 3; celll = 1;
+%llane = 13; celll = 1;
 ttheta = [0, pi/2, pi, 3/2*pi];
 colors = {'black', 'blue', 'magenta', 'red', [1, 0.5, 0], 'cyan', 'green', 'yellow'};
 avgRun = 2;
-pData = cellPerimsDataM;
-cData = cellDataM;
+pData = cellPerimsDataMock;
+cData = cellDataMock;
 usePercent = true;
-fps = 2000;
+fps = 1000;
 
-% figure;
-subplot(2,1,1);
+figure;
+%subplot(2,1,2);
 if(~isempty(ttheta))
     frameCount = length(pData{llane}{celll});
     xs = ((1:frameCount)/fps)*1000;
