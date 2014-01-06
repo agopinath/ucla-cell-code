@@ -1,5 +1,5 @@
 consNum = 8;
-cData = cellDataMock;
+cData = cellDataLamA;
 
 idx = 1;
 xs = [];

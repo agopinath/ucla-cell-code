@@ -1,10 +1,10 @@
 clear xs; clear ys;
-%llane = 13; celll = 1;
+llane = 11; celll = 1;
 ttheta = [0, pi/2, pi, 3/2*pi];
 colors = {'black', 'blue', 'magenta', 'red', [1, 0.5, 0], 'cyan', 'green', 'yellow'};
-avgRun = 2;
-pData = cellPerimsDataMock;
-cData = cellDataMock;
+avgRun = 15;
+pData = cellPerimsData;
+cData = cellData;
 usePercent = true;
 fps = 1000;
 
@@ -63,8 +63,8 @@ if(~isempty(ttheta))
             line([indices(j, 1), indices(j, 1)], [-100 100], 'color', 'black');
         end
         
-        %if(~isnan(indices(j, 2)))
-        %    line([indices(j, 2), indices(j, 2)], [-100 100], 'color', 'green');
-        %end
+        if(~isnan(indices(j, 2)))
+            line([indices(j, 2), indices(j, 2)], [-100 100], 'color', 'green');
+        end
     end
 end

@@ -1,11 +1,11 @@
 clear xs; clear ys;
-llane = 1; celll = 1;
-ttheta = {[3*pi/4, 5*pi/4]};%, [pi/4, 3*pi/4]};
+llane = 6; celll = 1;
+ttheta = {[pi/3, 2*pi/3], [pi/4, 3*pi/4]};
 avgRun = 3;
 colors = {'magenta', 'blue', 'black', 'magenta', 'red', [1, 0.5, 0], 'cyan', 'green', 'yellow'};
-pData = cellPerimsDataH;
-cData = cellDataH;
-fps = 2000;
+pData = cellPerimsDataMock;
+cData = cellDataMock;
+fps = 1000;
 %figure;
 
 if(~isempty(ttheta))
@@ -36,7 +36,7 @@ if(~isempty(ttheta))
                 ys(j) = ys(j-1) - ys(j-avgRun)/avgRun + ys(j)/avgRun;
             end
         end
-        subplot(2,1,2); 
+        subplot(2,1,1); 
         plot(xs, ys, 'color', colors{i}, 'LineWidth', 1);
         clear ys;
     end

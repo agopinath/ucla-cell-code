@@ -1,19 +1,19 @@
 clear xs; clear ys;
 
 consNum = 8;
-maxEdgeAngle = pi; % degrees, in rads, from theta=0 aligning with north, of max edge
+edgeAngle = pi; % degrees, in rads, from theta=0 aligning with north, of edge to analyze
 avgRun = 2;
 pData = cellPerimsData;
 usePercent = true;
 fps = 1000;
 
 % UNCOMMENT BELOW FOR SINGLE CELL RUN
-% llane = 11; celll = 1;
-% maxExt = zeros(2, 7);
-% maxExtIt = 1;
+% llane = 5; celll = 1;
+% extDists = zeros(1, 7);
+% extDistIt = 1;
 %
 frameCount = length(pData{llane}{celll});
-[delta, thetaIdx] = min(abs(pData{llane}{celll}{1}(:,1)-maxEdgeAngle));
+[delta, thetaIdx] = min(abs(pData{llane}{celll}{1}(:,1)-edgeAngle));
 base = pData{llane}{celll}{1}(thetaIdx, 2);
 
 for currCon = 2:8
@@ -34,10 +34,21 @@ for currCon = 2:8
         end
     end
     
-    maxEdge = max(edgeDists);
-    maxExt(maxExtIt, currCon-1) = maxEdge;
+    useMin = true;
+    if(mean(edgeDists) < 0)
+        useMin = false;
+    end
+    
+    if(useMin)
+        relaxedEdgeR = min(edgeDists);
+    else
+        relaxedEdgeR = max(edgeDists);
+    end
+    
+    %signedRelaxedEdgeR = edgeDists(relaxedEdgeIdx);
+    extDists(extDistIt, currCon-1) = relaxedEdgeR;
 end
 
-figure; boxplot(maxExt)
+%figure; boxplot(extDists)
 
 1+1;
