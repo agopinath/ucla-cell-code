@@ -50,7 +50,7 @@
 %       names by using regular expressions instead of ad-hoc parsing
 %       - cleaned up any remaining legacy code and comments
 %       - added better output of debugging information
-dbstop in MainCode at 147;
+%dbstop in MainCode at 147;
 close all
 clear variables
 clc
@@ -117,6 +117,22 @@ if ~(exist(outputFolderName, 'file') == 7)
 end
 
 lastPathName = pathNames{i};
+
+%% Initialize cell data containers
+% Initialize cell array cellData to store the cell data
+% of each cell at every frame between the start and end lines
+% The data for the stored cells are referenced as: 
+%   cellData{lane#}{cellID}
+cellData = cell(1, 16);
+
+cellPerimsData = cell(1, 16);
+
+for i = 1:16
+    cellData{i} = {};
+    cellPerimsData{i} = {};
+    cellPerimsData{i}{1} = {};
+end
+
 %% Iterates through videos to filter, analyze, and output the compiled data
 for i = 1:length(videoNames)
     % Initializations
@@ -125,7 +141,7 @@ for i = 1:length(videoNames)
     currVideoName = videoNames{i};
     currVideo = VideoReader(fullfile(currPathName, currVideoName));
     startFrame = 1;%1480;
-    endFrame = currVideo.NumberOfFrames;%1632;%currVideo.NumberOfFrames;
+    endFrame = 1625;%currVideo.NumberOfFrames;%1632;%currVideo.NumberOfFrames;
     
     disp(['==Video ', num2str(i), '==']);
     
@@ -142,59 +158,59 @@ for i = 1:length(videoNames)
     % Calls CellTrackingEveryFrame to track the detected cells.
     %[lonelyData, pairedData] = 
     numFrames = (endFrame-startFrame+1);
-    [cellData, cellPerimsData] = CellTrackingEveryFrame(numFrames, frameRates(i), lineTemplate, processedFrames, xOffset);
+    [cellData, cellPerimsData] = CellTrackingEveryFrame(numFrames, frameRates(i), lineTemplate, processedFrames, xOffset, cellData, cellPerimsData);
     %[fftData] = PostprocessPerimData(currVideo, cellData, cellPerimsData);
     progressbar((i/(size(videoNames,2))), 0, 0)
     
-    % If data is generated (cells are found and tracked through the device)
-    if (~isempty(lonelyData))
-        % If the first row is zeros (has not been written to yet)
-        if ((strcmpi(lastPathName, currPathName) == 0) | lonelyCompiledData(1,1:numDataCols) == zeros(1,numDataCols))
-            lonelyCompiledData = lonelyData;
-        % Otherwise add the new data
-        else
-            lonelyCompiledData = vertcat(lonelyCompiledData, lonelyData);
-        end
-        
-        if(isempty(pairedData))
-            % Don't to anything! (pairedCompiledData = pairedCompiledData)
-        elseif ((strcmpi(lastPathName, currPathName) == 0) | pairedCompiledData(1,1:numDataCols) == zeros(1,numDataCols))
-                pairedCompiledData = pairedData;
-        % Otherwise add the new data
-        else
-            pairedCompiledData = vertcat(pairedCompiledData, pairedData);
-        end
-        
-%         % Plots histograms of the paired and unpaired cells total times
-%         figure(5)
-%         s(1) = subplot(2,2,1);
-%         s(2) = subplot(2,2,2);
-%         s(3) = subplot(2,2,3);
-%         s(4) = subplot(2,2,4);
-%         % Transit times
-%         hist(s(1),lonelyCompiledData(:,1,1))
-%         hist(s(3),pairedCompiledData(:,1,1))
-%         title(s(1), 'Unpaired Cells','FontWeight','bold')
-%         title(s(3), 'Paired Cells','FontWeight','bold')
-%         xlabel(s(3), 'Total Transit Time (ms)')
-%         % Areas
-%         hist(s(2),lonelyCompiledData(:,1,2))
-%         hist(s(4),pairedCompiledData(:,1,2))
-%         title(s(2), 'Unpaired Cells','FontWeight','bold')
-%         title(s(4), 'Paired Cells','FontWeight','bold')
-%         xlabel(s(4), 'Area (pixels)')
-%         linkaxes([s(1) s(3)],'xy');
-%         linkaxes([s(2) s(4)],'xy');
-        if((i == length(videoNames)) || ~strcmp(pathNames{i}, pathNames{i+1}))
-            if(shouldUseExcel)
-                WriteExcelOutput(outputFilename, lonelyCompiledData, pairedCompiledData);
-            else
-                WriteCSVOutput(outputFolderName, lonelyCompiledData, pairedCompiledData);
-            end
-        end
-        
-        lastPathName = currPathName;
-    end
+%     % If data is generated (cells are found and tracked through the device)
+%     if (~isempty(lonelyData))
+%         % If the first row is zeros (has not been written to yet)
+%         if ((strcmpi(lastPathName, currPathName) == 0) | lonelyCompiledData(1,1:numDataCols) == zeros(1,numDataCols))
+%             lonelyCompiledData = lonelyData;
+%         % Otherwise add the new data
+%         else
+%             lonelyCompiledData = vertcat(lonelyCompiledData, lonelyData);
+%         end
+%         
+%         if(isempty(pairedData))
+%             % Don't to anything! (pairedCompiledData = pairedCompiledData)
+%         elseif ((strcmpi(lastPathName, currPathName) == 0) | pairedCompiledData(1,1:numDataCols) == zeros(1,numDataCols))
+%                 pairedCompiledData = pairedData;
+%         % Otherwise add the new data
+%         else
+%             pairedCompiledData = vertcat(pairedCompiledData, pairedData);
+%         end
+%         
+% %         % Plots histograms of the paired and unpaired cells total times
+% %         figure(5)
+% %         s(1) = subplot(2,2,1);
+% %         s(2) = subplot(2,2,2);
+% %         s(3) = subplot(2,2,3);
+% %         s(4) = subplot(2,2,4);
+% %         % Transit times
+% %         hist(s(1),lonelyCompiledData(:,1,1))
+% %         hist(s(3),pairedCompiledData(:,1,1))
+% %         title(s(1), 'Unpaired Cells','FontWeight','bold')
+% %         title(s(3), 'Paired Cells','FontWeight','bold')
+% %         xlabel(s(3), 'Total Transit Time (ms)')
+% %         % Areas
+% %         hist(s(2),lonelyCompiledData(:,1,2))
+% %         hist(s(4),pairedCompiledData(:,1,2))
+% %         title(s(2), 'Unpaired Cells','FontWeight','bold')
+% %         title(s(4), 'Paired Cells','FontWeight','bold')
+% %         xlabel(s(4), 'Area (pixels)')
+% %         linkaxes([s(1) s(3)],'xy');
+% %         linkaxes([s(2) s(4)],'xy');
+%         if((i == length(videoNames)) || ~strcmp(pathNames{i}, pathNames{i+1}))
+%             if(shouldUseExcel)
+%                 WriteExcelOutput(outputFilename, lonelyCompiledData, pairedCompiledData);
+%             else
+%                 WriteCSVOutput(outputFolderName, lonelyCompiledData, pairedCompiledData);
+%             end
+%         end
+%         
+%         lastPathName = currPathName;
+%     end
 end
 
 %% Output debugging information

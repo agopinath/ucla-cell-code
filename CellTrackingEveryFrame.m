@@ -1,4 +1,4 @@
-function [cellData, cellPerimsData] = CellTrackingEveryFrame(numFrames, framerate, template, processedFrames, xOffset)
+function [cellData, cellPerimsData] = CellTrackingEveryFrame(numFrames, template, processedFrames, xOffset, cellData, cellPerimsData)
 currFrameIdx = 1;
 %dbstop in CellTrackingEveryFrame at 68 if (currFrameIdx == 78)
 dbstop if error
@@ -7,20 +7,22 @@ dbstop if error
 % defaults to false.
 WRITEVIDEO_FLAG = false;
 CONV_FACTOR = 1.06; % conversion factor in um per pixel.
-%% Initializations
+% MAX_NUM = 20; % maximum number of cells in any lane before it turns out to be an error, and we clear the lane;
 
+%% Initializations
+%% Initialize cell data containers
 % Initialize cell array cellData to store the cell data
 % of each cell at every frame between the start and end lines
 % The data for the stored cells are referenced as: 
 %   cellData{lane#}{cellID}
-cellData = cell(1, 16);
+cellDataCurr = cell(1, 16);
 
-cellPerimsData = cell(1, 16);
+cellPerimsDataCurr = cell(1, 16);
 
 for i = 1:16
-    cellData{i} = {};
-    cellPerimsData{i} = {};
-    cellPerimsData{i}{1} = {};
+    cellDataCurr{i} = {};
+    cellPerimsDataCurr{i} = {};
+    cellPerimsDataCurr{i}{1} = {};
 end
 
 newCells = false(1, 16);
@@ -100,29 +102,29 @@ for currFrameIdx = 1:numFrames
             if(checkingArray(cellLane) == 0)
                 if(any(forIntersection(tripWireStart,:)))
                     % cellID(cellLane) = cellID(cellLane) + 1;
-                    newCellIdx = length(cellData{cellLane}) + 1;
+                    newCellIdx = length(cellDataCurr{cellLane}) + 1;
                     numPassing(cellLane) = numPassing(cellLane)+1;
                     % passageStatus{cellLane}(cellID(cellLane)) = true;
                     % newEntryIdx = size(cellData{cellLane}{cellID(cellLane)}, 1) + 1;
-                    cellData{cellLane}{newCellIdx}(1, 1) = currFrameIdx;
-                    cellData{cellLane}{newCellIdx}(1, 2) = currCell.Centroid(1);
-                    cellData{cellLane}{newCellIdx}(1, 3) = currCell.Centroid(2);
-                    cellData{cellLane}{newCellIdx}(1, 4) = currCell.Area*CONV_FACTOR^2;
-                    cellData{cellLane}{newCellIdx}(1, 5) = currCell.MajorAxisLength*CONV_FACTOR;
-                    cellData{cellLane}{newCellIdx}(1, 6) = currCell.MinorAxisLength*CONV_FACTOR;
-                    cellData{cellLane}{newCellIdx}(1, 7) = currCell.BoundingBox(3)*CONV_FACTOR;
-                    cellData{cellLane}{newCellIdx}(1, 8) = currCell.BoundingBox(4)*CONV_FACTOR;
-                    cellData{cellLane}{newCellIdx}(1, 9) = 1;
+                    cellDataCurr{cellLane}{newCellIdx}(1, 1) = currFrameIdx;
+                    cellDataCurr{cellLane}{newCellIdx}(1, 2) = currCell.Centroid(1);
+                    cellDataCurr{cellLane}{newCellIdx}(1, 3) = currCell.Centroid(2);
+                    cellDataCurr{cellLane}{newCellIdx}(1, 4) = currCell.Area*CONV_FACTOR^2;
+                    cellDataCurr{cellLane}{newCellIdx}(1, 5) = currCell.MajorAxisLength*CONV_FACTOR;
+                    cellDataCurr{cellLane}{newCellIdx}(1, 6) = currCell.MinorAxisLength*CONV_FACTOR;
+                    cellDataCurr{cellLane}{newCellIdx}(1, 7) = currCell.BoundingBox(3)*CONV_FACTOR;
+                    cellDataCurr{cellLane}{newCellIdx}(1, 8) = currCell.BoundingBox(4)*CONV_FACTOR;
+                    cellDataCurr{cellLane}{newCellIdx}(1, 9) = 1;
                     
                     if(numPassing(cellLane) > 1)
-                        cellData{cellLane}{newCellIdx}(1, 10) = 1;
+                        cellDataCurr{cellLane}{newCellIdx}(1, 10) = 1;
                     else
-                        cellData{cellLane}{newCellIdx}(1, 10) = 0;
+                        cellDataCurr{cellLane}{newCellIdx}(1, 10) = 0;
                     end
                     
                     if(length(currCell.BoundaryPoints) > 5)
                         pcoords = PreprocessPerimData(currCell, CONV_FACTOR);
-                        cellPerimsData{cellLane}{newCellIdx}{1} = pcoords;
+                        cellPerimsDataCurr{cellLane}{newCellIdx}{1} = pcoords;
                     end
                     
                     checkingArray(cellLane) = 1;
@@ -135,11 +137,11 @@ for currFrameIdx = 1:numFrames
         clear cellLane;
         
         for currLane = 1:16
-            for i = 1:length(cellData{currLane})
-                if(isempty(cellData{currLane}))
+            for i = 1:length(cellDataCurr{currLane})
+                if(isempty(cellDataCurr{currLane}))
                     continue;
                 end
-                currTrackedCell = cellData{currLane}{i};
+                currTrackedCell = cellDataCurr{currLane}{i};
                 if(~any(currTrackedCell)) % if tracked cell is empty, skip it
                     continue;
                 elseif(size(currTrackedCell, 1) == 1 && newCells(currLane) == 1) % if this is a new cell
@@ -174,15 +176,15 @@ for currFrameIdx = 1:numFrames
                 end
                 
                 bestCell = cellsPassing{currLane}{bestCellIdx};
-                newEntryIdx = size(cellData{currLane}{i}, 1) + 1;
-                cellData{currLane}{i}(newEntryIdx, 1) = currFrameIdx;
-                cellData{currLane}{i}(newEntryIdx, 2) = bestCell.Centroid(1);
-                cellData{currLane}{i}(newEntryIdx, 3) = bestCell.Centroid(2);
-                cellData{currLane}{i}(newEntryIdx, 4) = bestCell.Area*CONV_FACTOR^2;
-                cellData{currLane}{i}(newEntryIdx, 5) = bestCell.MajorAxisLength*CONV_FACTOR;
-                cellData{currLane}{i}(newEntryIdx, 6) = bestCell.MinorAxisLength*CONV_FACTOR;
-                cellData{currLane}{i}(newEntryIdx, 7) = bestCell.BoundingBox(3)*CONV_FACTOR;
-                cellData{currLane}{i}(newEntryIdx, 8) = bestCell.BoundingBox(4)*CONV_FACTOR;
+                newEntryIdx = size(cellDataCurr{currLane}{i}, 1) + 1;
+                cellDataCurr{currLane}{i}(newEntryIdx, 1) = currFrameIdx;
+                cellDataCurr{currLane}{i}(newEntryIdx, 2) = bestCell.Centroid(1);
+                cellDataCurr{currLane}{i}(newEntryIdx, 3) = bestCell.Centroid(2);
+                cellDataCurr{currLane}{i}(newEntryIdx, 4) = bestCell.Area*CONV_FACTOR^2;
+                cellDataCurr{currLane}{i}(newEntryIdx, 5) = bestCell.MajorAxisLength*CONV_FACTOR;
+                cellDataCurr{currLane}{i}(newEntryIdx, 6) = bestCell.MinorAxisLength*CONV_FACTOR;
+                cellDataCurr{currLane}{i}(newEntryIdx, 7) = bestCell.BoundingBox(3)*CONV_FACTOR;
+                cellDataCurr{currLane}{i}(newEntryIdx, 8) = bestCell.BoundingBox(4)*CONV_FACTOR;
                 
                 intersectCons = ismember(labeledFrame, bestCell.LocalIndex);
                 consIdx = 0;
@@ -193,30 +195,30 @@ for currFrameIdx = 1:numFrames
                     end
                 end
                 if consIdx == 0
-                    if(mod(cellData{currLane}{i}(end-1, 9), 0.2) == 0)
-                        consIdx = cellData{currLane}{i}(end-1, 9) + 0.5;
+                    if(mod(cellDataCurr{currLane}{i}(end-1, 9), 0.2) == 0)
+                        consIdx = cellDataCurr{currLane}{i}(end-1, 9) + 0.5;
                     else
-                        consIdx = cellData{currLane}{i}(end-1, 9);
+                        consIdx = cellDataCurr{currLane}{i}(end-1, 9);
                     end
                 end
-                cellData{currLane}{i}(newEntryIdx, 9) = consIdx;
+                cellDataCurr{currLane}{i}(newEntryIdx, 9) = consIdx;
                 
                 if(numPassing(currLane) > 1)
-                    cellData{currLane}{i}(newEntryIdx, 10) = 1;
+                    cellDataCurr{currLane}{i}(newEntryIdx, 10) = 1;
                 else
-                    cellData{currLane}{i}(newEntryIdx, 10) = 0;
+                    cellDataCurr{currLane}{i}(newEntryIdx, 10) = 0;
                 end
                 
                 if(length(bestCell.BoundaryPoints) > 5)
                     pcoords = PreprocessPerimData(bestCell, CONV_FACTOR);
-                    cellPerimsData{currLane}{i}{newEntryIdx} = pcoords;
+                    cellPerimsDataCurr{currLane}{i}{newEntryIdx} = pcoords;
                 end
                 
                 %cellPerimsData{currLane}{i}{newEntryIdx} = bestCell.BoundaryPoints;
                 
                 if(bestCell.Centroid(2) > tripWireEnd)
                     newEntryIdx = newEntryIdx + 1;
-                    cellData{currLane}{i}(newEntryIdx, 1) = -1;
+                    cellDataCurr{currLane}{i}(newEntryIdx, 1) = -1;
                     numPassing(currLane) = numPassing(currLane)-1;
                     if(numPassing(currLane) <= 0)
                         numPassing(currLane) = 0;
@@ -239,11 +241,42 @@ end
 %% Do post-processing of cell data
 % remove the "cap" entry (row of -1's) at the end of every tracked cell
 for r = 1:16
-    numCells = length(cellData{r});
+    numCells = length(cellDataCurr{r});
     for j = 1:numCells
-        if(cellData{r}{j}(end, 1) == -1)
-            cellData{r}{j}(end, :) = [];
+        if(cellDataCurr{r}{j}(end, 1) == -1)
+            cellDataCurr{r}{j}(end, :) = [];
+        else
+            cellDataCurr{r}{j} = [];
         end
+    end
+end
+
+
+for r = 1:16
+    numCells = length(cellDataCurr{r});
+    for j = 1:numCells
+        if(size(cellDataCurr{r}{j}, 1) < 5)
+            cellDataCurr{r}{j} = [];
+        elseif(cellDataCurr{r}{j}(end, 3) < tripWireEnd)
+            cellDataCurr{r}{j} = [];
+        end
+    end
+end
+
+for r = 1:16
+    numCells = length(cellDataCurr{r});
+%     if(numCells > MAX_NUM)
+%         continue;
+%     end
+    numCellsTotal = length(cellData{r});
+    offset = 0;
+    for j = 1:numCells
+        if(isempty(cellDataCurr{r}{j}))
+            offset = offset - 1;
+            continue;
+        end
+        cellData{r}{numCellsTotal+offset+j} = cellDataCurr{r}{j};
+        cellPerimsData{r}{numCellsTotal+offset+j} = cellPerimsDataCurr{r}{j};
     end
 end
 
