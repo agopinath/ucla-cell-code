@@ -54,7 +54,7 @@
 close all
 clear variables
 clc
- 
+
 addpath(genpath(fullfile(pwd, '/Helpers')));
 
 %% Initializations
@@ -111,7 +111,7 @@ tStart = tic;
 % The output folder name is a subfolder in the folder where the first videos
 % were selected. The folder name contains the time at which processing is
 % started.
-outputFolderName = fullfile(pathNames{1}, ['processed']);%', datestr(now, 'mm-dd-YY_HH-MM')]);
+outputFolderName = ['EF_', fullfile(pathNames{1}, ['processed'])];%', datestr(now, 'mm-dd-YY_HH-MM')]);
 if ~(exist(outputFolderName, 'file') == 7)
     mkdir(outputFolderName);
 end
@@ -124,9 +124,7 @@ lastPathName = pathNames{i};
 % The data for the stored cells are referenced as: 
 %   cellData{lane#}{cellID}
 cellData = cell(1, 16);
-
 cellPerimsData = cell(1, 16);
-
 for i = 1:16
     cellData{i} = {};
     cellPerimsData{i} = {};
@@ -141,7 +139,7 @@ for i = 1:length(videoNames)
     currVideoName = videoNames{i};
     currVideo = VideoReader(fullfile(currPathName, currVideoName));
     startFrame = 1;%1480;
-    endFrame = 1625;%currVideo.NumberOfFrames;%1632;%currVideo.NumberOfFrames;
+    endFrame = currVideo.NumberOfFrames;%1632;%currVideo.NumberOfFrames;
     
     disp(['==Video ', num2str(i), '==']);
     
@@ -158,10 +156,22 @@ for i = 1:length(videoNames)
     % Calls CellTrackingEveryFrame to track the detected cells.
     %[lonelyData, pairedData] = 
     numFrames = (endFrame-startFrame+1);
-    [cellData, cellPerimsData] = CellTrackingEveryFrame(numFrames, frameRates(i), lineTemplate, processedFrames, xOffset, cellData, cellPerimsData);
+    [cellData, cellPerimsData] = CellTrackingEveryFrame(numFrames, lineTemplate, processedFrames, xOffset, cellData, cellPerimsData);
     %[fftData] = PostprocessPerimData(currVideo, cellData, cellPerimsData);
     progressbar((i/(size(videoNames,2))), 0, 0)
     
+    if((i == length(videoNames)) || ~strcmp(pathNames{i}, pathNames{i+1}))
+        save([outputFilename, '_cellData.mat'], 'cellData');
+        save([outputFilename, '_cellPerims.mat'], 'cellPerimsData');
+        
+        cellData = cell(1, 16);
+        cellPerimsData = cell(1, 16);
+        for m = 1:16
+            cellData{m} = {};
+            cellPerimsData{m} = {};
+            cellPerimsData{m}{1} = {};
+        end
+    end
 %     % If data is generated (cells are found and tracked through the device)
 %     if (~isempty(lonelyData))
 %         % If the first row is zeros (has not been written to yet)
@@ -217,6 +227,7 @@ end
 totalTime = toc(tStart);
 avgTimePerVideo = totalTime/length(videoNames);
 
+disp('PROCESSED WITH NEW CELL DEFORMER CODE (TRACKS AT EVERY FRAME)');
 disp(sprintf('\n\n==========='));
 disp(['Total time to analyze ', num2str(length(videoNames)), ' video(s): ', num2str(totalTime), ' secs']);
 disp(['Average time per video: ', num2str(avgTimePerVideo), ' secs']);
