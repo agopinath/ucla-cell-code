@@ -39,19 +39,21 @@ function processed = CellDetection(cellVideo, startFrame, endFrame, folderName, 
 DEBUG_FLAG = false; % flag for whether to show debug info
 WRITEMOVIE_FLAG = false; % flag for whether to write processed frames to movie on disk
 USEMASK_FLAG = false; % flag whether to binary AND the processed frames with the supplied mask
-OVERLAYOUTLINE_FLAG = false; % flag whether to overlay detected outlines of cells on original frames
+OVERLAYOUTLINE_FLAG = true; % flag whether to overlay detected outlines of cells on original frames
 
 % 0 -> for normal fps hl60/large cells
 % 1 -> for RBC cells
 % 2 -> for high fps hl60/large cells
-% 3 -> for clear high fps droplet vids
-DETECT_TYPE = 4;
+% 3 -> for clear high fps single droplet vids
+% 4 -> for multiple high fps droplet vids 
+% 5 -> for normal/low fps multi droplet vids
+DETECT_TYPE = 5;
 
 if DETECT_TYPE == 0
-    flags = [DEBUG_FLAG, WRITEMOVIE_FLAG, false, OVERLAYOUTLINE_FLAG];
-elseif DETECT_TYPE == 1
     flags = [DEBUG_FLAG, WRITEMOVIE_FLAG, true, OVERLAYOUTLINE_FLAG];
-elseif DETECT_TYPE == 2 || DETECT_TYPE == 3 || DETECT_TYPE == 4 
+elseif DETECT_TYPE == 1
+    flags = [DEBUG_FLAG, WRITEMOVIE_FLAG, false, OVERLAYOUTLINE_FLAG];
+elseif DETECT_TYPE == 2 || DETECT_TYPE == 3 || DETECT_TYPE == 4 || DETECT_TYPE == 5
     flags = [DEBUG_FLAG, WRITEMOVIE_FLAG, true, OVERLAYOUTLINE_FLAG];
 end
 
@@ -74,4 +76,6 @@ elseif DETECT_TYPE == 3
     processed = DropletHighFPSDetection(cellVideo, startFrame, endFrame, folderName, videoName, mask, flags, startBG, endBG);
 elseif DETECT_TYPE == 4
     processed = MultiDropletHighFPSDetection(cellVideo, startFrame, endFrame, folderName, videoName, mask, flags);
+elseif DETECT_TYPE == 5
+    processed = DropletDetection(cellVideo, startFrame, endFrame, folderName, videoName, mask, flags);
 end
