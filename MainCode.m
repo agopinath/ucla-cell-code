@@ -77,7 +77,7 @@ end
 progressbar('Overall', 'Cell detection', 'Cell tracking');
 
 %% Load video files and prepare any metadata
-[pathNames, videoNames] = PromptForVideos('F:\CellVideos\RBCs');
+[pathNames, videoNames] = PromptForVideos('Y:\Kendra\Oil Droplets\131218 - Silicone Oil with Varying Viscosities 10-100k I');
 
 % Checks to make sure at least one video was selected for processing
 if(isempty(videoNames{1}))
@@ -139,7 +139,7 @@ for i = 1:length(videoNames)
     currVideoName = videoNames{i};
     currVideo = VideoReader(fullfile(currPathName, currVideoName));
     startFrame = 1;%1480;
-    endFrame = 1000;%currVideo.NumberOfFrames;
+    endFrame = currVideo.NumberOfFrames;
     
     disp(['==Video ', num2str(i), '==']);
     
@@ -163,13 +163,14 @@ for i = 1:length(videoNames)
     if((i == length(videoNames)) || ~strcmp(pathNames{i}, pathNames{i+1}))
         save([outputFilename, '_cellData.mat'], 'cellData');
         save([outputFilename, '_cellPerims.mat'], 'cellPerimsData');
-        
-        cellData = cell(1, 16);
-        cellPerimsData = cell(1, 16);
-        for m = 1:16
-            cellData{m} = {};
-            cellPerimsData{m} = {};
-            cellPerimsData{m}{1} = {};
+        if(i ~= length(videoNames)) % only reset vars if last video, so we can take a look immediately after processing
+            cellData = cell(1, 16);
+            cellPerimsData = cell(1, 16);
+            for m = 1:16
+                cellData{m} = {};
+                cellPerimsData{m} = {};
+                cellPerimsData{m}{1} = {};
+            end
         end
     end
 %     % If data is generated (cells are found and tracked through the device)
@@ -234,7 +235,7 @@ disp(sprintf('\nOutputting metadata...'));
 
 runOutputPaths = unique(pathNames);
 for i = 1:length(runOutputPaths)
-    runOutputFile = fopen(fullfile(runOutputPaths{i}, 'process_log.txt'), 'wt');
+    runOutputFile = fopen(fullfile(runOutputPaths{i}, 'process_log_EVERYFR.txt'), 'wt');
     vidIndices = strcmp(runOutputPaths{i}, pathNames);
     vidsProcessed = videoNames(vidIndices);
     
