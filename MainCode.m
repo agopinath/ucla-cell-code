@@ -164,7 +164,7 @@ for i = 1:length(videoNames)
     if((i == length(videoNames)) || ~strcmp(pathNames{i}, pathNames{i+1}))
         save([outputFilename, '_cellData.mat'], 'cellData');
         save([outputFilename, '_cellPerims.mat'], 'cellPerimsData');
-        if(i ~= length(videoNames)) % only reset vars if last video, so we can take a look immediately after processing
+        if(i ~= length(videoNames)) % only reset vars if not last video, so we can take a look immediately after processing
             cellData = cell(1, 16);
             cellPerimsData = cell(1, 16);
             for m = 1:16
@@ -174,55 +174,6 @@ for i = 1:length(videoNames)
             end
         end
     end
-%     % If data is generated (cells are found and tracked through the device)
-%     if (~isempty(lonelyData))
-%         % If the first row is zeros (has not been written to yet)
-%         if ((strcmpi(lastPathName, currPathName) == 0) | lonelyCompiledData(1,1:numDataCols) == zeros(1,numDataCols))
-%             lonelyCompiledData = lonelyData;
-%         % Otherwise add the new data
-%         else
-%             lonelyCompiledData = vertcat(lonelyCompiledData, lonelyData);
-%         end
-%         
-%         if(isempty(pairedData))
-%             % Don't to anything! (pairedCompiledData = pairedCompiledData)
-%         elseif ((strcmpi(lastPathName, currPathName) == 0) | pairedCompiledData(1,1:numDataCols) == zeros(1,numDataCols))
-%                 pairedCompiledData = pairedData;
-%         % Otherwise add the new data
-%         else
-%             pairedCompiledData = vertcat(pairedCompiledData, pairedData);
-%         end
-%         
-% %         % Plots histograms of the paired and unpaired cells total times
-% %         figure(5)
-% %         s(1) = subplot(2,2,1);
-% %         s(2) = subplot(2,2,2);
-% %         s(3) = subplot(2,2,3);
-% %         s(4) = subplot(2,2,4);
-% %         % Transit times
-% %         hist(s(1),lonelyCompiledData(:,1,1))
-% %         hist(s(3),pairedCompiledData(:,1,1))
-% %         title(s(1), 'Unpaired Cells','FontWeight','bold')
-% %         title(s(3), 'Paired Cells','FontWeight','bold')
-% %         xlabel(s(3), 'Total Transit Time (ms)')
-% %         % Areas
-% %         hist(s(2),lonelyCompiledData(:,1,2))
-% %         hist(s(4),pairedCompiledData(:,1,2))
-% %         title(s(2), 'Unpaired Cells','FontWeight','bold')
-% %         title(s(4), 'Paired Cells','FontWeight','bold')
-% %         xlabel(s(4), 'Area (pixels)')
-% %         linkaxes([s(1) s(3)],'xy');
-% %         linkaxes([s(2) s(4)],'xy');
-%         if((i == length(videoNames)) || ~strcmp(pathNames{i}, pathNames{i+1}))
-%             if(shouldUseExcel)
-%                 WriteExcelOutput(outputFilename, lonelyCompiledData, pairedCompiledData);
-%             else
-%                 WriteCSVOutput(outputFolderName, lonelyCompiledData, pairedCompiledData);
-%             end
-%         end
-%         
-%         lastPathName = currPathName;
-%     end
 end
 
 %% Output debugging information
