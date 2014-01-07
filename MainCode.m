@@ -138,7 +138,8 @@ for i = 1:length(videoNames)
     outputFilename = fullfile(outputFolderName, regexprep(currPathName, '[^a-zA-Z_0-9-]', '~'));
     currVideoName = videoNames{i};
     currVideo = VideoReader(fullfile(currPathName, currVideoName));
-    startFrame = 1;%1480;
+    
+    startFrame = 1;
     endFrame = currVideo.NumberOfFrames;
     
     disp(['==Video ', num2str(i), '==']);
@@ -228,6 +229,7 @@ end
 totalTime = toc(tStart);
 avgTimePerVideo = totalTime/length(videoNames);
 
+disp('PROCESSED WITH NEW CELL DEFORMER CODE (TRACKS AT EVERY FRAME)');
 disp(sprintf('\n\n==========='));
 disp(['Total time to analyze ', num2str(length(videoNames)), ' video(s): ', num2str(totalTime), ' secs']);
 disp(['Average time per video: ', num2str(avgTimePerVideo), ' secs']);
