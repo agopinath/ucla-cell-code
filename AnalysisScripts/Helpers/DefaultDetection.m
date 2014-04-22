@@ -1,6 +1,6 @@
 %% DefaultDetection.m
 
-function processed = DropletDetection(cellVideo, startFrame, endFrame, folderName, videoName, mask, flags)
+function processed = DefaultDetection(cellVideo, startFrame, endFrame, folderName, videoName, mask, flags)
 
 %%% This code analyzes a video of cells passing through constrictions
 %%% to produce and return a binary array of the video's frames which
@@ -43,7 +43,7 @@ height = cellVideo.Height;
 width = cellVideo.Width;
 
 %% Calculate initial background image
-sampleWindow = 150;
+sampleWindow = 100;
 
 % if the sampling window is larger than the number of frames present,
 % the number is set to all the frames present instead
@@ -72,7 +72,7 @@ clear frameIdxs;
 
 %% Prepare for Cell Detection
 % create structuring elements used in cleanup of grayscale image
-forClose = strel('disk', 8);
+forClose = strel('disk', 10);
 
 % automatic calculation of threshold value for conversion from grayscale to binary image
 threshold = graythresh(backgroundImg) / 20;
@@ -119,10 +119,10 @@ for frameIdx = startFrame:endFrame
     
     %% Cleanup 
     % clean the grayscale image of the cells to improve detection
-    cleanImg = bwareaopen(cleanImg, 18);
+    cleanImg = bwareaopen(cleanImg, 20);
     cleanImg = imbothat(cleanImg, forClose);
-    cleanImg = medfilt2(cleanImg, [3, 3]);
-    cleanImg = bwareaopen(cleanImg, 28);
+    cleanImg = medfilt2(cleanImg, [5, 5]);
+    cleanImg = bwareaopen(cleanImg, 35);
     cleanImg = bwmorph(cleanImg, 'bridge');
     cleanImg = imfill(cleanImg, 'holes');
     

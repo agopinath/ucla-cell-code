@@ -1,6 +1,6 @@
-%% DefaultDetection.m
+%% HighFPSDetection.m
 
-function processed = DropletDetection(cellVideo, startFrame, endFrame, folderName, videoName, mask, flags)
+function processed = HighFPSDetection(cellVideo, startFrame, endFrame, folderName, videoName, mask, flags, startBG, endBG)
 
 %%% This code analyzes a video of cells passing through constrictions
 %%% to produce and return a binary array of the video's frames which
@@ -36,29 +36,23 @@ isVideoGrayscale = (strcmp(cellVideo.VideoFormat, 'Grayscale') == 1);
 disp(sprintf(['\nStarting cell detection for ', videoName, '...']));
 
 % stores the number of frames that will be processed
-effectiveFrameCount = (endFrame-startFrame+1) ;
+effectiveFrameCount = (endFrame-startFrame+1);
 
 % store the height/width of the cell video for clarity
 height = cellVideo.Height;
 width = cellVideo.Width;
 
 %% Calculate initial background image
-sampleWindow = 150;
-
-% if the sampling window is larger than the number of frames present,
-% the number is set to all the frames present instead
-if((sampleWindow+startFrame) > endFrame)
-    sampleWindow = effectiveFrameCount-1;
-end
+sampleWindow = endBG-startBG+1;
 
 % Store the first sampleWindow frames into bgFrames
 bgFrames = zeros(height, width, sampleWindow, 'uint8');
-for j = startFrame:(startFrame+sampleWindow-1)
+for j = startBG:endBG
     if(isVideoGrayscale)
-        bgFrames(:,:,j) = read(cellVideo, j); % store the frame that was read in bgFrames
+        bgFrames(:,:,j-startBG+1) = read(cellVideo, j); % store the frame that was read in bgFrames
     else
         temp = read(cellVideo, j);
-        bgFrames(:,:,j) = temp(:,:,1);
+        bgFrames(:,:,j-startBG+1) = temp(:,:,1);
     end
 end
 
@@ -68,14 +62,15 @@ end
 backgroundImg = uint8(mean(bgFrames, 3));
 
 % clear variables for better memory management
-clear frameIdxs;
+clear frameIdxs; clear bgFrames;
 
 %% Prepare for Cell Detection
 % create structuring elements used in cleanup of grayscale image
-forClose = strel('disk', 8);
+forClose1 = strel('disk', 2);
+forClose2 = strel('disk', 10);
 
 % automatic calculation of threshold value for conversion from grayscale to binary image
-threshold = graythresh(backgroundImg) / 20;
+threshold = graythresh(backgroundImg) / 25;
 
 % preallocate memory for marix for speed
 if(OVERLAYOUTLINE_FLAG)
@@ -86,7 +81,6 @@ end
 
 bgProcessTime = toc(startTime1);
 startTime2 = tic;
-lastBackgroundImg = double(backgroundImg);
 %% Step through video
 % iterates through each video frame in the range [startFrame, endFrame]
 for frameIdx = startFrame:endFrame
@@ -98,33 +92,28 @@ for frameIdx = startFrame:endFrame
         currFrame = temp(:,:,1);
     end
     
-    % if the current frame is after the first sampleWindow frames,
-    % start adjusting the backgroundImage so that it represents a 'moving'
-    % average of the pixel values of the frames in the interval
-    % [frameIdx-sampleWindow, frameIdx]. This better localizes the background 
-    % imageso it 'adapts' to the local frames and appears to better segment 
-    % the cells. bgFrames is used to store the previous sampleWindow frames
-    % so that memory is recycled.
-    if(frameIdx >= sampleWindow+startFrame)
-        bgImgDbl = lastBackgroundImg - double(bgFrames(:,:,(mod(frameIdx-1,sampleWindow)+1)))/sampleWindow + double(currFrame)/sampleWindow;
-        backgroundImg = uint8(bgImgDbl);
-        lastBackgroundImg = bgImgDbl;
-        bgFrames(:,:,mod(frameIdx-1,sampleWindow)+1) = currFrame;
-    end
-    
     %% Do cell detection
     % subtracts the background in bgImgs from each frame, hopefully leaving
     % just the cells
     cleanImg = im2bw(imsubtract(backgroundImg, currFrame), threshold);
-    
+    cleanImg = bwareaopen(cleanImg, 2);
+    cleanImg = imclose(cleanImg, forClose1);
+    cleanImg = imfill(cleanImg, 'holes');
+    cleanImg = bwareaopen(cleanImg, 6);
+    cleanImg = imclose(cleanImg, forClose2);
+    cleanImg = bwareaopen(cleanImg, 30);
+    cleanImg = medfilt2(cleanImg, [3, 3]);
+    %cleanImg = imsubtract(backgroundImg, currFrame);
     %% Cleanup 
     % clean the grayscale image of the cells to improve detection
-    cleanImg = bwareaopen(cleanImg, 18);
-    cleanImg = imbothat(cleanImg, forClose);
-    cleanImg = medfilt2(cleanImg, [3, 3]);
-    cleanImg = bwareaopen(cleanImg, 28);
-    cleanImg = bwmorph(cleanImg, 'bridge');
-    cleanImg = imfill(cleanImg, 'holes');
+    %cleanImg = medfilt2(cleanImg, [3, 3]);
+     %cleanImg = bwareaopen(cleanImg, 25);
+     %cleanImg = imclose(cleanImg, forClose);
+     %cleanImg = medfilt2(cleanImg, [7, 7]);
+%     cleanImg = imfill(cleanImg, 'holes');
+%     cleanImg = bwareaopen(cleanImg, 45);
+%     cleanImg = medfilt2(cleanImg, [3, 3]);
+%     cleanImg = bwareaopen(cleanImg, 45);
     
     if(USEMASK_FLAG)
         % binary 'AND' to find the intersection of the cleaned image and the mask

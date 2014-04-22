@@ -1,11 +1,13 @@
 consNum = 8;
-cData = cellDataLamA;
+cData = cellDataLama;%cellData0uMLama;
+pData = cellPerimsDataLama;%cellPerimsData0uMLama;
+fps = 800;
 
 idx = 1;
 xs = [];
 ys = [];
 
-for laneNum = 1:16
+for laneNum = 11:16
     numCells = length(cData{laneNum});
     for cellNum = 1:numCells
         llane = laneNum; celll = cellNum;

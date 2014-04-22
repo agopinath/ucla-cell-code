@@ -1,30 +1,31 @@
 clear xs; clear ys;
-llane = 6; celll = 1;
+llane = 4; celll = 6;
 ttheta = {[pi/3, 2*pi/3], [pi/4, 3*pi/4]};
 avgRun = 3;
 colors = {'magenta', 'blue', 'black', 'magenta', 'red', [1, 0.5, 0], 'cyan', 'green', 'yellow'};
-pData = cellPerimsDataMock;
-cData = cellDataMock;
-fps = 1000;
-%figure;
+cData = dropDatatSilicone10cST;
+pData = dropPerimsDatatSilicone10cST;
+fps = 800;
+figure;
+allDegs = (1:361)*pi/180;
 
 if(~isempty(ttheta))
-    frameCount = length(pData{llane}{celll});
+    frameCount = size(pData{llane}{celll}, 1);
     xs = (1:frameCount)/fps*1000;
     for i = 1:length(ttheta)
         if i > 1
             hold on;
         end
         currInt = ttheta{i};
-        [delta, thetaSt] = min(abs(pData{llane}{celll}{1}(:,1)-currInt(1)));
-        [delta, thetaEnd] = min(abs(pData{llane}{celll}{1}(:,1)-currInt(2)));
+        [delta, thetaSt] = min(abs(allDegs-currInt(1)));
+        [delta, thetaEnd] = min(abs(allDegs-currInt(2)));
         for j = 1:frameCount
             dists = zeros(1, thetaEnd-thetaSt);
             for k = thetaSt+1:thetaEnd
-                r1 = pData{llane}{celll}{j}(k-1, 2);
-                r2 = pData{llane}{celll}{j}(k, 2);
-                theta1 = pData{llane}{celll}{j}(k-1, 1);
-                theta2 = pData{llane}{celll}{j}(k, 1);
+                r1 = pData{llane}{celll}(j, k-1);
+                r2 = pData{llane}{celll}(j, k);
+                theta1 = pData{llane}{celll}(j, k-1);
+                theta2 = pData{llane}{celll}(j, k);
                 
                 dists(k-thetaSt) = sqrt(r1^2 + r2^2 - 2*r1*r2*cos(theta1-theta2));
 %                 if (j > avgRun)

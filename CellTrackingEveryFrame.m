@@ -171,7 +171,7 @@ for currFrameIdx = 1:numFrames
                 % or if the lowest distance is greater than a certain amount (meaning
                 % that the cell has disappeared and has been matched with another one
                 % instead), skip
-                if(bestCellIdx == -1 || lowestDist > 20)
+                if(bestCellIdx == -1 || lowestDist > 30)
                     continue;         
                 end
                 
