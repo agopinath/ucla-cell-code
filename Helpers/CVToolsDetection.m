@@ -30,7 +30,7 @@ if((sampleWindow+startFrame) > endFrame)
     sampleWindow = effectiveFrameCount-1;
 end
 
-endFrame = 900;
+%endFrame = 900;
 effectiveFrameCount = (endFrame-startFrame+1) ;
 
 %% Prepare for Cell Detection
