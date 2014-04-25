@@ -77,7 +77,7 @@ end
 progressbar('Overall', 'Cell detection', 'Cell tracking');
 
 %% Load video files and prepare any metadata
-[pathNames, videoNames] = PromptForVideos('Y:\Kendra\Oil Droplets\131218 - Silicone Oil with Varying Viscosities 10-100k I');
+[pathNames, videoNames] = PromptForVideos('D:\');
 
 % Checks to make sure at least one video was selected for processing
 if(isempty(videoNames{1}))
@@ -94,11 +94,25 @@ end
 %       ex. "1200fps..."
 % Example of properly formatted video names:
 % 'dev5x10_1200fps_48hrppb_glass_4psi_20x_0.6ms_p12_041'
+
+% for i = 1:length(videoNames)
+%     videoName = videoNames{i};
+%     [j,k] = regexp(videoName, 'dev\d*x'); % store start/end indices of template size
+%     [m, n] = regexp(videoName, '\d*fps'); % store start/end indices of frame rate
+%     templateSize = videoName((j+3):(k-1)); % removes 'dev' at the start, and 'x' at the end
+%     frameRate = videoName(m:(n-3)); % removes 'fps'  at the end
+%     
+%     templateSizes(i) = str2double(templateSize);
+%     frameRates(i) = str2double(frameRate);
+% end
+
+% TEMPORARILY USED TO PROCESS OLD VIDEO NAMES HERE: Y:\Kendra\HL60 Cell Line\120000 - Amy Rowat Data_hl60_cells\120223 hl60\HL60\d0\6psi 5um
+% To use with normal videos, comment the for loop below and uncomment the for loop immediately above
 for i = 1:length(videoNames)
-    videoName = videoNames{i};
-    [j,k] = regexp(videoName, 'dev\d*x'); % store start/end indices of template size
+    videoName = sscanf(videoNames{i},'%s');
+    [j,k] = regexp(videoName, 'psi\d*um'); % store start/end indices of template size
     [m, n] = regexp(videoName, '\d*fps'); % store start/end indices of frame rate
-    templateSize = videoName((j+3):(k-1)); % removes 'dev' at the start, and 'x' at the end
+    templateSize = videoName((j+3):(k-2)); % removes 'dev' at the start, and 'x' at the end
     frameRate = videoName(m:(n-3)); % removes 'fps'  at the end
     
     templateSizes(i) = str2double(templateSize);
@@ -138,8 +152,7 @@ for i = 1:length(videoNames)
     outputFilename = fullfile(outputFolderName, regexprep(currPathName, '[^a-zA-Z_0-9-]', '~'));
     currVideoName = videoNames{i};
     currVideo = VideoReader(fullfile(currPathName, currVideoName));
-    
-    startFrame = 1;
+    startFrame = 1;%1480;
     endFrame = currVideo.NumberOfFrames;
     
     disp(['==Video ', num2str(i), '==']);
@@ -147,7 +160,7 @@ for i = 1:length(videoNames)
     % Calls the MakeWaypoints function to define the constriction region.
     % This function draws a template with a line across each constriction;
     % these lines are used in calculating the transit time
-    [mask, lineTemplate, xOffset] = MakeWaypoints(currVideo, templateSizes(i));
+    [mask, lineTemplate, xOffset] = MakeWaypoints(currVideo, 5);%templateSizes(i));
     
     % Calls CellDetection to filter the images and store them in
     % 'processedFrames'.  These stored image are binary and should
@@ -158,21 +171,27 @@ for i = 1:length(videoNames)
     %[lonelyData, pairedData] = 
     numFrames = (endFrame-startFrame+1);
     [cellData, cellPerimsData] = CellTrackingEveryFrame(numFrames, lineTemplate, processedFrames, xOffset, cellData, cellPerimsData);
-    %[fftData] = PostprocessPerimData(currVideo, cellData, cellPerimsData);
+
     progressbar((i/(size(videoNames,2))), 0, 0)
+    clear processedFrames;
     
-    if((i == length(videoNames)) || ~strcmp(pathNames{i}, pathNames{i+1}))
-        save([outputFilename, '_cellData.mat'], 'cellData');
-        save([outputFilename, '_cellPerims.mat'], 'cellPerimsData');
-        if(i ~= length(videoNames)) % only reset vars if not last video, so we can take a look immediately after processing
-            cellData = cell(1, 16);
-            cellPerimsData = cell(1, 16);
-            for m = 1:16
-                cellData{m} = {};
-                cellPerimsData{m} = {};
-                cellPerimsData{m}{1} = {};
-            end
-        end
+    nameIdx = i;
+    eval(sprintf('cellData%d = cellData', nameIdx));
+    eval(sprintf('cellPerimsData%d = cellPerimsData', nameIdx));
+    clear cellData; clear cellPerimsData;
+    
+    save([outputFilename, '_cellData', num2str(nameIdx), '.mat'], sprintf('cellData%d', nameIdx));
+    save([outputFilename, '_cellPerims', num2str(nameIdx), '.mat'], sprintf('cellPerimsData%d', nameIdx));    
+    
+    eval(sprintf('clear cellData%d', nameIdx));
+    eval(sprintf('clear cellPerimsData%d', nameIdx));
+    
+    cellData = cell(1, 16);
+    cellPerimsData = cell(1, 16);
+    for jj = 1:16
+        cellData{jj} = {};
+        cellPerimsData{jj} = {};
+        cellPerimsData{jj}{1} = {};
     end
 end
 
@@ -180,7 +199,6 @@ end
 totalTime = toc(tStart);
 avgTimePerVideo = totalTime/length(videoNames);
 
-disp('PROCESSED WITH NEW CELL DEFORMER CODE (TRACKS AT EVERY FRAME)');
 disp(sprintf('\n\n==========='));
 disp(['Total time to analyze ', num2str(length(videoNames)), ' video(s): ', num2str(totalTime), ' secs']);
 disp(['Average time per video: ', num2str(avgTimePerVideo), ' secs']);

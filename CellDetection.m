@@ -38,8 +38,8 @@ function processed = CellDetection(cellVideo, startFrame, endFrame, folderName, 
 
 DEBUG_FLAG = false; % flag for whether to show debug info
 WRITEMOVIE_FLAG = false; % flag for whether to write processed frames to movie on disk
-USEMASK_FLAG = false; % flag whether to binary AND the processed frames with the supplied mask
-OVERLAYOUTLINE_FLAG = true; % flag whether to overlay detected outlines of cells on original frames
+USEMASK_FLAG = true; % flag whether to binary AND the processed frames with the supplied mask
+OVERLAYOUTLINE_FLAG = false; % flag whether to overlay detected outlines of cells on original frames
 
 % 0 -> for normal fps hl60/large cells
 % 1 -> for RBC cells
@@ -47,10 +47,10 @@ OVERLAYOUTLINE_FLAG = true; % flag whether to overlay detected outlines of cells
 % 3 -> for clear high fps single droplet vids
 % 4 -> for multiple high fps droplet vids 
 % 5 -> for normal/low fps multi droplet vids
-DETECT_TYPE = 5;
+DETECT_TYPE = 6;
 
-if DETECT_TYPE == 0
-    flags = [DEBUG_FLAG, WRITEMOVIE_FLAG, true, OVERLAYOUTLINE_FLAG];
+if DETECT_TYPE == 0 || DETECT_TYPE == 6
+    flags = [DEBUG_FLAG, WRITEMOVIE_FLAG, USEMASK_FLAG, OVERLAYOUTLINE_FLAG];
 elseif DETECT_TYPE == 1
     flags = [DEBUG_FLAG, WRITEMOVIE_FLAG, false, OVERLAYOUTLINE_FLAG];
 elseif DETECT_TYPE == 2 || DETECT_TYPE == 3 || DETECT_TYPE == 4 || DETECT_TYPE == 5
@@ -63,8 +63,8 @@ end
 % ...08:
 %minoil 002.001: 730, 803
 
-startBG = 1250;%2100;
-endBG = 1300;%2249;
+startBG = 650;%2100;
+endBG = 800;%2249;
 
 if DETECT_TYPE == 0
     processed = DefaultDetection(cellVideo, startFrame, endFrame, folderName, videoName, mask, flags);
@@ -78,4 +78,6 @@ elseif DETECT_TYPE == 4
     processed = MultiDropletHighFPSDetection(cellVideo, startFrame, endFrame, folderName, videoName, mask, flags);
 elseif DETECT_TYPE == 5
     processed = DropletDetection(cellVideo, startFrame, endFrame, folderName, videoName, mask, flags);
+elseif DETECT_TYPE == 6
+    processed = CVToolsDetection(cellVideo, startFrame, endFrame, folderName, videoName, mask, flags);
 end

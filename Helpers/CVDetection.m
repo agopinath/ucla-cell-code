@@ -1,7 +1,7 @@
 %% DefaultDetection.m
 
-function processed = DefaultDetection(cellVideo, startFrame, endFrame, folderName, videoName, mask, flags)
-
+function processed = CVToolsDetection(cellVideo, startFrame, endFrame, folderName, videoName, mask, flags)
+dbstop if error
 %%% This code analyzes a video of cells passing through constrictions
 %%% to produce and return a binary array of the video's frames which
 %%% have been processed to yield only the cells.
@@ -19,31 +19,10 @@ end
 
 startTime1 = tic;
 
-% %% Initialization
-% folderName = 'G:\CellVideos\';
-% videoName = 'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi';
-%             %'Dev3x10_20x_200fps_4,8ms_72_1.avi';
-%             %'device01_20X_800fps_0.6ms_6psi_p4_15_3.avi';
-%             %'dev9x10_20X_1200fps_0.6ms_2psi_p9_324_1.avi'; 
-%             %'unconstricted_test_1200.avi';
-%             
-% cellVideo = VideoReader([folderName, videoName]);
-% startFrame = 1;
-% endFrame = cellVideo.NumberOfFrames;
-
-isVideoGrayscale = (strcmp(cellVideo.VideoFormat, 'Grayscale') == 1);
-
 disp(sprintf(['\nStarting cell detection for ', videoName, '...']));
 
-% stores the number of frames that will be processed
-effectiveFrameCount = (endFrame-startFrame+1) ;
-
-% store the height/width of the cell video for clarity
-height = cellVideo.Height;
-width = cellVideo.Width;
-
 %% Calculate initial background image
-sampleWindow = 325;
+sampleWindow = 225;
 
 % if the sampling window is larger than the number of frames present,
 % the number is set to all the frames present instead
@@ -51,82 +30,58 @@ if((sampleWindow+startFrame) > endFrame)
     sampleWindow = effectiveFrameCount-1;
 end
 
-% Store the first sampleWindow frames into bgFrames
-bgFrames = zeros(height, width, sampleWindow, 'uint8');
-interval = ceil((endFrame-startFrame+1)/sampleWindow);
-startToEnd = startFrame:interval:endFrame;
-for j = 1:length(startToEnd);
-    currFrameNum = startToEnd(j);
-    if(isVideoGrayscale)
-        bgFrames(:,:,j) = read(cellVideo, currFrameNum); % store the frame that was read in bgFrames
-    else
-        temp = read(cellVideo, currFrameNum);
-        bgFrames(:,:,j) = temp(:,:,1);
-    end
-end
-
-% calculate the initial 'background' frame for the first sampleWindow
-% frames by storing the corresponding pixel value as the mean value of each 
-% corresponding pixel of the background frames in bgFrames
-backgroundImg = uint8(mean(bgFrames, 3));
-
-% clear variables for better memory management
-clear frameIdxs;
+endFrame = 900;
+effectiveFrameCount = (endFrame-startFrame+1) ;
 
 %% Prepare for Cell Detection
 % create structuring elements used in cleanup of grayscale image
-forClose = strel('disk', 12);
+forClose = strel('disk', 5);
+forDil = strel('disk', 2);
 
 % automatic calculation of threshold value for conversion from grayscale to binary image
-threshold = graythresh(backgroundImg) / 35;
+%threshold = graythresh(backgroundImg) / 20;
 
 % preallocate memory for marix for speed
 if(OVERLAYOUTLINE_FLAG)
-    processed = zeros(height, width, effectiveFrameCount, 'uint8');
+    processed = zeros(304, 544, effectiveFrameCount, 'uint8');
 else
-    processed = false(height, width, effectiveFrameCount);
+    processed = false(304, 544, effectiveFrameCount);
 end
+
 
 bgProcessTime = toc(startTime1);
 startTime2 = tic;
-lastBackgroundImg = double(backgroundImg);
+
+foregroundDetector = vision.ForegroundDetector('NumGaussians', 3, 'NumTrainingFrames', sampleWindow);
+videoReader = vision.VideoFileReader(fullfile(folderName, videoName));
+
 %% Step through video
 % iterates through each video frame in the range [startFrame, endFrame]
 for frameIdx = startFrame:endFrame
-    % reads in the movie file frame at frameIdx
-    if(isVideoGrayscale)
-        currFrame = read(cellVideo, frameIdx);
-    else
-        temp = read(cellVideo, frameIdx);
-        currFrame = temp(:,:,1);
-    end
     
-    % if the current frame is after the first sampleWindow frames,
-    % start adjusting the backgroundImage so that it represents a 'moving'
-    % average of the pixel values of the frames in the interval
-    % [frameIdx-sampleWindow, frameIdx]. This better localizes the background 
-    % imageso it 'adapts' to the local frames and appears to better segment 
-    % the cells. bgFrames is used to store the previous sampleWindow frames
-    % so that memory is recycled.
-    if(frameIdx >= sampleWindow+startFrame)
-        bgImgDbl = lastBackgroundImg - double(bgFrames(:,:,(mod(frameIdx-1,sampleWindow)+1)))/sampleWindow + double(currFrame)/sampleWindow;
-        backgroundImg = uint8(bgImgDbl);
-        lastBackgroundImg = bgImgDbl;
-        bgFrames(:,:,mod(frameIdx-1,sampleWindow)+1) = currFrame;
-    end
+    currFrame = step(videoReader); % read the next video frame
+    %currFrame = currFrame(:,:,1);
+    cleanImg = step(foregroundDetector, currFrame);
+    currFrame = uint8(currFrame(:,:,1));
     
-    %% Do cell detection
-    % subtracts the background in bgImgs from each frame, hopefully leaving
-    % just the cells
-    cleanImg = im2bw(imsubtract(backgroundImg, currFrame), threshold);
+    %cleanImg = uint8(cleanImg);
+    %cleanImg = bwareaopen(cleanImg, 10);
+    cleanImg = bwareaopen(cleanImg, 3); 
+    cleanImg = imdilate(cleanImg, forDil);
+    cleanImg = imclose(cleanImg, forClose);
+    cleanImg = imfill(cleanImg, 'holes');
+    cleanImg = bwareaopen(cleanImg, 75); 
+    cleanImg = medfilt2(cleanImg, [5, 5]);
+%     cleanImg = im2bw(imsubtract(backgroundImg, currFrame), threshold);
     
     %% Cleanup 
     % clean the grayscale image of the cells to improve detection
-    cleanImg = bwareaopen(cleanImg, 8);
-    cleanImg = imbothat(cleanImg, forClose);
-    cleanImg = medfilt2(cleanImg, [7, 7]);
-    cleanImg = bwareaopen(cleanImg, 65);
-    cleanImg = imfill(cleanImg, 'holes');
+%     cleanImg = bwareaopen(cleanImg, 20);
+%     cleanImg = imbothat(cleanImg, forClose);
+%     cleanImg = medfilt2(cleanImg, [5, 5]);
+%     cleanImg = bwareaopen(cleanImg, 35);
+%     cleanImg = bwmorph(cleanImg, 'bridge');
+%     cleanImg = imfill(cleanImg, 'holes');
     
     if(USEMASK_FLAG)
         % binary 'AND' to find the intersection of the cleaned image and the mask
@@ -155,7 +110,7 @@ disp(['Average time to detect cells per frame: ', num2str(framesTime/effectiveFr
 
 %% Set up frame viewer and write to file if debugging is on
 if(DEBUG_FLAG)
-    %implay(processed);
+    implay(processed);
     
     % if video file is set
     if(WRITEMOVIE_FLAG)
