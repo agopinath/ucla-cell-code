@@ -35,7 +35,7 @@ effectiveFrameCount = (endFrame-startFrame+1) ;
 
 %% Prepare for Cell Detection
 % create structuring elements used in cleanup of grayscale image
-forClose = strel('disk', 5);
+forClose = strel('disk', 6);
 forDil = strel('disk', 2);
 
 % automatic calculation of threshold value for conversion from grayscale to binary image
@@ -66,12 +66,13 @@ for frameIdx = startFrame:endFrame
     
     %cleanImg = uint8(cleanImg);
     %cleanImg = bwareaopen(cleanImg, 10);
-    cleanImg = bwareaopen(cleanImg, 3); 
-    cleanImg = imdilate(cleanImg, forDil);
+    cleanImg = bwareaopen(cleanImg, 3);
+    %cleanImg = imdilate(cleanImg, forDil);
     cleanImg = imclose(cleanImg, forClose);
-    cleanImg = imfill(cleanImg, 'holes');
-    cleanImg = bwareaopen(cleanImg, 75); 
     cleanImg = medfilt2(cleanImg, [5, 5]);
+    cleanImg = bwareaopen(cleanImg, 70);
+    cleanImg = imfill(cleanImg, 'holes');
+%     
 %     cleanImg = im2bw(imsubtract(backgroundImg, currFrame), threshold);
     
     %% Cleanup 
