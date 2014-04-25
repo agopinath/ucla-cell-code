@@ -46,14 +46,14 @@ for nn = 1:length(varsC)
 %     else
 %         offf = nn;
 %     end
-    subplot(1,3,nn); %%CHANGE
+    subplot(1,2,nn); %%CHANGE
 %     if (jjj == 2 && nn == 3)
 %         maxX = 45;
 %     else
         maxX = 2000;
 %     end
     %maxY = -.4;
-    mmm = relDats(relDats(:,1)==1  & relDats(:,2) <= maxX, :); 
+    mmm = relDats(relDats(:,1)==1 & relDats(:,2) <= maxX, :); 
 %     if(jjj == 2)
 %         %negs = -1./mmm(:, 3);
 %         if(nn ~= 3)
@@ -65,6 +65,8 @@ for nn = 1:length(varsC)
         %loglog(mmm(:,2)', mmm(:,3)');
 %     end
     scatter((mmm(:,2)), (mmm(:,3)));
+    xlim([0 200]);
+    ylim([0 20]);
     % xlim([0 10]);
 %     if(jjj == 2)
 %         h = lsline;
