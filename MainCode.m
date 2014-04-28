@@ -152,7 +152,7 @@ for i = 1:length(videoNames)
     outputFilename = fullfile(outputFolderName, regexprep(currPathName, '[^a-zA-Z_0-9-]', '~'));
     currVideoName = videoNames{i};
     currVideo = VideoReader(fullfile(currPathName, currVideoName));
-    startFrame = 1;%1480;
+    startFrame = 6001;%1480;
     endFrame = currVideo.NumberOfFrames;
     
     disp(['==Video ', num2str(i), '==']);
@@ -175,7 +175,7 @@ for i = 1:length(videoNames)
     progressbar((i/(size(videoNames,2))), 0, 0)
     clear processedFrames;
     
-    nameIdx = i;
+    nameIdx = i+5;
     eval(sprintf('cellData%d = cellData', nameIdx));
     eval(sprintf('cellPerimsData%d = cellPerimsData', nameIdx));
     clear cellData; clear cellPerimsData;

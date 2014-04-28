@@ -2,12 +2,12 @@ function [cellData, cellPerimsData] = CellTrackingEveryFrame(numFrames, template
 currFrameIdx = 1;
 %dbstop in CellTrackingEveryFrame at 68 if (currFrameIdx == 78)
 dbstop if error
-
+%dbstop at 68 in CellTrackingEveryFrame if (currFrameIdx == 300)
 % Change WRITEVIDEO_FLAG to true in order to print a video of the output,
 % defaults to false.
 WRITEVIDEO_FLAG = false;
 CONV_FACTOR = 1.06; % conversion factor in um per pixel.
-% MAX_NUM = 20; % maximum number of cells in any lane before it turns out to be an error, and we clear the lane;
+MAX_NUM = 20; % maximum number of cells in any lane before it turns out to be an error, and we clear the lane;
 
 %% Initializations
 %% Initialize cell data containers
@@ -22,7 +22,7 @@ cellPerimsDataCurr = cell(1, 16);
 for i = 1:16
     cellDataCurr{i} = {};
     cellPerimsDataCurr{i} = {};
-    cellPerimsDataCurr{i}{1} = {};
+    cellPerimsDataCurr{i}{1} = [];
 end
 
 newCells = false(1, 16);
@@ -62,7 +62,8 @@ end
 %% Cell Labeling
 for currFrameIdx = 1:numFrames
     currentFrame = processedFrames(:,:,currFrameIdx);
-    
+    if(currFrameIdx == 1)
+    end
     % If the current frame has any objects in it.  Skips any empty frames.
     if any(currentFrame(:) ~= 0)
         %% Label the current frame
@@ -124,7 +125,7 @@ for currFrameIdx = 1:numFrames
                     
                     if(length(currCell.BoundaryPoints) > 5)
                         pcoords = PreprocessPerimData(currCell, CONV_FACTOR);
-                        cellPerimsDataCurr{cellLane}{newCellIdx}{1} = pcoords;
+                        cellPerimsDataCurr{cellLane}{newCellIdx}(1, :) = pcoords(:,2);
                     end
                     
                     checkingArray(cellLane) = 1;
@@ -211,7 +212,7 @@ for currFrameIdx = 1:numFrames
                 
                 if(length(bestCell.BoundaryPoints) > 5)
                     pcoords = PreprocessPerimData(bestCell, CONV_FACTOR);
-                    cellPerimsDataCurr{currLane}{i}{newEntryIdx} = pcoords;
+                    cellPerimsDataCurr{currLane}{i}(newEntryIdx, :) = pcoords(:, 2);
                 end
                 
                 %cellPerimsData{currLane}{i}{newEntryIdx} = bestCell.BoundaryPoints;
@@ -254,20 +255,24 @@ end
 
 for r = 1:16
     numCells = length(cellDataCurr{r});
+    lastX = 0;
+    lastY = 0;
     for j = 1:numCells
-        if(size(cellDataCurr{r}{j}, 1) < 5)
+        if(size(cellDataCurr{r}{j}, 1) < 5 ||...
+           cellDataCurr{r}{j}(end, 3) < tripWireEnd ||...
+           (cellDataCurr{r}{j}(end, 2) == lastX && cellDataCurr{r}{j}(end, 3) == lastY))
             cellDataCurr{r}{j} = [];
-        elseif(cellDataCurr{r}{j}(end, 3) < tripWireEnd)
-            cellDataCurr{r}{j} = [];
+            cellPerimsDataCurr{r}{j} = [];
+        end
+        if(~isempty(cellDataCurr{r}{j}))
+            lastX = cellDataCurr{r}{j}(end, 2);
+            lastY = cellDataCurr{r}{j}(end, 3);
         end
     end
 end
 
 for r = 1:16
     numCells = length(cellDataCurr{r});
-%     if(numCells > MAX_NUM)
-%         continue;
-%     end
     numCellsTotal = length(cellData{r});
     offset = 0;
     for j = 1:numCells

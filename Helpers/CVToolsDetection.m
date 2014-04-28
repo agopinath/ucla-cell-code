@@ -22,7 +22,7 @@ startTime1 = tic;
 disp(sprintf(['\nStarting cell detection for ', videoName, '...']));
 
 %% Calculate initial background image
-sampleWindow = 225;
+sampleWindow = 350;
 
 % if the sampling window is larger than the number of frames present,
 % the number is set to all the frames present instead
@@ -36,7 +36,7 @@ effectiveFrameCount = (endFrame-startFrame+1) ;
 %% Prepare for Cell Detection
 % create structuring elements used in cleanup of grayscale image
 forClose = strel('disk', 6);
-forDil = strel('disk', 2);
+forErr = strel('disk', 1);
 
 % automatic calculation of threshold value for conversion from grayscale to binary image
 %threshold = graythresh(backgroundImg) / 20;
@@ -52,7 +52,8 @@ end
 bgProcessTime = toc(startTime1);
 startTime2 = tic;
 
-foregroundDetector = vision.ForegroundDetector('NumGaussians', 3, 'NumTrainingFrames', sampleWindow);
+foregroundDetector = vision.ForegroundDetector('NumGaussians',3, 'NumTrainingFrames', sampleWindow,...
+                                                'MinimumBackgroundRatio', .32);
 videoReader = vision.VideoFileReader(fullfile(folderName, videoName));
 
 %% Step through video
@@ -66,11 +67,11 @@ for frameIdx = startFrame:endFrame
     
     %cleanImg = uint8(cleanImg);
     %cleanImg = bwareaopen(cleanImg, 10);
-    cleanImg = bwareaopen(cleanImg, 3);
+    cleanImg = bwareaopen(cleanImg, 7);
     %cleanImg = imdilate(cleanImg, forDil);
     cleanImg = imclose(cleanImg, forClose);
-    cleanImg = medfilt2(cleanImg, [5, 5]);
-    cleanImg = bwareaopen(cleanImg, 70);
+    cleanImg = medfilt2(cleanImg, [9, 9]);
+    cleanImg = bwareaopen(cleanImg, 75);
     cleanImg = imfill(cleanImg, 'holes');
 %     
 %     cleanImg = im2bw(imsubtract(backgroundImg, currFrame), threshold);

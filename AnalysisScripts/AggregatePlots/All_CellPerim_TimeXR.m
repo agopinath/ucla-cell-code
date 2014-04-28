@@ -7,7 +7,7 @@ idx = 1;
 xs = [];
 ys = [];
 
-for laneNum = 11:16
+for laneNum = 1:16
     numCells = length(cData{laneNum});
     for cellNum = 1:numCells
         llane = laneNum; celll = cellNum;
