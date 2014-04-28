@@ -18,10 +18,10 @@
 % titles = {'10 cSt Silicone Droplets', '100k cSt Silicone Droplets'};
 % frameRates = {500, 500};
 
-varsC = {cellDataHEYA8Mock};
-varsP = {cellPerimsDataHEYA8Mock};
-titles = {'HEYA8 MOCK'};
-frameRates = {800};
+varsC = {cellDataMock, cellDataLama};
+varsP = {cellPerimsDataMock,cellPerimsDataLama};
+titles = {'hl60_MOCK', 'hl60_LMNAoe'};
+frameRates = {800, 800};
 
 % COL 1 - 1st con transit time
 % COL 2 - total transit time
@@ -71,5 +71,5 @@ for nn = 1:length(varsC)
 %     ylabel('Transit Time 1st Con (ms)', 'FontSize', 14);
     xlim([0 200]);
     ylim([0 20]);
-    csvwrite(['D:\firstCon_', num2str(nn), '.csv'], mmm);   
+    csvwrite(['D:\firstCon_', titles{nn}, '.csv'], mmm);   
 end
