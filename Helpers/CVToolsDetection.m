@@ -19,6 +19,8 @@ end
 
 startTime1 = tic;
 
+isVideoGrayscale = (strcmp(cellVideo.VideoFormat, 'Grayscale') == 1);
+
 disp(sprintf(['\nStarting cell detection for ', videoName, '...']));
 
 %% Calculate initial background image
@@ -56,15 +58,17 @@ foregroundDetector = vision.ForegroundDetector('NumGaussians',3, 'NumTrainingFra
                                                 'MinimumBackgroundRatio', .32);
 videoReader = vision.VideoFileReader(fullfile(folderName, videoName));
 
+for nn = 1:(startFrame-1)
+    step(videoReader); % step until startFrame is reached
+end
+
 %% Step through video
 % iterates through each video frame in the range [startFrame, endFrame]
 for frameIdx = startFrame:endFrame
-    
     currFrame = step(videoReader); % read the next video frame
+    %currFrame = step(videoReader);
     %currFrame = currFrame(:,:,1);
     cleanImg = step(foregroundDetector, currFrame);
-    currFrame = uint8(currFrame(:,:,1));
-    
     %cleanImg = uint8(cleanImg);
     %cleanImg = bwareaopen(cleanImg, 10);
     cleanImg = bwareaopen(cleanImg, 7);
@@ -73,6 +77,7 @@ for frameIdx = startFrame:endFrame
     cleanImg = medfilt2(cleanImg, [9, 9]);
     cleanImg = bwareaopen(cleanImg, 75);
     cleanImg = imfill(cleanImg, 'holes');
+    cleanImg = imerode(cleanImg, forErr);
 %     
 %     cleanImg = im2bw(imsubtract(backgroundImg, currFrame), threshold);
     
@@ -92,6 +97,7 @@ for frameIdx = startFrame:endFrame
     end
     
     if OVERLAYOUTLINE_FLAG == 1
+        currFrame = uint8(currFrame(:,:,1));
         cleanImg = imadd(currFrame, uint8(bwperim(cleanImg)*255));
     end
     

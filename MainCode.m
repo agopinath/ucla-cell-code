@@ -77,7 +77,7 @@ end
 progressbar('Overall', 'Cell detection', 'Cell tracking');
 
 %% Load video files and prepare any metadata
-[pathNames, videoNames] = PromptForVideos('D:\');
+[pathNames, videoNames] = PromptForVideos('F:\Ajay\Microfluidics\Mock');
 
 % Checks to make sure at least one video was selected for processing
 if(isempty(videoNames{1}))
@@ -152,8 +152,8 @@ for i = 1:length(videoNames)
     outputFilename = fullfile(outputFolderName, regexprep(currPathName, '[^a-zA-Z_0-9-]', '~'));
     currVideoName = videoNames{i};
     currVideo = VideoReader(fullfile(currPathName, currVideoName));
-    startFrame = 6001;%1480;
-    endFrame = currVideo.NumberOfFrames;
+    startFrame = 500;%1480;
+    endFrame = 1500; %currVideo.NumberOfFrames;
     
     disp(['==Video ', num2str(i), '==']);
     

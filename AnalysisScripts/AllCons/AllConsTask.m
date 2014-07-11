@@ -14,11 +14,13 @@ frameCount = length(pData{llane}{celll});
 baseHeight = pData{llane}{celll}(1, thetaLengthIdx1) +  pData{llane}{celll}(1, thetaLengthIdx2);
 
 %% FIND LONGEST CONTIGUOUS 2.5 BLOCK
-avgRun = 5;
-datsLen(datsIt, 8) = cData{llane}{celll}(1, 4); 
-datsLen(datsIt, 9) = baseHeight;
-datsVels(datsIt, 8) = cData{llane}{celll}(1, 4); 
-datsVels(datsIt, 9) = baseHeight;
+avgRun = 3;
+dats{1}(datsIt, 8) = cData{llane}{celll}(1, 4); 
+dats{1}(datsIt, 9) = baseHeight;
+dats{2}(datsIt, 8) = cData{llane}{celll}(1, 4); 
+dats{2}(datsIt, 9) = baseHeight;
+dats{3}(datsIt, 8) = cData{llane}{celll}(1, 4); 
+dats{3}(datsIt, 9) = baseHeight;
 for i = 2:8
     currCon = i - 1;
     conStart = find(cData{llane}{celll}(:, 9) == i, 1, 'first');

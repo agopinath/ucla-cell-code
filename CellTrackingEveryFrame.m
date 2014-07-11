@@ -41,12 +41,12 @@ laneCoords = [16 48 81 113 146 178 210 243 276 308 341 373 406 438 471 503] + xO
 % ending tripwires, tripWireStart and tripWireEnd, respectively
 q = regionprops(ismember(tempmask, 1), 'PixelList');
 tripWireStart = q(1,1).PixelList(1,2);
-q = regionprops(ismember(tempmask, 9), 'PixelList');
+q = regionprops(ismember(tempmask, 16), 'PixelList');
 tripWireEnd = q(1,1).PixelList(1,2);
 q = regionprops(ismember(tempmask, 2), 'PixelList');
 tripWireCheck = q(1,1).PixelList(1,2);
 
-for jj = 1:8
+for jj = 1:15
     q = regionprops(ismember(tempmask, jj), 'PixelList');
     conLines(jj) = q(1,1).PixelList(1,2);
 end
@@ -115,7 +115,7 @@ for currFrameIdx = 1:numFrames
                     cellDataCurr{cellLane}{newCellIdx}(1, 6) = currCell.MinorAxisLength*CONV_FACTOR;
                     cellDataCurr{cellLane}{newCellIdx}(1, 7) = currCell.BoundingBox(3)*CONV_FACTOR;
                     cellDataCurr{cellLane}{newCellIdx}(1, 8) = currCell.BoundingBox(4)*CONV_FACTOR;
-                    cellDataCurr{cellLane}{newCellIdx}(1, 9) = 1;
+                    cellDataCurr{cellLane}{newCellIdx}(1, 9) = 0;
                     
                     if(numPassing(cellLane) > 1)
                         cellDataCurr{cellLane}{newCellIdx}(1, 10) = 1;
@@ -191,17 +191,33 @@ for currFrameIdx = 1:numFrames
                 consIdx = 0;
                 for currConIdx = length(conLines):-1:1
                     if(any(intersectCons(conLines(currConIdx), :)))
-                        consIdx = currConIdx;
-                        break;
+                        if(currConIdx == 1)
+                            consIdx = 0;
+                            break;
+                        else
+                            if(mod(currConIdx, 2) == 0)
+                                consIdx = currConIdx/2;
+                            else
+                                if(any(intersectCons(conLines(currConIdx-1), :)))
+                                    consIdx = (currConIdx-1)/2+.25;
+                                else
+                                    consIdx = (currConIdx-1)/2+.75;
+                                end
+                            end
+                            break;
+                        end
                     end
                 end
+                
                 if consIdx == 0
-                    if(mod(cellDataCurr{currLane}{i}(end-1, 9), 0.2) == 0)
-                        consIdx = cellDataCurr{currLane}{i}(end-1, 9) + 0.5;
-                    else
+%                     if(mod(cellDataCurr{currLane}{i}(end-1, 9), 0.2) == 0)
                         consIdx = cellDataCurr{currLane}{i}(end-1, 9);
-                    end
+%                     else
+%                         consIdx = -1;%cellDataCurr{currLane}{i}(end-1, 9);
+%                     end
                 end
+                
+                %consIdx = consIdx - 1; % subtract one to align actual con. indices with device con. indices
                 cellDataCurr{currLane}{i}(newEntryIdx, 9) = consIdx;
                 
                 if(numPassing(currLane) > 1)

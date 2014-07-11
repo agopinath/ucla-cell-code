@@ -12,8 +12,11 @@ for nn = 1:length(varsC)
     
     xs = [];
     ys = [];
-    datsVels = zeros(1, 9);
-    datsLen = zeros(1, 9);
+    dats = cell(1,5);
+    for mm = 1:length(dats)
+        dats{mm} = zeros(1, 9);
+    end
+    %datsLen = zeros(1, 9);
     datsIt = 1;
     fps = frameRates{nn};
     for laneNum = 1:16
@@ -28,10 +31,11 @@ for nn = 1:length(varsC)
             datsIt = datsIt+1;
         end
     end
-    datsVels(all(isnan(datsVels), 2), :) = [];
-    datsLen(all(isnan(datsLen), 2), :) = [];
-    subplot(1,2,nn);
-    boxplot(datsVels(:,1:7))
+    for mm = 1:length(dats)
+        dats{mm}(all(isnan(dats), 2), :) = [];
+    end
+%     subplot(1,2,nn);
+%     boxplot(datsVels(:,1:7))
 %     maxX = 2000;
 %     mmm = dats(dats(:,1) <= maxX, :); 
 %     %mmm = mmm(log10(mmm(:,3)) > 1 & log10(mmm(:,3)) < 1.35, :);

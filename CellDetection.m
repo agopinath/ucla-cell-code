@@ -39,7 +39,7 @@ function processed = CellDetection(cellVideo, startFrame, endFrame, folderName, 
 DEBUG_FLAG = false; % flag for whether to show debug info
 WRITEMOVIE_FLAG = false; % flag for whether to write processed frames to movie on disk
 USEMASK_FLAG = true; % flag whether to binary AND the processed frames with the supplied mask
-OVERLAYOUTLINE_FLAG = false; % flag whether to overlay detected outlines of cells on original frames
+OVERLAYOUTLINE_FLAG = true; % flag whether to overlay detected outlines of cells on original frames
 
 % 0 -> for normal fps hl60/large cells
 % 1 -> for RBC cells

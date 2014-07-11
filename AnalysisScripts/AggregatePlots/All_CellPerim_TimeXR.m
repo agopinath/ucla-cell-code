@@ -1,7 +1,7 @@
 consNum = 8;
-cData = cellDataLama;%cellData0uMLama;
-pData = cellPerimsDataLama;%cellPerimsData0uMLama;
-fps = 800;
+cData = dropDataSilicone10cSt;
+pData = dropPerimsDataSilicone10cSt;
+fps = 500;
 
 idx = 1;
 xs = [];

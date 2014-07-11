@@ -133,12 +133,14 @@ lineTemplate = uint8(zeros(size(frame)));
 if templateSize == 3
     %constrict = 47 + position(2);
     firstLinePos = 33 + position(2);
-    secondLinePos = 47 + position(2);
+    conStartPos = 47 + position(2);
+    conEndPos = 52 + position(2);
     spacing = 28;
 else
     %constrict = 46 + position(2);
     firstLinePos = 31 + position(2);
-    secondLinePos = 52 + position(2);
+    conStartPos = 47 + position(2);
+    conEndPos = 54 + position(2);
     spacing = 32;
 end
 
@@ -156,17 +158,18 @@ end
 % This loop writes the horizontal lines defining each constriction to the
 % template
 for i = 1:8
-    if(i ~= 1)
-        lineTemplate(floor(secondLinePos+(i-2)*spacing),:) = uint8(ones(1,size(frame,2)));
+    if(i > 1)
+        lineTemplate(floor(conStartPos+(i-2)*spacing),:) = uint8(ones(1,size(frame,2)));
+        lineTemplate(floor(conEndPos+(i-2)*spacing),:) = uint8(ones(1,size(frame,2)));
     else
         lineTemplate(floor(firstLinePos),:) = uint8(ones(1,size(frame,2)));
     end
 end
 
 if templateSize == 3
-    lineTemplate(floor(secondLinePos+(7)*spacing-10),:) = uint8(ones(1,size(frame,2)));
+    lineTemplate(floor(conEndPos+(7)*spacing-10),:) = uint8(ones(1,size(frame,2)));
 else
-    lineTemplate(floor(secondLinePos+(7)*spacing-12),:) = uint8(ones(1,size(frame,2)));
+    lineTemplate(floor(conEndPos+(7)*spacing-13),:) = uint8(ones(1,size(frame,2)));
 end
 
 %% Check: Displays the template overlaid on the background image 
