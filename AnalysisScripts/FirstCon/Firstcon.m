@@ -13,10 +13,11 @@ frameCount = length(pData{llane}{celll});
 
 [delta, thetaLengthIdx1] = min(abs(allDegs-0));
 [delta, thetaLengthIdx2] = min(abs(allDegs-pi));
+[delta, thetaWidthIdx1] = min(abs(allDegs-pi/2));
+[delta, thetaWidthIdx2] = min(abs(allDegs-3*pi/2));
 
 baseHeight = pData{llane}{celll}(1, thetaLengthIdx1) +  pData{llane}{celll}(1, thetaLengthIdx2);
-baseTrailingEdge = pData{llane}{celll}(1, thetaLengthIdx1);
-baseLeadingEdge = pData{llane}{celll}(1, thetaLengthIdx2);
+baseWidth = pData{llane}{celll}(1, thetaWidthIdx1) +  pData{llane}{celll}(1, thetaWidthIdx2);
 
 %% INITIALIZE 1st CON TRANSIT REGIONS
 creepRegion = 1;
@@ -35,23 +36,28 @@ end
 edgeDists = [];
 for j = conStart:conEnd
     jIdx = j-conStart+1;
-    edgeDists(jIdx) = pData{llane}{celll}(j, thetaLengthIdx1) +  pData{llane}{celll}(j, thetaLengthIdx2);
+    edgeDists(jIdx, 1) = pData{llane}{celll}(j, thetaLengthIdx1) +  pData{llane}{celll}(j, thetaLengthIdx2);
+    edgeDists(jIdx, 2) = pData{llane}{celll}(j, thetaWidthIdx1) +  pData{llane}{celll}(j, thetaWidthIdx2);
     
     if usePercent
-        edgeDists(jIdx) = edgeDists(jIdx)/baseHeight*100;
+        edgeDists(jIdx, 1) = edgeDists(jIdx, 1)/baseHeight*100;
+        edgeDists(jIdx, 2) = edgeDists(jIdx, 2)/baseWidth*100;
     end
 end
-avg = smooth(edgeDists, avgRun);
+avg = smooth(edgeDists(:,1), avgRun);
 
-dats(datsIt, 1) = (conEnd-conStart+1)/fps*1000;
-dats(datsIt, 2) = size(cData{llane}{celll}, 1)/fps*1000;
-dats(datsIt, 3) = baseHeight;
+dats(datsIt, 1) = baseHeight;
+dats(datsIt, 2) = baseWidth;
+dats(datsIt, 3) = cData{llane}{celll}(1, 4);
+dats(datsIt, 4) = (conEnd-conStart+1)/fps*1000;
+dats(datsIt, 5) = size(cData{llane}{celll}, 1)/fps*1000;
+
 
 maxEdge = max(avg);
 if(isempty(maxEdge))
-    dats(datsIt, 4) = NaN;
+    dats(datsIt, 6) = NaN;
 else
-    dats(datsIt, 4) = maxEdge;
+    dats(datsIt, 6) = maxEdge;
 end
 
 %% RELAXATION
@@ -60,44 +66,34 @@ V = (cData{llane}{celll}(:, 9) == currConGap);
 conStart = conStart - 1;
 
 if(conStart < 1 | conEnd == -1)
-    dats(datsIt, 5) = NaN;
-    dats(datsIt, 6) = NaN;
+    dats(datsIt, 7) = NaN;
+    dats(datsIt, 8) = NaN;
 else
+clear avg; clear avgL; clear avgW; clear edgeDists;
 edgeDists = [];
 for j = conStart:conEnd
     jIdx = j-conStart+1;
-    edgeDists(jIdx) = pData{llane}{celll}(j, thetaLengthIdx1) +  pData{llane}{celll}(j, thetaLengthIdx2);
-    
+    edgeDists(jIdx, 1) = pData{llane}{celll}(j, thetaLengthIdx1) +  pData{llane}{celll}(j, thetaLengthIdx2);
+    edgeDists(jIdx, 2) = pData{llane}{celll}(j, thetaWidthIdx1) +  pData{llane}{celll}(j, thetaWidthIdx2);
     if usePercent
-        edgeDists(jIdx) = edgeDists(jIdx)/baseHeight*100;
+        edgeDists(jIdx, 1) = edgeDists(jIdx, 1)/baseHeight*100;
+        edgeDists(jIdx, 2) = edgeDists(jIdx, 2)/baseWidth*100;
     end
 end
-avg = smooth(edgeDists, avgRun);
-% 
-% maxEdgeIdx = find(edgeDists == max(edgeDists));
-% if(isempty(maxEdgeIdx) | maxEdgeIdx == 0) % if not found, skip this constriction and store a NaN
-%     dats(datsIt, 6) = NaN;
-% end
-% 
-% if(size(maxEdgeIdx, 2) > 1)
-%     maxEdgeIdx = maxEdgeIdx(1);
-% end
-% 
-% minEdgeIdx = find(edgeDists(maxEdgeIdx+1:end) == min(edgeDists(maxEdgeIdx+1:end)));
-% if(size(minEdgeIdx, 2) > 1)
-%     minEdgeIdx = minEdgeIdx(1);
-% end
-% 
-% if(isempty(minEdgeIdx) | minEdgeIdx == 0) % if not found, skip this constriction and store a NaN
-%     dats(datsIt, 6) = NaN;
-% else
-%     minEdgeIdx = minEdgeIdx + maxEdgeIdx;
+avgL = smooth(edgeDists(:,1), avgRun);
 
-    maxEdge = avg(1);
-    minEdge = avg(end);
+maxEdge = avgL(1);
+minEdge = avgL(end);
 
-    rate = (minEdge - maxEdge) / ((conEnd-conStart)/fps*1000);%((minEdgeIdx - maxEdgeIdx)/fps*1000);
-    dats(datsIt, 5) = abs(rate);
+rate = (minEdge - maxEdge) / ((conEnd-conStart)/fps*1000);%((minEdgeIdx - maxEdgeIdx)/fps*1000);
+dats(datsIt, 7) = abs(rate);
+
+avgW = smooth(edgeDists(:, 2), avgRun);
+
+maxEdge = avgW(1);
+minEdge = avgW(end);
+rate = (minEdge - maxEdge) / ((conEnd-conStart)/fps*1000);
+dats(datsIt, 8) = abs(rate);
 % end
 
 % relaxedEdgeR = min(edgeDists(maxEdgeIdx+1:end));
@@ -105,7 +101,7 @@ avg = smooth(edgeDists, avgRun);
 % if(isempty(relaxedEdgeR))
 %     dats(datsIt, 7) = NaN;
 % else 
-    dats(datsIt, 6) = minEdge; % subtract from 100 to result in the closets of equilibiruim the edge becomes
+dats(datsIt, 9) = minEdge; % subtract from 100 to result in the closets of equilibiruim the edge becomes
 % end
 
 end
@@ -122,9 +118,9 @@ V = (cData{llane}{celll}(:, 9) == creepRegion);
 conEnd = conEnd + 1;
 
 if(conStart == -1 | conEnd == -1)
-    dats(datsIt, 8) = NaN;
-    dats(datsIt, 9) = NaN;
     dats(datsIt, 10) = NaN;
+    dats(datsIt, 11) = NaN;
+    dats(datsIt, 12) = NaN;
 else
     edgeDists = [];
     for j = conStart:conEnd
@@ -140,10 +136,7 @@ else
     creepExtent = avg(end) - avg(1);
     creepTime = (conEnd - conStart)/fps*1000;
     creepRate = creepExtent / creepTime;
-    dats(datsIt, 8) = creepExtent;
-    dats(datsIt, 9) = creepTime;
-    dats(datsIt, 10) = creepRate;%creepTime/cData{llane}{celll}(1, 4);
+    dats(datsIt, 10) = creepExtent;
+    dats(datsIt, 11) = creepTime;
+    dats(datsIt, 12) = creepRate;%creepTime/cData{llane}{celll}(1, 4);
 end
-
-%% GENERAL
-dats(datsIt, 7) = cData{llane}{celll}(1, 4);

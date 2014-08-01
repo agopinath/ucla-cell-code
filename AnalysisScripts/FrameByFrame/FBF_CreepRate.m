@@ -21,31 +21,33 @@ baseLeadingEdge = pData{llane}{celll}(1, thetaLengthIdx2);
 for currCon = 1:consNum
     % Get max extension
     jjj = (currCon + .25);
-
-    % conStart = find(cData{llane}{celll}(:, 9) == creepRegion, 1, 'first');
-    % conEnd = find(cData{llane}{celll}(:, 9) == currCon, 1, 'last');
+    
+    %% CREEP
+    
     V = (cData{llane}{celll}(:, 9) == jjj);
     [conStart, conEnd] = IdxFinder(V);
-
-    %% IN CONSTRICTION
-    if(isempty(conEnd) || isempty(conStart) || conEnd == -1)
-        return;
-    end
-    edgeDists = [];
-    for j = conStart:conEnd
-        jIdx = j-conStart+1;
-        edgeDists(jIdx) = pData{llane}{celll}(j, thetaLengthIdx1) +  pData{llane}{celll}(j, thetaLengthIdx2);
-        
-        if usePercent
-            edgeDists(jIdx) = edgeDists(jIdx)/baseHeight*100;
-        end
-    end
-    avg = smooth(edgeDists, avgRun);
-
-    maxEdge = max(avg);
-    if(isempty(maxEdge))
+    conEnd = conEnd + 1;
+    conEnd = min(length(cData{llane}{celll}), conEnd);
+    
+    if(conStart == -1 | conEnd == -1)
         dats(datsIt, currCon) = NaN;
     else
-        dats(datsIt, currCon) = maxEdge;
+        edgeDists = [];
+        for j = conStart:conEnd
+            jIdx = j-conStart+1;
+            edgeDists(jIdx) = pData{llane}{celll}(j, thetaLengthIdx1) + pData{llane}{celll}(j, thetaLengthIdx2);
+            
+            if usePercent
+                edgeDists(jIdx) = edgeDists(jIdx)/baseHeight*100;
+            end
+        end
+        avg = smooth(edgeDists, avgRun);
+        
+        for j = 1:min(length(avg), numSamples)
+            dats(datsIt, j) = avg(j);
+        end
+        if min(length(avg), numSamples) < numSamples
+            dats(datsIt, length(avg)+1:numSamples) = NaN;
+        end
     end
 end

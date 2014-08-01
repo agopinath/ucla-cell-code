@@ -1,13 +1,3 @@
-% varsC = {cellDataMock, cellDataLama};
-% varsP = {cellPerimsDataMock, cellPerimsDataLama};
-% titles = {'HL60 Mock', 'HL60 LMNA OE', 'Silicone Oil (10 cSt)'};
-% frameRates = {800, 800, 500};
-
-% varsC = {cellDataMock, cellDataLama, cellData_d0_6psi, cellData_d4_6psi};
-% varsP = {cellPerimsDataMock, cellPerimsDataLama, cellPerimsData_d0_6psi, cellPerimsData_d4_6psi};
-% titles = {'HL60 Mock', 'HL60 LMNA OE', 'HL60 d0', 'HL60 d4'};
-% frameRates = {800, 800, 300, 300}
-
 varsC = {cellData_d0Ext};
 varsP = {cellPerimsData_d0Ext};
 titles = {'HL60 d0'};
@@ -18,11 +8,11 @@ for nn = 1:length(varsC)
     consNum = 8;
     cData = varsC{nn};
     pData = varsP{nn};
-
-    dats = zeros(1, 7);
+    numSamples = 5;
+    dats = zeros(1, numSamples);
     datsIt = 1;
     fps = frameRates{nn};
-
+    
     for laneNum = 1:16
         numCells = length(cData{laneNum});
         for cellNum = 1:numCells
@@ -31,7 +21,7 @@ for nn = 1:length(varsC)
                 continue;
             end
             
-            Multi_CreepRate
+            FBF_CreepRate
             datsIt = datsIt+1;
         end
     end
