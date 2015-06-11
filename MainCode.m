@@ -152,8 +152,8 @@ for i = 1:length(videoNames)
     outputFilename = fullfile(outputFolderName, regexprep(currPathName, '[^a-zA-Z_0-9-]', '~'));
     currVideoName = videoNames{i};
     currVideo = VideoReader(fullfile(currPathName, currVideoName));
-    startFrame = 500;%1480;
-    endFrame = 1500; %currVideo.NumberOfFrames;
+    startFrame = 1;
+    endFrame = currVideo.NumberOfFrames;
     
     disp(['==Video ', num2str(i), '==']);
     

@@ -1,4 +1,4 @@
-datsC = cellDataLama;
+datsC = cellDatad4WT_300fps;
 
 sum = 0;
 for i = 1:length(datsC)
